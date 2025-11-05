@@ -1,0 +1,58 @@
+{
+  "name": "ai-readme-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for managing AI_README.md files in projects",
+  "type": "module",
+  "bin": {
+    "ai-readme-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "zod": "^3.22.4",
+    "glob": "^10.3.10",
+    "minimatch": "^9.0.3",
+    "fs-extra": "^11.2.0",
+    "remark": "^15.0.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.4",
+    "simple-git": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0",
+    "tsup": "^8.0.1"
+  },
+  "keywords": [
+    "mcp",
+    "ai",
+    "readme",
+    "context",
+    "claude",
+    "llm",
+    "model-context-protocol"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

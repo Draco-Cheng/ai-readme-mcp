@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Testing
+coverage/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# AI_README backups (local testing)
+.ai_readme_history/
+.ai_readme_cache/
+
+# Temp files
+*.tmp
+tmp/
+temp/
