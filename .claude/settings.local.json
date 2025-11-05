@@ -7,7 +7,16 @@
       "Bash(npm run typecheck:*)",
       "Bash(npm test:*)",
       "Bash(npm run build:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(node dist/index.js:*)",
+      "Bash(node --version:*)",
+      "Bash(taskkill:*)",
+      "Bash(npx vitest --version)",
+      "Bash(npx vitest:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(DEBUG=vite:*)",
+      "Bash(npx vite-node:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * AI_README MCP Server
  * Entry point for the MCP server
