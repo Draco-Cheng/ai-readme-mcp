@@ -95,6 +95,32 @@ claude mcp get ai-readme-manager
 
 You should see `Status: ✓ Connected`
 
+### Configuration for Cursor
+
+Add to Cursor's MCP configuration file:
+
+**Windows:** `%APPDATA%\Cursor\User\mcp.json`
+**macOS/Linux:** `~/.cursor/mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "node",
+      "args": [
+        "D:\\Home\\WorkSpace\\playground\\ai-readme-mcp\\dist\\index.js"
+      ]
+    }
+  }
+}
+```
+
+Replace with your actual installation path.
+
+**Verify Installation:**
+
+After configuring, restart Cursor completely. The MCP server should be available to AI assistants in Cursor.
+
 ### Configuration for Claude Desktop Application
 
 Add to `claude_desktop_config.json`:
