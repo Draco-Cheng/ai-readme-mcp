@@ -1,5 +1,7 @@
 import { z } from 'zod';
+import { dirname } from 'path';
 import { ReadmeUpdater, UpdateOperation } from '../core/updater.js';
+import { ReadmeValidator } from '../core/validator.js';
 
 /**
  * Zod schema for update operation
@@ -58,20 +60,50 @@ export async function updateAIReadme(input: UpdateInput) {
   // Perform update
   const result = await updater.update(readmePath, operations as UpdateOperation[]);
 
-  // Format response
-  if (result.success) {
-    return {
-      success: true,
-      readmePath,
-      changes: result.changes,
-      summary: `Successfully updated ${readmePath} with ${result.changes.length} operation(s). Use 'git diff' to review changes.`,
-    };
-  } else {
+  if (!result.success) {
     return {
       success: false,
       readmePath,
       error: result.error,
       summary: `Failed to update ${readmePath}: ${result.error}`,
+    };
+  }
+
+  // Auto-validate after update
+  try {
+    const projectRoot = dirname(dirname(readmePath)); // Approximate project root
+    const config = await ReadmeValidator.loadConfig(projectRoot);
+    const validator = new ReadmeValidator(config || undefined);
+    const validation = await validator.validate(readmePath);
+
+    // Collect validation warnings
+    const warnings = validation.issues
+      .filter(i => i.type === 'warning' || i.type === 'error')
+      .map(i => `[${i.type.toUpperCase()}] ${i.message}`);
+
+    return {
+      success: true,
+      readmePath,
+      changes: result.changes,
+      summary: `Successfully updated ${readmePath} with ${result.changes.length} operation(s). Use 'git diff' to review changes.`,
+      validation: {
+        valid: validation.valid,
+        score: validation.score,
+        warnings: warnings.length > 0 ? warnings : undefined,
+        stats: validation.stats,
+      },
+    };
+  } catch (validationError) {
+    // If validation fails, still return success for the update
+    return {
+      success: true,
+      readmePath,
+      changes: result.changes,
+      summary: `Successfully updated ${readmePath} with ${result.changes.length} operation(s). Use 'git diff' to review changes.`,
+      validation: {
+        valid: false,
+        error: validationError instanceof Error ? validationError.message : 'Validation failed',
+      },
     };
   }
 }

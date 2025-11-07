@@ -17,17 +17,23 @@ src/
 ├── index.ts           # MCP Server entry point
 ├── tools/             # MCP Tool implementations
 │   ├── discover.ts    # discover_ai_readmes tool
-│   └── getContext.ts  # get_context_for_file tool
+│   ├── getContext.ts  # get_context_for_file tool
+│   ├── update.ts      # update_ai_readme tool
+│   └── validate.ts    # validate_ai_readmes tool
 ├── core/              # Core business logic
 │   ├── scanner.ts     # AIReadmeScanner - discovers README files
-│   └── router.ts      # ContextRouter - routes files to relevant READMEs
+│   ├── router.ts      # ContextRouter - routes files to relevant READMEs
+│   ├── updater.ts     # ReadmeUpdater - updates README files
+│   └── validator.ts   # ReadmeValidator - validates README quality
 ├── types/             # TypeScript type definitions
 └── utils/             # Utility functions (future)
 
 tests/
 ├── unit/              # Unit tests for core modules
 │   ├── scanner.test.ts
-│   └── router.test.ts
+│   ├── router.test.ts
+│   ├── updater.test.ts
+│   └── validator.test.ts
 └── fixtures/          # Test fixtures (sample monorepo structure)
 
 docs/
@@ -115,7 +121,7 @@ describe('MyComponent', () => {
 ### Test Coverage
 
 - **Target:** 80%+ coverage
-- **Current Status:** 26/26 tests passing (100%)
+- **Current Status:** 57/57 tests passing (100%)
 - Test both happy paths and error cases
 - Use descriptive test names that explain the scenario
 
@@ -157,8 +163,10 @@ export async function myTool(input: MyToolInput) {
 
 - **discover_ai_readmes:** Returns JSON with README index
 - **get_context_for_file:** Returns formatted markdown prompt
+- **update_ai_readme:** Returns JSON with update results and validation warnings
+- **validate_ai_readmes:** Returns JSON with validation report for all READMEs
 
-Both return text content blocks for the MCP protocol.
+All tools return text content blocks for the MCP protocol.
 
 ## Build & Development
 
@@ -202,14 +210,58 @@ npm run typecheck   # TypeScript type checking
 
 - ✅ **Phase 0:** Initial setup complete
 - ✅ **Phase 1:** MVP with discovery and context retrieval complete
-- 📋 **Phase 2:** Update/sync functionality (next)
-- 📋 **Phase 3:** Validation and health checks
+- ✅ **Phase 2:** Update/sync functionality complete
+- ✅ **Phase 3:** Validation and quality checks complete
 - 📋 **Phase 4:** Advanced features (watch mode, caching, VSCode extension)
+
+### Phase 3: Validation Features
+
+- **ReadmeValidator:** Validates AI_README files for token count, structure, and quality
+- **Flexible configuration:** Pass config directly in tool calls to customize validation rules
+- **Auto-validation:** update_ai_readme tool automatically validates after changes
+- **Standalone validation:** validate_ai_readmes tool for checking all READMEs
+- **Quality scoring:** 0-100 score based on token count, structure, and issues
+- **Token estimation:** Simple word-based formula (words × 1.3) for approximate token counting
+
+## Configuration
+
+### Validation Configuration (Optional)
+
+Validation uses sensible defaults. You can customize rules by passing a `config` parameter when calling validation tools:
+
+```typescript
+// Example: Customize validation when calling validate_ai_readmes
+{
+  projectRoot: "/path/to/project",
+  config: {
+    maxTokens: 300,          // Stricter token limit
+    rules: {
+      requireH1: true,
+      requireSections: ["## Architecture", "## Security"],
+      allowCodeBlocks: true,
+      maxLineLength: 120
+    },
+    tokenLimits: {
+      excellent: 200,
+      good: 300,
+      warning: 500,
+      error: 800
+    }
+  }
+}
+```
+
+**Default values:**
+- `maxTokens: 500`
+- `requireH1: true`
+- `allowCodeBlocks: true`
+- `maxLineLength: 120`
+- Token limits: excellent (<300), good (<500), warning (<800), error (>1200)
 
 ## When Modifying This Project
 
 1. **Adding new MCP tools:** Follow the pattern in `src/tools/`
-2. **Changing core logic:** Update tests first, ensure all 26 tests pass
+2. **Changing core logic:** Update tests first, ensure all 57 tests pass
 3. **Path handling:** Always normalize to Unix-style paths
 4. **Documentation:** Update relevant docs in `docs/` folder
 5. **Breaking changes:** Update version number and CHANGELOG

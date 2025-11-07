@@ -86,34 +86,122 @@ export interface UpdaterOptions {
 }
 
 /**
- * Validation check types
+ * Validation configuration
  */
-export type ValidationCheck = 'structure' | 'links' | 'consistency' | 'syntax';
+export interface ValidationConfig {
+  /** Maximum tokens allowed (default: 500) */
+  maxTokens?: number;
+  /** Validation rules */
+  rules?: {
+    /** Require H1 heading (default: true) */
+    requireH1?: boolean;
+    /** Required sections (default: []) */
+    requireSections?: string[];
+    /** Allow code blocks (default: true) */
+    allowCodeBlocks?: boolean;
+    /** Maximum line length (default: 120) */
+    maxLineLength?: number;
+  };
+  /** Token limit thresholds */
+  tokenLimits?: {
+    /** Excellent: under this many tokens (default: 300) */
+    excellent?: number;
+    /** Good: under this many tokens (default: 500) */
+    good?: number;
+    /** Warning: under this many tokens (default: 800) */
+    warning?: number;
+    /** Error: over this many tokens (default: 1200) */
+    error?: number;
+  };
+}
+
+/**
+ * Fully resolved validation configuration (all properties required)
+ */
+export interface ResolvedValidationConfig {
+  maxTokens: number;
+  rules: {
+    requireH1: boolean;
+    requireSections: string[];
+    allowCodeBlocks: boolean;
+    maxLineLength: number;
+  };
+  tokenLimits: {
+    excellent: number;
+    good: number;
+    warning: number;
+    error: number;
+  };
+}
+
+/**
+ * Default validation configuration
+ */
+export const DEFAULT_VALIDATION_CONFIG: ResolvedValidationConfig = {
+  maxTokens: 500,
+  rules: {
+    requireH1: true,
+    requireSections: [],
+    allowCodeBlocks: true,
+    maxLineLength: 120,
+  },
+  tokenLimits: {
+    excellent: 300,
+    good: 500,
+    warning: 800,
+    error: 1200,
+  },
+};
+
+/**
+ * Validation issue severity
+ */
+export type ValidationSeverity = 'error' | 'warning' | 'info';
+
+/**
+ * Validation rule type
+ */
+export type ValidationRule =
+  | 'token-count'
+  | 'require-h1'
+  | 'require-sections'
+  | 'code-blocks'
+  | 'line-length'
+  | 'empty-content'
+  | 'structure';
 
 /**
  * Validation issue
  */
 export interface ValidationIssue {
-  /** File with the issue */
-  file: string;
+  /** Issue severity */
+  type: ValidationSeverity;
+  /** Rule that triggered this issue */
+  rule: ValidationRule;
+  /** Issue message */
+  message: string;
   /** Line number (if applicable) */
   line?: number;
-  /** Issue severity */
-  severity: 'error' | 'warning';
-  /** Issue type */
-  type: ValidationCheck;
-  /** Description of the issue */
-  message: string;
+  /** Suggestion for fixing */
+  suggestion?: string;
 }
 
 /**
- * Validation report
+ * Validation result for a single README
  */
-export interface ValidationReport {
-  /** Whether all validations passed */
+export interface ValidationResult {
+  /** Whether validation passed */
   valid: boolean;
+  /** Path to the README file */
+  filePath: string;
   /** List of issues found */
   issues: ValidationIssue[];
-  /** Timestamp of validation */
-  timestamp: Date;
+  /** Quality score (0-100) */
+  score?: number;
+  /** Token count statistics */
+  stats?: {
+    tokens: number;
+    lines: number;
+    characters: number;
+  };
 }

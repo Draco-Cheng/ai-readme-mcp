@@ -25,6 +25,11 @@ import {
   updateSchema,
   type UpdateInput,
 } from './tools/update.js';
+import {
+  validateAIReadmes,
+  validateSchema,
+  type ValidateInput,
+} from './tools/validate.js';
 
 const server = new Server(
   {
@@ -57,8 +62,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'update_ai_readme',
         description:
-          'Update an AI_README.md file with specified operations (append, prepend, replace, insert-after, insert-before). Changes are written directly; use Git for version control.',
+          'Update an AI_README.md file with specified operations (append, prepend, replace, insert-after, insert-before). Auto-validates after update. Changes are written directly; use Git for version control.',
         inputSchema: zodToJsonSchema(updateSchema),
+      },
+      {
+        name: 'validate_ai_readmes',
+        description:
+          'Validate all AI_README.md files in a project. Checks token count, structure, and content quality. Returns validation results with suggestions for improvement.',
+        inputSchema: zodToJsonSchema(validateSchema),
       },
     ],
   };
@@ -108,6 +119,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
+    if (name === 'validate_ai_readmes') {
+      const input = validateSchema.parse(args) as ValidateInput;
+      const result = await validateAIReadmes(input);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
     throw new Error(`Unknown tool: ${name}`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -128,7 +152,7 @@ async function main() {
   await server.connect(transport);
 
   console.error('AI_README MCP Server started');
-  console.error('Available tools: discover_ai_readmes, get_context_for_file, update_ai_readme');
+  console.error('Available tools: discover_ai_readmes, get_context_for_file, update_ai_readme, validate_ai_readmes');
 }
 
 main().catch((error) => {
