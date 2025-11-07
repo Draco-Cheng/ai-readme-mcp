@@ -137,6 +137,12 @@ Now ask Claude Code to use the context:
 
 Claude will use the `get_context_for_file` tool to fetch your AI_README content and provide context-aware guidance!
 
+You can also ask Claude to update your AI_README:
+
+> "Please add a new section about Performance to our AI_README with best practices for React components"
+
+Claude will use the `update_ai_readme` tool to add the content (with automatic backup)!
+
 ## Next Steps
 
 ### For Monorepos

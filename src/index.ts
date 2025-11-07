@@ -20,6 +20,11 @@ import {
   getContextSchema,
   type GetContextInput,
 } from './tools/getContext.js';
+import {
+  updateAIReadme,
+  updateSchema,
+  type UpdateInput,
+} from './tools/update.js';
 
 const server = new Server(
   {
@@ -48,6 +53,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         description:
           'Get relevant AI_README context for a specific file path. Returns formatted context from relevant README files to help understand project conventions.',
         inputSchema: zodToJsonSchema(getContextSchema),
+      },
+      {
+        name: 'update_ai_readme',
+        description:
+          'Update an AI_README.md file with specified operations (append, prepend, replace, insert-after, insert-before). Automatically creates a backup before updating.',
+        inputSchema: zodToJsonSchema(updateSchema),
       },
     ],
   };
@@ -84,6 +95,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
+    if (name === 'update_ai_readme') {
+      const input = updateSchema.parse(args) as UpdateInput;
+      const result = await updateAIReadme(input);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
     throw new Error(`Unknown tool: ${name}`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -104,7 +128,7 @@ async function main() {
   await server.connect(transport);
 
   console.error('AI_README MCP Server started');
-  console.error('Available tools: discover_ai_readmes, get_context_for_file');
+  console.error('Available tools: discover_ai_readmes, get_context_for_file, update_ai_readme');
 }
 
 main().catch((error) => {

@@ -12,17 +12,18 @@ AI_README MCP Server is a Model Context Protocol (MCP) server that automatically
 
 ## ✨ Features
 
-### Available Now (Phase 1 Complete)
+### Available Now
 
-- 🔍 **Automatic Discovery** - Scan and index all AI_README.md files in your project
-- 🎯 **Smart Context Routing** - Find relevant README content based on file paths
+- 🔍 **Automatic Discovery** - Scan and index all AI_README.md files in your project (Phase 1)
+- 🎯 **Smart Context Routing** - Find relevant README content based on file paths (Phase 1)
+- 🔄 **Update & Sync** - AI can both read and update AI_README files with automatic backup (Phase 2)
 - 📦 **Easy Integration** - Works seamlessly with Claude Code and other MCP clients
-- 🧪 **Well Tested** - 26 unit tests, 100% passing
+- 🧪 **Well Tested** - 40 unit tests, 100% passing
 
 ### Coming Soon
 
-- 🔄 **Bidirectional Sync** - AI can both read and update AI_README files (Phase 2)
 - ✅ **Validation & Health Checks** - Ensure README consistency and integrity (Phase 3)
+- 🎬 **Watch Mode** - Auto-sync changes to README files (Phase 4)
 
 ## 🚀 Quick Start
 
@@ -253,6 +254,72 @@ Gets relevant AI_README context for a specific file path.
 }
 ```
 
+### `update_ai_readme`
+
+Update an AI_README.md file with specified operations. Automatically creates a backup before updating.
+
+```typescript
+// Parameters
+{
+  readmePath: string;            // Required: Path to AI_README.md file
+  operations: Array<{            // Required: Update operations to perform
+    type: 'append' | 'prepend' | 'replace' | 'insert-after' | 'insert-before';
+    content: string;             // Content to add or replace
+    section?: string;            // Section heading (for insert operations)
+    searchText?: string;         // Text to search for (for replace)
+  }>;
+  createBackup?: boolean;        // Optional: Create backup (default: true)
+}
+
+// Returns
+{
+  success: boolean;
+  readmePath: string;
+  backupPath?: string;           // Path to backup file (if created)
+  changes: Array<{
+    operation: string;
+    section?: string;
+    linesAdded: number;
+    linesRemoved: number;
+  }>;
+  summary: string;
+  error?: string;                // Error message if failed
+}
+```
+
+**Example Usage:**
+
+```typescript
+// Append new section
+{
+  readmePath: "apps/frontend/AI_README.md",
+  operations: [{
+    type: "append",
+    content: "## Performance\n- Use React.memo for expensive components"
+  }]
+}
+
+// Insert after specific section
+{
+  readmePath: "AI_README.md",
+  operations: [{
+    type: "insert-after",
+    section: "## Coding Conventions",
+    content: "### Code Style\n- Use TypeScript strict mode\n- Prefer const over let"
+  }]
+}
+
+// Replace specific text
+{
+  readmePath: "AI_README.md",
+  operations: [{
+    type: "replace",
+    searchText: "Run tests with npm test",
+    content: "Run tests with: `npm test` or `npm run test:watch`"
+  }]
+}
+```
+
 ## 🗺️ Development Roadmap
 
 ### Phase 0: Initial Setup ✅ COMPLETED
@@ -271,18 +338,20 @@ Gets relevant AI_README context for a specific file path.
 - [x] MCP server integration
 - [x] Documentation and templates
 
-### Phase 2: Update & Sync 📋 NEXT
-- [ ] Implement ReadmeUpdater
-- [ ] Create `update_ai_readme` tool
-- [ ] Backup mechanism
+### Phase 2: Update & Sync ✅ COMPLETED
+- [x] Implement ReadmeUpdater
+- [x] Create `update_ai_readme` tool
+- [x] Backup mechanism with rollback
+- [x] Write comprehensive tests (40 tests total, all passing)
 
-### Phase 3: Validation & Quality
+### Phase 3: Validation & Quality 📋 NEXT
 - [ ] Implement ReadmeValidator
 - [ ] Create `validate_ai_readmes` tool
+- [ ] Health check functionality
 
 ### Phase 4: Advanced Features
-- [ ] Watch mode
-- [ ] Caching
+- [ ] Watch mode for auto-sync
+- [ ] Performance optimization and caching
 - [ ] VSCode Extension
 
 ### Phase 5: Distribution
