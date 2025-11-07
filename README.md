@@ -16,9 +16,9 @@ AI_README MCP Server is a Model Context Protocol (MCP) server that automatically
 
 - 🔍 **Automatic Discovery** - Scan and index all AI_README.md files in your project (Phase 1)
 - 🎯 **Smart Context Routing** - Find relevant README content based on file paths (Phase 1)
-- 🔄 **Update & Sync** - AI can both read and update AI_README files with automatic backup (Phase 2)
+- 🔄 **Update & Sync** - AI can both read and update AI_README files (Phase 2)
 - 📦 **Easy Integration** - Works seamlessly with Claude Code and other MCP clients
-- 🧪 **Well Tested** - 40 unit tests, 100% passing
+- 🧪 **Well Tested** - 36 unit tests, 100% passing
 
 ### Coming Soon
 
@@ -256,7 +256,7 @@ Gets relevant AI_README context for a specific file path.
 
 ### `update_ai_readme`
 
-Update an AI_README.md file with specified operations. Automatically creates a backup before updating.
+Update an AI_README.md file with specified operations.
 
 ```typescript
 // Parameters
@@ -268,23 +268,27 @@ Update an AI_README.md file with specified operations. Automatically creates a b
     section?: string;            // Section heading (for insert operations)
     searchText?: string;         // Text to search for (for replace)
   }>;
-  createBackup?: boolean;        // Optional: Create backup (default: true)
 }
 
 // Returns
 {
   success: boolean;
   readmePath: string;
-  backupPath?: string;           // Path to backup file (if created)
   changes: Array<{
     operation: string;
     section?: string;
     linesAdded: number;
     linesRemoved: number;
   }>;
-  summary: string;
+  summary: string;               // Includes reminder to use git diff
   error?: string;                // Error message if failed
 }
+```
+
+**Note:** Changes are written directly to the file. Use Git for version control:
+- Review changes: `git diff AI_README.md`
+- Undo changes: `git checkout AI_README.md`
+- Commit changes: `git add AI_README.md && git commit -m "Update AI_README"`
 ```
 
 **Example Usage:**
@@ -341,8 +345,8 @@ Update an AI_README.md file with specified operations. Automatically creates a b
 ### Phase 2: Update & Sync ✅ COMPLETED
 - [x] Implement ReadmeUpdater
 - [x] Create `update_ai_readme` tool
-- [x] Backup mechanism with rollback
-- [x] Write comprehensive tests (40 tests total, all passing)
+- [x] Support 5 operation types (append, prepend, replace, insert-after, insert-before)
+- [x] Write comprehensive tests (36 tests total, all passing)
 
 ### Phase 3: Validation & Quality 📋 NEXT
 - [ ] Implement ReadmeValidator

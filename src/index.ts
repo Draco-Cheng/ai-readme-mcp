@@ -57,7 +57,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'update_ai_readme',
         description:
-          'Update an AI_README.md file with specified operations (append, prepend, replace, insert-after, insert-before). Automatically creates a backup before updating.',
+          'Update an AI_README.md file with specified operations (append, prepend, replace, insert-after, insert-before). Changes are written directly; use Git for version control.',
         inputSchema: zodToJsonSchema(updateSchema),
       },
     ],

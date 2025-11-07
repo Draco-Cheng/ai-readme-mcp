@@ -1,4 +1,4 @@
-import { describe, it, before, after } from 'node:test';
+import { describe, it, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import { ReadmeUpdater } from '../../src/core/updater.js';
 import { writeFile, mkdir, rm, readFile } from 'fs/promises';
@@ -45,277 +45,199 @@ describe('ReadmeUpdater', () => {
     }
   });
 
-  describe('constructor', () => {
-    it('should create updater with default options', () => {
-      updater = new ReadmeUpdater();
-      assert.ok(updater);
-    });
-
-    it('should create updater with custom backup dir', () => {
-      updater = new ReadmeUpdater({ backupDir: '.custom_backups' });
-      assert.ok(updater);
-    });
+  beforeEach(async () => {
+    // Reset updater and test file before each test
+    updater = new ReadmeUpdater();
+    await writeFile(TEST_README, SAMPLE_README, 'utf-8');
   });
 
-  describe('backup()', () => {
-    it('should create a backup of the README file', async () => {
-      // Create test file
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
-
-      updater = new ReadmeUpdater();
-      const backupPath = await updater.backup(TEST_README);
-
-      assert.ok(existsSync(backupPath), 'Backup file should exist');
-      assert.ok(backupPath.includes('.ai_readme_history'), 'Backup should be in history dir');
-      assert.ok(backupPath.includes('.backup'), 'Backup should have .backup extension');
-
-      const backupContent = await readFile(backupPath, 'utf-8');
-      assert.strictEqual(backupContent, SAMPLE_README, 'Backup content should match original');
+  describe('constructor', () => {
+    it('should create updater', () => {
+      const newUpdater = new ReadmeUpdater();
+      assert.ok(newUpdater, 'Updater should be created');
     });
   });
 
   describe('update() - append operation', () => {
     it('should append content to the end of file', async () => {
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
-
-      updater = new ReadmeUpdater();
-      const result = await updater.update(
-        TEST_README,
-        [
-          {
-            type: 'append',
-            content: '## New Section\n\nThis is new content.',
-          },
-        ],
-        { createBackup: true }
-      );
+      const result = await updater.update(TEST_README, [
+        {
+          type: 'append',
+          content: '## Performance\n\n- Use memoization',
+        },
+      ]);
 
       assert.strictEqual(result.success, true, 'Update should succeed');
-      assert.ok(result.backupPath, 'Should create backup');
-      assert.strictEqual(result.changes.length, 1, 'Should have one change');
+      assert.strictEqual(result.changes.length, 1, 'Should have 1 change');
       assert.strictEqual(result.changes[0].operation, 'append');
 
-      const updatedContent = await readFile(TEST_README, 'utf-8');
-      assert.ok(updatedContent.includes('## New Section'), 'Should contain new section');
+      const content = await readFile(TEST_README, 'utf-8');
+      assert.ok(content.includes('## Performance'), 'Should include new section');
+      assert.ok(content.includes('Use memoization'), 'Should include new content');
     });
   });
 
   describe('update() - prepend operation', () => {
     it('should prepend content to the beginning of file', async () => {
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
+      const result = await updater.update(TEST_README, [
+        {
+          type: 'prepend',
+          content: '> This is a prepended note',
+        },
+      ]);
 
-      updater = new ReadmeUpdater();
-      const result = await updater.update(
-        TEST_README,
-        [
-          {
-            type: 'prepend',
-            content: '> **Note:** This is a test project',
-          },
-        ],
-        { createBackup: false }
+      assert.strictEqual(result.success, true, 'Update should succeed');
+      const content = await readFile(TEST_README, 'utf-8');
+      assert.ok(
+        content.startsWith('> This is a prepended note'),
+        'Should start with prepended content'
       );
-
-      assert.strictEqual(result.success, true);
-      assert.strictEqual(result.backupPath, undefined, 'Should not create backup');
-
-      const updatedContent = await readFile(TEST_README, 'utf-8');
-      assert.ok(updatedContent.startsWith('> **Note:**'), 'Should start with prepended content');
     });
   });
 
   describe('update() - replace operation', () => {
     it('should replace specific text', async () => {
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
+      const result = await updater.update(TEST_README, [
+        {
+          type: 'replace',
+          searchText: 'Run tests with npm test.',
+          content: 'Run tests with: `npm test` or `npm run test:watch`',
+        },
+      ]);
 
-      updater = new ReadmeUpdater();
-      const result = await updater.update(
-        TEST_README,
-        [
-          {
-            type: 'replace',
-            searchText: 'Run tests with npm test.',
-            content: 'Run tests with: `npm test` or `npm run test:watch`',
-          },
-        ]
+      assert.strictEqual(result.success, true, 'Update should succeed');
+      const content = await readFile(TEST_README, 'utf-8');
+      assert.ok(
+        content.includes('npm run test:watch'),
+        'Should include replaced content'
       );
-
-      assert.strictEqual(result.success, true);
-
-      const updatedContent = await readFile(TEST_README, 'utf-8');
-      assert.ok(updatedContent.includes('npm run test:watch'), 'Should contain replaced text');
-      assert.ok(!updatedContent.includes('Run tests with npm test.'), 'Should not contain old text');
+      assert.ok(
+        !content.includes('Run tests with npm test.'),
+        'Should not include old content'
+      );
     });
 
     it('should fail if search text not found', async () => {
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
+      const result = await updater.update(TEST_README, [
+        {
+          type: 'replace',
+          searchText: 'This text does not exist',
+          content: 'New content',
+        },
+      ]);
 
-      updater = new ReadmeUpdater();
-      const result = await updater.update(
-        TEST_README,
-        [
-          {
-            type: 'replace',
-            searchText: 'THIS TEXT DOES NOT EXIST',
-            content: 'New content',
-          },
-        ]
+      assert.strictEqual(result.success, false, 'Update should fail');
+      assert.ok(
+        result.error?.includes('Text not found'),
+        'Error should mention text not found'
       );
-
-      assert.strictEqual(result.success, false);
-      assert.ok(result.error?.includes('not found'), 'Should have error about text not found');
     });
   });
 
   describe('update() - insert-after operation', () => {
     it('should insert content after a section', async () => {
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
+      const result = await updater.update(TEST_README, [
+        {
+          type: 'insert-after',
+          section: '## Coding Conventions',
+          content: '### Code Style\n- Use TypeScript strict mode',
+        },
+      ]);
 
-      updater = new ReadmeUpdater();
-      const result = await updater.update(
-        TEST_README,
-        [
-          {
-            type: 'insert-after',
-            section: '## Coding Conventions',
-            content: '### Code Style\n- Use TypeScript strict mode\n- Prefer const over let',
-          },
-        ]
+      assert.strictEqual(result.success, true, 'Update should succeed');
+      const content = await readFile(TEST_README, 'utf-8');
+      assert.ok(content.includes('### Code Style'), 'Should include new subsection');
+
+      // Verify it's after "Coding Conventions" but before "Testing"
+      const codingConvIndex = content.indexOf('## Coding Conventions');
+      const codeStyleIndex = content.indexOf('### Code Style');
+      const testingIndex = content.indexOf('## Testing');
+
+      assert.ok(
+        codeStyleIndex > codingConvIndex,
+        'Code Style should be after Coding Conventions'
       );
-
-      assert.strictEqual(result.success, true);
-      assert.strictEqual(result.changes[0].section, '## Coding Conventions');
-
-      const updatedContent = await readFile(TEST_README, 'utf-8');
-      assert.ok(updatedContent.includes('### Code Style'), 'Should contain inserted content');
-      assert.ok(updatedContent.includes('TypeScript strict mode'), 'Should contain inserted detail');
-
-      // Check order: should be after "Coding Conventions" but before "Testing"
-      const codingConvIndex = updatedContent.indexOf('## Coding Conventions');
-      const codeStyleIndex = updatedContent.indexOf('### Code Style');
-      const testingIndex = updatedContent.indexOf('## Testing');
-
-      assert.ok(codeStyleIndex > codingConvIndex, 'Should be after Coding Conventions');
-      assert.ok(codeStyleIndex < testingIndex, 'Should be before Testing');
+      assert.ok(codeStyleIndex < testingIndex, 'Code Style should be before Testing');
     });
 
     it('should fail if section not found', async () => {
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
+      const result = await updater.update(TEST_README, [
+        {
+          type: 'insert-after',
+          section: '## Nonexistent Section',
+          content: 'New content',
+        },
+      ]);
 
-      updater = new ReadmeUpdater();
-      const result = await updater.update(
-        TEST_README,
-        [
-          {
-            type: 'insert-after',
-            section: '## Non-existent Section',
-            content: 'New content',
-          },
-        ]
+      assert.strictEqual(result.success, false, 'Update should fail');
+      assert.ok(
+        result.error?.includes('Section not found'),
+        'Error should mention section not found'
       );
-
-      assert.strictEqual(result.success, false);
-      assert.ok(result.error?.includes('not found'), 'Should have error about section not found');
     });
   });
 
   describe('update() - insert-before operation', () => {
     it('should insert content before a section', async () => {
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
+      const result = await updater.update(TEST_README, [
+        {
+          type: 'insert-before',
+          section: '## Testing',
+          content: '## Performance\n\n- Optimize bundle size',
+        },
+      ]);
 
-      updater = new ReadmeUpdater();
-      const result = await updater.update(
-        TEST_README,
-        [
-          {
-            type: 'insert-before',
-            section: '## Testing',
-            content: '## Security\n\n- Never commit secrets\n- Use environment variables',
-          },
-        ]
+      assert.strictEqual(result.success, true, 'Update should succeed');
+      const content = await readFile(TEST_README, 'utf-8');
+
+      // Verify it's before "Testing"
+      const performanceIndex = content.indexOf('## Performance');
+      const testingIndex = content.indexOf('## Testing');
+
+      assert.ok(
+        performanceIndex < testingIndex,
+        'Performance should be before Testing'
       );
-
-      assert.strictEqual(result.success, true);
-
-      const updatedContent = await readFile(TEST_README, 'utf-8');
-      assert.ok(updatedContent.includes('## Security'), 'Should contain inserted section');
-
-      // Check order: should be before "Testing"
-      const securityIndex = updatedContent.indexOf('## Security');
-      const testingIndex = updatedContent.indexOf('## Testing');
-
-      assert.ok(securityIndex < testingIndex, 'Should be before Testing');
     });
   });
 
   describe('update() - multiple operations', () => {
     it('should apply multiple operations in sequence', async () => {
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
-
-      updater = new ReadmeUpdater();
       const result = await updater.update(TEST_README, [
         {
-          type: 'prepend',
-          content: '> Project README\n',
-        },
-        {
-          type: 'insert-after',
-          section: '## Architecture',
-          content: '- Microservices architecture\n- Event-driven design',
-        },
-        {
           type: 'append',
-          content: '\n## License\n\nMIT',
+          content: '## License\n\nMIT',
+        },
+        {
+          type: 'replace',
+          searchText: 'npm test',
+          content: 'npm run test',
         },
       ]);
 
-      assert.strictEqual(result.success, true);
-      assert.strictEqual(result.changes.length, 3, 'Should have 3 changes');
+      assert.strictEqual(result.success, true, 'Update should succeed');
+      assert.strictEqual(result.changes.length, 2, 'Should have 2 changes');
 
-      const updatedContent = await readFile(TEST_README, 'utf-8');
-      assert.ok(updatedContent.startsWith('> Project README'), 'Should have prepended content');
-      assert.ok(updatedContent.includes('Microservices architecture'), 'Should have inserted content');
-      assert.ok(updatedContent.includes('## License'), 'Should have appended content');
+      const content = await readFile(TEST_README, 'utf-8');
+      assert.ok(content.includes('## License'), 'Should include appended section');
+      assert.ok(content.includes('npm run test'), 'Should include replaced text');
     });
   });
 
   describe('update() - error handling', () => {
     it('should handle file not found', async () => {
-      updater = new ReadmeUpdater();
-      const result = await updater.update(
-        '/path/to/nonexistent/file.md',
-        [{ type: 'append', content: 'test' }]
+      const result = await updater.update('/nonexistent/file.md', [
+        {
+          type: 'append',
+          content: 'test',
+        },
+      ]);
+
+      assert.strictEqual(result.success, false, 'Update should fail');
+      assert.ok(
+        result.error?.includes('File not found'),
+        'Error should mention file not found'
       );
-
-      assert.strictEqual(result.success, false);
-      assert.ok(result.error?.includes('not found'), 'Should have file not found error');
-    });
-  });
-
-  describe('rollback()', () => {
-    it('should rollback to a previous backup', async () => {
-      // Create and update file
-      await writeFile(TEST_README, SAMPLE_README, 'utf-8');
-
-      updater = new ReadmeUpdater();
-      const backupPath = await updater.backup(TEST_README);
-
-      // Modify the file
-      await writeFile(TEST_README, 'Modified content', 'utf-8');
-
-      // Rollback
-      const success = await updater.rollback(backupPath, TEST_README);
-      assert.strictEqual(success, true, 'Rollback should succeed');
-
-      const restoredContent = await readFile(TEST_README, 'utf-8');
-      assert.strictEqual(restoredContent, SAMPLE_README, 'Content should be restored');
-    });
-
-    it('should fail if backup file not found', async () => {
-      updater = new ReadmeUpdater();
-      const success = await updater.rollback('/nonexistent/backup.md', TEST_README);
-
-      assert.strictEqual(success, false, 'Rollback should fail');
     });
   });
 });

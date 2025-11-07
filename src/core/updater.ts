@@ -1,5 +1,4 @@
-import { readFile, writeFile, mkdir, copyFile } from 'fs/promises';
-import { join, dirname, basename } from 'path';
+import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 
 export interface UpdateOperation {
@@ -11,7 +10,6 @@ export interface UpdateOperation {
 
 export interface UpdateResult {
   success: boolean;
-  backupPath?: string;
   changes: {
     operation: string;
     section?: string;
@@ -21,25 +19,19 @@ export interface UpdateResult {
   error?: string;
 }
 
-export interface UpdaterOptions {
-  createBackup?: boolean;
-  backupDir?: string;
-}
-
 /**
  * ReadmeUpdater - Handles updating AI_README.md files
  *
  * Features:
- * - Automatic backup before updates
  * - Section-based updates
- * - Rollback capability
- * - Update history tracking
+ * - Multiple operation types (append, prepend, replace, insert-after, insert-before)
+ * - Detailed change tracking
+ *
+ * Note: Version control is handled by Git. Use git diff/revert for rollback.
  */
 export class ReadmeUpdater {
-  private backupDir: string;
-
-  constructor(options: UpdaterOptions = {}) {
-    this.backupDir = options.backupDir || '.ai_readme_history';
+  constructor() {
+    // No configuration needed
   }
 
   /**
@@ -47,16 +39,12 @@ export class ReadmeUpdater {
    *
    * @param readmePath - Path to the AI_README.md file
    * @param operations - List of update operations
-   * @param options - Update options
-   * @returns Update result with backup path and changes
+   * @returns Update result with changes
    */
   async update(
     readmePath: string,
-    operations: UpdateOperation[],
-    options: UpdaterOptions = {}
+    operations: UpdateOperation[]
   ): Promise<UpdateResult> {
-    const shouldBackup = options.createBackup ?? true;
-
     try {
       // Check if file exists
       if (!existsSync(readmePath)) {
@@ -65,12 +53,6 @@ export class ReadmeUpdater {
           error: `File not found: ${readmePath}`,
           changes: [],
         };
-      }
-
-      // Create backup
-      let backupPath: string | undefined;
-      if (shouldBackup) {
-        backupPath = await this.backup(readmePath);
       }
 
       // Read current content
@@ -91,7 +73,6 @@ export class ReadmeUpdater {
 
       return {
         success: true,
-        backupPath,
         changes,
       };
     } catch (error) {
@@ -100,54 +81,6 @@ export class ReadmeUpdater {
         error: error instanceof Error ? error.message : String(error),
         changes: [],
       };
-    }
-  }
-
-  /**
-   * Create a backup of the README file
-   *
-   * @param readmePath - Path to the file to backup
-   * @returns Path to the backup file
-   */
-  async backup(readmePath: string): Promise<string> {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const fileName = basename(readmePath);
-    const projectDir = dirname(dirname(readmePath)); // Assuming README is in project root or subdirectory
-    const backupDirPath = join(projectDir, this.backupDir);
-
-    // Create backup directory if it doesn't exist
-    if (!existsSync(backupDirPath)) {
-      await mkdir(backupDirPath, { recursive: true });
-    }
-
-    // Generate backup filename
-    const backupFileName = `${fileName}.${timestamp}.backup`;
-    const backupPath = join(backupDirPath, backupFileName);
-
-    // Copy file to backup location
-    await copyFile(readmePath, backupPath);
-
-    return backupPath;
-  }
-
-  /**
-   * Rollback to a previous backup
-   *
-   * @param backupPath - Path to the backup file
-   * @param targetPath - Path where to restore the backup
-   * @returns Success status
-   */
-  async rollback(backupPath: string, targetPath: string): Promise<boolean> {
-    try {
-      if (!existsSync(backupPath)) {
-        throw new Error(`Backup file not found: ${backupPath}`);
-      }
-
-      await copyFile(backupPath, targetPath);
-      return true;
-    } catch (error) {
-      console.error('Rollback failed:', error);
-      return false;
     }
   }
 

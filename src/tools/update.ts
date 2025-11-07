@@ -25,9 +25,6 @@ export const updateSchema = z.object({
   operations: z.array(updateOperationSchema).describe(
     'List of update operations to perform'
   ),
-  createBackup: z.boolean().optional().default(true).describe(
-    'Whether to create a backup before updating (default: true)'
-  ),
 });
 
 export type UpdateInput = z.infer<typeof updateSchema>;
@@ -36,7 +33,7 @@ export type UpdateInput = z.infer<typeof updateSchema>;
  * Update an AI_README.md file with specified operations
  *
  * @param input - Update parameters
- * @returns Update result with backup info and changes
+ * @returns Update result with changes
  *
  * @example
  * ```typescript
@@ -46,31 +43,28 @@ export type UpdateInput = z.infer<typeof updateSchema>;
  *     type: 'insert-after',
  *     section: '## Directory Structure',
  *     content: '├── src/hooks/  # Custom React hooks'
- *   }],
- *   createBackup: true
+ *   }]
  * });
  * ```
+ *
+ * Note: Changes are immediately written to the file.
+ * Use git to track changes and rollback if needed.
  */
 export async function updateAIReadme(input: UpdateInput) {
-  const { readmePath, operations, createBackup } = input;
+  const { readmePath, operations } = input;
 
-  const updater = new ReadmeUpdater({
-    createBackup,
-  });
+  const updater = new ReadmeUpdater();
 
   // Perform update
-  const result = await updater.update(readmePath, operations as UpdateOperation[], {
-    createBackup,
-  });
+  const result = await updater.update(readmePath, operations as UpdateOperation[]);
 
   // Format response
   if (result.success) {
     return {
       success: true,
       readmePath,
-      backupPath: result.backupPath,
       changes: result.changes,
-      summary: `Successfully updated ${readmePath} with ${result.changes.length} operation(s).`,
+      summary: `Successfully updated ${readmePath} with ${result.changes.length} operation(s). Use 'git diff' to review changes.`,
     };
   } else {
     return {
