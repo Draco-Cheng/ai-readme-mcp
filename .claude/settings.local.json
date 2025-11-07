@@ -29,7 +29,9 @@
       "mcp__ai-readme-manager__discover_ai_readmes",
       "mcp__ai-readme-manager__get_context_for_file",
       "mcp__ai-readme-manager__update_ai_readme",
-      "Bash(del validate-test.mjs)"
+      "Bash(del validate-test.mjs)",
+      "Bash(npm run test:*)",
+      "Bash(npm pack:*)"
     ],
     "deny": [],
     "ask": []

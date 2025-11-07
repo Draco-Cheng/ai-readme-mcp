@@ -157,7 +157,7 @@ export class ReadmeValidator {
   private validateStructure(_content: string, lines: string[], issues: ValidationIssue[]): void {
     // Check for H1 heading
     if (this.config.rules.requireH1) {
-      const hasH1 = lines.some((line) => line.trim().match(/^#\s+.+/));
+      const hasH1 = lines.some((line) => line.trim().match(/^#\s+[^#]/));
       if (!hasH1) {
         issues.push({
           type: 'error',

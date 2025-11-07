@@ -29,9 +29,44 @@ AI_README MCP Server is a Model Context Protocol (MCP) server that automatically
 
 ### Installation
 
-> **Note:** Currently requires manual installation. npm package coming soon!
+**Option 1: Using npx (Recommended - After npm publish)**
 
-**Step 1: Clone and Build**
+No installation needed! Just configure and use via npx:
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "npx",
+      "args": ["-y", "ai-readme-mcp"]
+    }
+  }
+}
+```
+
+The `-y` flag automatically accepts the npx prompt.
+
+**Option 2: Global Installation (After npm publish)**
+
+```bash
+npm install -g ai-readme-mcp
+```
+
+Then configure:
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "ai-readme-mcp"
+    }
+  }
+}
+```
+
+**Option 3: Local Development (Current)**
+
+> **Note:** Use this method before npm package is published.
 
 ```bash
 # Clone this repository to a permanent location
@@ -43,9 +78,7 @@ npm install
 npm run build
 ```
 
-**Step 2: Configure in Your Projects**
-
-See configuration section below to set up the MCP server in your projects.
+Then see configuration section below for manual setup.
 
 ### Configuration for Claude Code (VSCode Extension)
 
@@ -102,6 +135,33 @@ Add to Cursor's MCP configuration file:
 **Windows:** `%APPDATA%\Cursor\User\mcp.json`
 **macOS/Linux:** `~/.cursor/mcp.json`
 
+**After npm publish (Recommended):**
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "npx",
+      "args": ["-y", "ai-readme-mcp"]
+    }
+  }
+}
+```
+
+**Or if globally installed:**
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "ai-readme-mcp"
+    }
+  }
+}
+```
+
+**Current (local development):**
+
 ```json
 {
   "mcpServers": {
@@ -115,8 +175,6 @@ Add to Cursor's MCP configuration file:
 }
 ```
 
-Replace with your actual installation path.
-
 **Verify Installation:**
 
 After configuring, restart Cursor completely. The MCP server should be available to AI assistants in Cursor.
@@ -128,6 +186,33 @@ Add to `claude_desktop_config.json`:
 **Windows:** `%APPDATA%\claude\claude_desktop_config.json`
 **macOS/Linux:** `~/.config/claude/config.json` or `~/Library/Application Support/Claude/config.json`
 
+**After npm publish (Recommended):**
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "npx",
+      "args": ["-y", "ai-readme-mcp"]
+    }
+  }
+}
+```
+
+**Or if globally installed:**
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "ai-readme-mcp"
+    }
+  }
+}
+```
+
+**Current (local development):**
+
 ```json
 {
   "mcpServers": {
@@ -138,8 +223,6 @@ Add to `claude_desktop_config.json`:
   }
 }
 ```
-
-Replace with your actual path. See examples in Claude Code configuration above.
 
 ### Create Your First AI_README
 
