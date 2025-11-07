@@ -30,6 +30,11 @@ import {
   validateSchema,
   type ValidateInput,
 } from './tools/validate.js';
+import {
+  initAIReadme,
+  initSchema,
+  type InitInput,
+} from './tools/init.js';
 
 const server = new Server(
   {
@@ -70,6 +75,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         description:
           'Validate all AI_README.md files in a project. Checks token count, structure, and content quality. Returns validation results with suggestions for improvement.',
         inputSchema: zodToJsonSchema(validateSchema),
+      },
+      {
+        name: 'init_ai_readme',
+        description:
+          'Initialize a new AI_README.md file from a template. Creates a basic structure with common sections to help you get started quickly.',
+        inputSchema: zodToJsonSchema(initSchema),
       },
     ],
   };
@@ -132,6 +143,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
+    if (name === 'init_ai_readme') {
+      const input = initSchema.parse(args) as InitInput;
+      const result = await initAIReadme(input);
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
     throw new Error(`Unknown tool: ${name}`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -152,7 +176,7 @@ async function main() {
   await server.connect(transport);
 
   console.error('AI_README MCP Server started');
-  console.error('Available tools: discover_ai_readmes, get_context_for_file, update_ai_readme, validate_ai_readmes');
+  console.error('Available tools: discover_ai_readmes, get_context_for_file, update_ai_readme, validate_ai_readmes, init_ai_readme');
 }
 
 main().catch((error) => {
