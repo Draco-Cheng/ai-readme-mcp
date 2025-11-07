@@ -31,7 +31,8 @@
       "mcp__ai-readme-manager__update_ai_readme",
       "Bash(del validate-test.mjs)",
       "Bash(npm run test:*)",
-      "Bash(npm pack:*)"
+      "Bash(npm pack:*)",
+      "Bash(npm adduser)"
     ],
     "deny": [],
     "ask": []
