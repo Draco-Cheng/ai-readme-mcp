@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/absolute/path/to/ai-readme-mcp/dist/index.js"]
+    }
+  }
+}

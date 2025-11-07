@@ -20,6 +20,10 @@ coverage/
 *.swo
 *~
 
+# Claude Code configuration (local only)
+.claude/
+.mcp.json
+
 # OS
 .DS_Store
 Thumbs.db

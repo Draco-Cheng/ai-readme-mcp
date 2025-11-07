@@ -28,29 +28,75 @@ AI_README MCP Server is a Model Context Protocol (MCP) server that automatically
 
 ### Installation
 
-#### Option 1: Local Development
+> **Note:** Currently requires manual installation. npm package coming soon!
+
+**Step 1: Clone and Build**
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/ai-readme-mcp.git
-cd ai-readme-mcp
+# Clone this repository to a permanent location
+git clone https://github.com/Draco-Cheng/ai-readme-mcp.git ~/ai-readme-mcp
+cd ~/ai-readme-mcp
 
-# Install dependencies
+# Install and build
 npm install
-
-# Build the project
 npm run build
 ```
 
-#### Option 2: Using npx (when published)
+**Step 2: Configure in Your Projects**
+
+See configuration section below to set up the MCP server in your projects.
+
+### Configuration for Claude Code (VSCode Extension)
+
+**Option 1: Using CLI (Recommended)**
+
+In your project directory, run:
 
 ```bash
-npx ai-readme-mcp
+# If you cloned to ~/ai-readme-mcp:
+claude mcp add --transport stdio ai-readme-manager --scope project -- node ~/ai-readme-mcp/dist/index.js
+
+# Or use absolute path:
+claude mcp add --transport stdio ai-readme-manager --scope project -- node /path/to/ai-readme-mcp/dist/index.js
 ```
 
-### Configuration for Claude Code
+This creates a `.mcp.json` file in your project root.
 
-Add to your Claude Code MCP configuration file:
+**Option 2: Manual Configuration**
+
+Create `.mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/absolute/path/to/ai-readme-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to/ai-readme-mcp` with your actual installation path.
+
+**Path examples:**
+- **Windows:** `"C:\\Users\\YourName\\ai-readme-mcp\\dist\\index.js"`
+- **macOS/Linux:** `"~/ai-readme-mcp/dist/index.js"` or `"/home/username/ai-readme-mcp/dist/index.js"`
+
+> 💡 **Tip:** Clone to a permanent location like `~/ai-readme-mcp` so the path stays consistent across projects.
+
+**Verify Installation:**
+
+```bash
+claude mcp get ai-readme-manager
+```
+
+You should see `Status: ✓ Connected`
+
+### Configuration for Claude Desktop Application
+
+Add to `claude_desktop_config.json`:
 
 **Windows:** `%APPDATA%\claude\claude_desktop_config.json`
 **macOS/Linux:** `~/.config/claude/config.json` or `~/Library/Application Support/Claude/config.json`
@@ -60,14 +106,13 @@ Add to your Claude Code MCP configuration file:
   "mcpServers": {
     "ai-readme-manager": {
       "command": "node",
-      "args": ["d:/Home/WorkSpace/playground/ai-readme-mcp/dist/index.js"],
-      "env": {}
+      "args": ["/absolute/path/to/ai-readme-mcp/dist/index.js"]
     }
   }
 }
 ```
 
-Replace the path with your actual installation path.
+Replace with your actual path. See examples in Claude Code configuration above.
 
 ### Create Your First AI_README
 
@@ -128,7 +173,7 @@ ai-readme-mcp/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/ai-readme-mcp.git
+git clone https://github.com/Draco-Cheng/ai-readme-mcp.git
 cd ai-readme-mcp
 
 # Install dependencies
@@ -149,13 +194,10 @@ npm run dev
 
 ## 📚 Documentation
 
-- [Quick Start Guide](./docs/QUICK_START.md) - Get started in 5 minutes
-- [MCP Configuration](./docs/MCP_CONFIG.md) - Detailed configuration guide
-- [Project Specification](./docs/SPEC.md) - Complete project specification
+- **[Quick Start Guide](./docs/QUICK_START.md)** - Get started in 10 minutes
+- **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute
+- [Project Specification](./docs/SPEC.md) - Complete technical specification
 - [AI_README Templates](./docs/templates/) - Example templates for your projects
-  - [Root-level Template](./docs/templates/ROOT_AI_README_TEMPLATE.md)
-  - [Frontend Template](./docs/templates/FRONTEND_AI_README_TEMPLATE.md)
-  - [Backend Template](./docs/templates/BACKEND_AI_README_TEMPLATE.md)
 
 ## 🛠️ Available MCP Tools
 
@@ -243,6 +285,11 @@ Gets relevant AI_README context for a specific file path.
 - [ ] Caching
 - [ ] VSCode Extension
 
+### Phase 5: Distribution
+- [ ] Publish to npm registry
+- [ ] Add npx support for easier installation
+- [ ] CI/CD pipeline for automated releases
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -259,8 +306,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-- GitHub Issues: [project-repo]/issues
-- Project Link: [https://github.com/yourusername/ai-readme-mcp](https://github.com/yourusername/ai-readme-mcp)
+- GitHub Issues: https://github.com/Draco-Cheng/ai-readme-mcp/issues
+- Project Link: https://github.com/Draco-Cheng/ai-readme-mcp
 
 ---
 

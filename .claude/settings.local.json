@@ -16,9 +16,19 @@
       "Bash(npx tsx:*)",
       "Bash(npm uninstall:*)",
       "Bash(DEBUG=vite:*)",
-      "Bash(npx vite-node:*)"
+      "Bash(npx vite-node:*)",
+      "Bash(powershell:*)",
+      "Bash(dir:*)",
+      "Bash(where:*)",
+      "Bash(\"C:\\Program Files\\nodejs\\node.exe\" \"d:\\Home\\WorkSpace\\playground\\ai-readme-mcp\\dist\\index.js\")",
+      "Bash(node -e \"console.log(JSON.stringify(require(''C:/Users/Draco/AppData/Roaming/Claude/claude_desktop_config.json''), null, 2))\")",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp:*)",
+      "Bash(node:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true
 }

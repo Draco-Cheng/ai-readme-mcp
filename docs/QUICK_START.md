@@ -6,7 +6,7 @@ This guide will help you get the AI_README MCP Server running with Claude Code i
 
 ```bash
 # Navigate to the project directory
-cd d:/Home/WorkSpace/playground/ai-readme-mcp
+cd /path/to/ai-readme-mcp
 
 # Build the server
 npm run build
@@ -25,37 +25,57 @@ dist/index.d.ts   1.36 KB
 
 ## Step 2: Configure Claude Code
 
-Create or edit your Claude Code MCP configuration file:
+**Recommended:** Use the CLI to add the MCP server:
 
-**For Windows:**
-- File location: `%APPDATA%\claude\claude_desktop_config.json` or similar
+```bash
+claude mcp add --transport stdio ai-readme-manager --scope project -- node /absolute/path/to/ai-readme-mcp/dist/index.js
+```
 
-**For macOS/Linux:**
-- File location: `~/.config/claude/config.json` or `~/Library/Application Support/Claude/config.json`
+This will create `.mcp.json` in your project root.
 
-Add this configuration:
+**Or manually create `.mcp.json`:**
 
 ```json
 {
   "mcpServers": {
     "ai-readme-manager": {
+      "type": "stdio",
       "command": "node",
-      "args": ["d:/Home/WorkSpace/playground/ai-readme-mcp/dist/index.js"],
-      "env": {}
+      "args": ["/absolute/path/to/ai-readme-mcp/dist/index.js"]
     }
   }
 }
 ```
 
-**Important:** Replace `d:/Home/WorkSpace/playground/ai-readme-mcp/dist/index.js` with the actual path to your built server.
+**Path examples:**
+- Windows: `"C:\\Users\\YourName\\projects\\ai-readme-mcp\\dist\\index.js"`
+- macOS/Linux: `"/home/username/projects/ai-readme-mcp/dist/index.js"`
 
-## Step 3: Restart Claude Code
+## Step 3: Enable Project MCP Servers
 
-After updating the configuration file, restart Claude Code completely to load the MCP server.
+Create or edit `.claude/settings.local.json` in your project:
+
+```json
+{
+  "enableAllProjectMcpServers": true
+}
+```
 
 ## Step 4: Verify Installation
 
-In Claude Code, you can verify the server is running by asking:
+Check MCP server status:
+
+```bash
+claude mcp get ai-readme-manager
+```
+
+You should see `Status: ✓ Connected`
+
+## Step 5: Restart Claude Code
+
+Restart Claude Code (Developer: Reload Window) to load the MCP server.
+
+In a new conversation, verify by asking:
 
 > "What MCP tools do you have available?"
 
@@ -63,7 +83,7 @@ You should see:
 - `discover_ai_readmes` - Scan project for AI_README files
 - `get_context_for_file` - Get relevant context for a file
 
-## Step 5: Create Your First AI_README
+## Step 6: Create Your First AI_README
 
 Create a file called `AI_README.md` in your project root:
 
@@ -109,7 +129,7 @@ This is a [your project type] using [your tech stack].
 - Update this README when architecture changes
 ```
 
-## Step 6: Test It Out
+## Step 7: Test It Out
 
 Now ask Claude Code to use the context:
 
@@ -169,6 +189,17 @@ Available tools: discover_ai_readmes, get_context_for_file
 
 Make sure the MCP server has read permissions for your project directories.
 
-## Advanced Usage
+### MCP Tools Not Loading
 
-See [MCP_CONFIG.md](./MCP_CONFIG.md) for detailed configuration options and advanced features.
+If tools don't appear in new conversations:
+
+1. Check `.claude/settings.local.json` has `"enableAllProjectMcpServers": true`
+2. Verify MCP server is Connected: `claude mcp get ai-readme-manager`
+3. Restart Claude Code completely
+4. Try `claude mcp reset-project-choices` and restart
+
+## Learn More
+
+- See [templates](./templates/) for AI_README examples
+- Check [SPEC.md](./SPEC.md) for complete specification
+- Visit [GitHub repo](https://github.com/Draco-Cheng/ai-readme-mcp) for updates

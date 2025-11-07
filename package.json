@@ -47,12 +47,16 @@
     "llm",
     "model-context-protocol"
   ],
-  "author": "",
+  "author": "Draco Cheng <draco.cheng@outlook.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/Draco-Cheng/ai-readme-mcp.git"
   },
+  "bugs": {
+    "url": "https://github.com/Draco-Cheng/ai-readme-mcp/issues"
+  },
+  "homepage": "https://github.com/Draco-Cheng/ai-readme-mcp#readme",
   "engines": {
     "node": ">=18.0.0"
   }
