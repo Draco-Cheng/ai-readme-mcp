@@ -138,18 +138,18 @@ export interface ResolvedValidationConfig {
  * Default validation configuration
  */
 export const DEFAULT_VALIDATION_CONFIG: ResolvedValidationConfig = {
-  maxTokens: 600,
+  maxTokens: 400,
   rules: {
     requireH1: true,
     requireSections: [],
-    allowCodeBlocks: true,
-    maxLineLength: 120,
+    allowCodeBlocks: false,
+    maxLineLength: 100,
   },
   tokenLimits: {
-    excellent: 400,
-    good: 600,
-    warning: 1000,
-    error: 1500,
+    excellent: 200,
+    good: 400,
+    warning: 600,
+    error: 1000,
   },
 };
 

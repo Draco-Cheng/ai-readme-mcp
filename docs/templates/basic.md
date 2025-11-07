@@ -10,63 +10,46 @@ Brief description of this module or component.
 
 ## Directory Structure
 
-Describe your project layout:
-
-```
-src/
-├── main entry point
-├── core logic/
-└── utilities/
-```
+- Main entry: [path]
+- Core logic: [path]
+- Utilities: [path]
 
 ## Coding Conventions
 
 ### File Naming
-- Describe your file naming conventions here
-- Example: snake_case, camelCase, PascalCase, kebab-case
+- [snake_case/camelCase/PascalCase/kebab-case]
 
 ### Code Style
 - Formatting: [Prettier/Black/gofmt/rustfmt/etc]
 - Linting: [ESLint/Pylint/golangci-lint/Clippy/etc]
-- Style guide: Link to or describe your style guide
 
 ### Important Patterns
-- Add any architectural patterns or design decisions
-- Best practices specific to this project
-- Common patterns team members should follow
+- Key architectural patterns or design decisions
+- Project-specific best practices
+- Common patterns to follow
 
 ## Testing
 
-- **Test Framework:** [Jest/Pytest/JUnit/Go testing/etc]
-- **Run Command:** `[command to run tests]`
+- **Framework:** [Jest/Pytest/JUnit/Go testing/etc]
+- **Run Command:** [command]
 - **Coverage Target:** [percentage or "not enforced"]
 
 ## Dependencies
 
-### Key Libraries/Packages
-- List important dependencies here
-- Explain their purpose and why they're used
+### Key Libraries
+- [Library name] - Purpose and why used
+- [Library name] - Purpose and why used
 
 ## Development Workflow
 
-```bash
-# Installation/Setup
-[installation command]
-
-# Development mode
-[dev command]
-
-# Build/Compile
-[build command]
-
-# Run
-[run command]
-```
+- Installation: [command]
+- Dev mode: [command]
+- Build: [command]
+- Run: [command]
 
 ## Important Notes
 
-- Add any critical information AI should know
+- Critical information AI should know
 - Security considerations
 - Performance considerations
 - Known limitations or gotchas
-- Common pitfalls to avoid
