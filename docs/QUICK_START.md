@@ -71,7 +71,28 @@ claude mcp get ai-readme-manager
 
 You should see `Status: ✓ Connected`
 
-## Step 5: Restart Claude Code
+## Step 5: (Optional) Auto-approve MCP Tools
+
+To avoid confirmation prompts every time AI uses the MCP tools, add them to your allow list.
+
+In `.claude/settings.local.json`, add to the `permissions.allow` array:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "mcp__ai-readme-manager__discover_ai_readmes",
+      "mcp__ai-readme-manager__get_context_for_file",
+      "mcp__ai-readme-manager__update_ai_readme"
+    ]
+  },
+  "enableAllProjectMcpServers": true
+}
+```
+
+> **Note:** This is optional. If you prefer to approve each MCP call, skip this step.
+
+## Step 6: Restart Claude Code
 
 Restart Claude Code (Developer: Reload Window) to load the MCP server.
 
@@ -82,8 +103,9 @@ In a new conversation, verify by asking:
 You should see:
 - `discover_ai_readmes` - Scan project for AI_README files
 - `get_context_for_file` - Get relevant context for a file
+- `update_ai_readme` - Update AI_README files
 
-## Step 6: Create Your First AI_README
+## Step 7: Create Your First AI_README
 
 Create a file called `AI_README.md` in your project root:
 
@@ -129,7 +151,7 @@ This is a [your project type] using [your tech stack].
 - Update this README when architecture changes
 ```
 
-## Step 7: Test It Out
+## Step 8: Test It Out
 
 Now ask Claude Code to use the context:
 

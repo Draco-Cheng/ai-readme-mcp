@@ -25,7 +25,10 @@
       "Bash(claude mcp add:*)",
       "Bash(claude mcp:*)",
       "Bash(node:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "mcp__ai-readme-manager__discover_ai_readmes",
+      "mcp__ai-readme-manager__get_context_for_file",
+      "mcp__ai-readme-manager__update_ai_readme"
     ],
     "deny": [],
     "ask": []
