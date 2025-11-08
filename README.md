@@ -674,7 +674,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - GitHub Issues: https://github.com/Draco-Cheng/ai-readme-mcp/issues
 - Project Link: https://github.com/Draco-Cheng/ai-readme-mcp
-
----
-
-**Status:** ✅ Published | **Version:** 0.3.1 | **Last Updated:** 2025-11-08

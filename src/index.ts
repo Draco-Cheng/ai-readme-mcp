@@ -39,7 +39,7 @@ import {
 const server = new Server(
   {
     name: 'ai-readme-mcp',
-    version: '0.1.0',
+    version: '0.3.2',
   },
   {
     capabilities: {
@@ -61,13 +61,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'get_context_for_file',
         description:
-          'Get relevant AI_README context for a specific file path. Returns formatted context from relevant README files to help understand project conventions. Use this BEFORE creating or editing files to understand conventions - works even if the file does not exist yet.',
+          'Get relevant AI_README context for a specific file path. Returns formatted context from relevant README files to help understand project conventions. Use this BEFORE creating or editing files - works even if the file does not exist yet.\n\nIMPORTANT: When establishing NEW conventions (e.g., switching from Tailwind to CSS Modules), update the AI_README FIRST, then call this tool to get the updated context before writing code.',
         inputSchema: zodToJsonSchema(getContextSchema),
       },
       {
         name: 'update_ai_readme',
         description:
-          'Update an AI_README.md file when you discover important conventions, patterns, or rules while editing code. Use this to keep documentation in sync with code changes. Supports append, prepend, replace, insert-after, insert-before operations. Auto-validates after update. Note: Only update when you find NEW conventions not already documented - avoid duplicate updates.',
+          'Update an AI_README.md file to document conventions, patterns, or architectural decisions. Supports append, prepend, replace, insert-after, insert-before operations. Auto-validates after update.\n\nTwo usage scenarios:\n1. BEFORE code changes: Establish new conventions (update AI_README → get_context → write code)\n2. AFTER code changes: Document discovered patterns in existing code\n\nNote: Only update when documenting NEW conventions - avoid duplicates.',
         inputSchema: zodToJsonSchema(updateSchema),
       },
       {

@@ -81,11 +81,17 @@ export async function updateAIReadme(input: UpdateInput) {
       .filter(i => i.type === 'warning' || i.type === 'error')
       .map(i => `[${i.type.toUpperCase()}] ${i.message}`);
 
+    const workflowTip = result.changes.some(c =>
+      c.operation === 'replace' || c.operation === 'append' || c.operation === 'prepend'
+    )
+      ? '\n\n💡 NEXT STEP: Use get_context_for_file before writing code to ensure you\'re following the updated conventions.'
+      : '';
+
     return {
       success: true,
       readmePath,
       changes: result.changes,
-      summary: `Successfully updated ${readmePath} with ${result.changes.length} operation(s). Use 'git diff' to review changes.`,
+      summary: `Successfully updated ${readmePath} with ${result.changes.length} operation(s). Use 'git diff' to review changes.${workflowTip}`,
       validation: {
         valid: validation.valid,
         score: validation.score,

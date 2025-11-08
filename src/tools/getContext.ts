@@ -77,9 +77,11 @@ export async function getContextForFile(input: GetContextInput) {
       promptText += ctx.content + '\n\n';
     }
 
-    promptText += `---\n**Important Reminders:**\n`;
+    promptText += `---\n`;
+    promptText += `**Important:**\n`;
     promptText += `- Follow the above conventions when making changes\n`;
-    promptText += `- If your changes affect architecture or conventions, consider updating the relevant AI_README\n`;
+    promptText += `- When establishing NEW conventions: update AI_README first → get context → write code\n`;
+    promptText += `- When discovering patterns in existing code: document them in AI_README afterward\n`;
   }
 
   return {
