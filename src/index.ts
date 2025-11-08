@@ -61,13 +61,38 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'get_context_for_file',
         description:
-          'Get relevant AI_README context for a specific file path. Returns formatted context from relevant README files to help understand project conventions. Use this BEFORE creating or editing files - works even if the file does not exist yet.\n\nIMPORTANT: When establishing NEW conventions (e.g., switching from Tailwind to CSS Modules), update the AI_README FIRST, then call this tool to get the updated context before writing code.',
+          '⚠️ REQUIRED: Call this tool BEFORE creating or editing ANY file to get project conventions.\n\n' +
+          'Gets relevant AI_README context for a specific file path. Returns formatted guidelines that MUST be followed when writing code.\n\n' +
+          '**When to call this tool:**\n' +
+          '- BEFORE using Write tool (creating new files)\n' +
+          '- BEFORE using Edit tool (modifying existing files)\n' +
+          '- AFTER updating AI_README (to get fresh context)\n' +
+          '- Works even if the target file does not exist yet\n\n' +
+          '**Recommended workflow:**\n' +
+          '1. Establishing NEW conventions: update_ai_readme → get_context_for_file → Write/Edit\n' +
+          '2. Following existing conventions: get_context_for_file → Write/Edit\n' +
+          '3. Documenting discovered patterns: Write/Edit → update_ai_readme\n\n' +
+          '**Example:** Before creating Button.tsx, call get_context_for_file with filePath="src/components/Button.tsx" to learn styling preferences (CSS Modules vs Tailwind), naming conventions, component patterns, etc.',
         inputSchema: zodToJsonSchema(getContextSchema),
       },
       {
         name: 'update_ai_readme',
         description:
-          'Update an AI_README.md file to document conventions, patterns, or architectural decisions. Supports append, prepend, replace, insert-after, insert-before operations. Auto-validates after update.\n\nTwo usage scenarios:\n1. BEFORE code changes: Establish new conventions (update AI_README → get_context → write code)\n2. AFTER code changes: Document discovered patterns in existing code\n\nNote: Only update when documenting NEW conventions - avoid duplicates.',
+          'Update an AI_README.md file to document conventions, patterns, or architectural decisions. Supports append, prepend, replace, insert-after, insert-before operations. Auto-validates after update.\n\n' +
+          '**When to use this tool:**\n' +
+          '1. BEFORE code changes: When establishing NEW conventions\n' +
+          '   - User requests a style/approach change (e.g., "use CSS Modules instead of Tailwind")\n' +
+          '   - Choosing between multiple approaches (e.g., state management libraries)\n' +
+          '   - Setting up new architectural patterns or folder structures\n' +
+          '   - Workflow: update_ai_readme → get_context_for_file → Write/Edit\n\n' +
+          '2. AFTER code changes: When documenting discovered patterns\n' +
+          '   - Found consistent patterns in existing code\n' +
+          '   - Identified team conventions from code review\n' +
+          '   - Workflow: Write/Edit → update_ai_readme\n\n' +
+          '**Example scenarios:**\n' +
+          '- User: "Use CSS Modules instead of Tailwind" → Update AI_README first, then modify code\n' +
+          '- User: "Add error handling to API calls" → Code first, document pattern after if it\'s new\n\n' +
+          'Note: Only update when documenting NEW conventions - avoid duplicates.',
         inputSchema: zodToJsonSchema(updateSchema),
       },
       {
