@@ -677,4 +677,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Status:** ✅ Published | **Version:** 0.3.0 | **Last Updated:** 2025-11-08
+**Status:** ✅ Published | **Version:** 0.3.1 | **Last Updated:** 2025-11-08
