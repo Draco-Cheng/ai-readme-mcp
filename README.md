@@ -1,6 +1,6 @@
 # AI_README MCP Server
 
-> Intelligent context management for AI_README.md files in your projects
+> A smart documentation system that helps AI assistants understand and follow your project's conventions
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
@@ -8,19 +8,51 @@
 
 ## 📋 Overview
 
-AI_README MCP Server is a Model Context Protocol (MCP) server that automatically manages and syncs AI_README.md files across your projects. It enables AI assistants to intelligently read and update relevant context documentation when modifying code.
+**AI_README MCP Server** is a Model Context Protocol (MCP) server that helps AI assistants understand your project conventions through dedicated `AI_README.md` guide files. It automatically discovers, routes, and manages these files so AI can generate consistent, high-quality code that matches your team's standards.
 
-### Why AI_README?
+**Works with:** Cursor, Claude Code, and other MCP-compatible AI tools.
 
-When working with AI assistants on code projects, **consistency and quality matter**. This tool helps teams:
+---
 
-- **🤝 Standardize AI interactions** - Ensure all team members and AI assistants follow the same coding standards, conventions, and best practices
-- **📈 Improve AI output quality** - By providing clear, structured context, AI generates more accurate and consistent code that matches your project's style
-- **🎯 Maintain consistency across teams** - When multiple developers use AI assistants, AI_README ensures everyone gets the same guidelines and standards
-- **⚡ Save time on onboarding** - New team members and AI assistants instantly understand project conventions without lengthy explanations
-- **🔄 Keep documentation in sync** - AI can automatically update README files as the project evolves, maintaining up-to-date documentation
+## 🎯 The Problem
 
-Think of it as a **"style guide and context manager for AI"** - ensuring every AI interaction in your project follows your team's standards and produces high-quality, consistent output.
+When working with AI assistants (like Claude, GPT, or other AI coding tools), you've probably experienced:
+
+- ❌ **Inconsistent code style** - AI generates code that doesn't match your project's conventions
+- ❌ **Repeated instructions** - You have to tell the AI the same rules over and over
+- ❌ **Team inconsistency** - Different team members get different AI outputs
+- ❌ **Context loss** - AI forgets your project's specific patterns and best practices
+- ❌ **Outdated documentation** - Project conventions change, but documentation lags behind
+
+## 💡 The Solution
+
+**AI_README.md** - A dedicated guide file specifically designed for AI assistants to read.
+
+Think of it as:
+- 📖 A "style guide" that AI reads before writing code
+- 🎓 An "onboarding document" that teaches AI your project's conventions
+- 🔧 A "configuration file" for AI behavior in your codebase
+
+### How It Works
+
+1. **Create** `AI_README.md` files in your project (root or specific directories)
+2. **Document** your conventions: coding standards, architecture patterns, naming rules, testing requirements
+3. **AI reads it automatically** before making changes - ensuring consistent, high-quality output
+4. **Keep it in sync** - AI can update the README as your project evolves
+
+### What This MCP Server Does
+
+This MCP (Model Context Protocol) server automates the entire workflow:
+
+- 🔍 **Auto-discovers** all AI_README.md files in your project
+- 🎯 **Routes context** - AI gets the most relevant README for the code it's editing
+- ✏️ **Updates automatically** - AI can add new conventions it discovers while coding
+- ✅ **Validates quality** - Ensures READMEs are concise and optimized for AI consumption
+- 🤖 **Smart generation** - Auto-creates AI_README based on your project structure
+
+**Result:** Every AI interaction in your project follows your team's standards and produces consistent, high-quality code.
+
+---
 
 ## ✨ Features
 
@@ -32,6 +64,7 @@ Think of it as a **"style guide and context manager for AI"** - ensuring every A
 - 🏗️ **Monorepo Support** - Place AI_README.md files at different folder levels; the tool automatically finds and uses the most relevant one
 - 📦 **Easy Integration** - Works seamlessly with Cursor, Claude Code, and other MCP clients
 
+---
 
 ## 🚀 Quick Start
 
@@ -314,6 +347,8 @@ The AI will automatically retrieve your AI_README context!
 
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICK_START.md).
 
+---
+
 ## 🏗️ Project Structure
 
 ```
@@ -362,11 +397,15 @@ npm run build
 npm run dev
 ```
 
+---
+
 ## 📚 Documentation
 
 - **[Quick Start Guide](./docs/QUICK_START.md)** - Get started in 10 minutes
 - **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute
 - [Project Specification](./docs/SPEC.md) - Complete technical specification
+
+---
 
 ## 🛠️ Available MCP Tools
 
@@ -602,6 +641,8 @@ Validate all AI_README.md files in your project for quality and token efficiency
 - ⚠️ Needs improvement: < 600 tokens
 - ❌ Too long: > 1000 tokens
 
+---
+
 ## 🚀 What's Next
 
 We're actively working on new features:
@@ -612,6 +653,8 @@ We're actively working on new features:
 - **CI/CD Integration** - GitHub Actions for automated README validation
 
 Want to contribute? Check out our [Contributing Guide](./CONTRIBUTING.md)!
+
+---
 
 ## 🤝 Contributing
 

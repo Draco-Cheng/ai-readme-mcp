@@ -61,13 +61,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'get_context_for_file',
         description:
-          'Get relevant AI_README context for a specific file path. Returns formatted context from relevant README files to help understand project conventions. Use this BEFORE editing files to understand conventions.',
+          'Get relevant AI_README context for a specific file path. Returns formatted context from relevant README files to help understand project conventions. Use this BEFORE creating or editing files to understand conventions - works even if the file does not exist yet.',
         inputSchema: zodToJsonSchema(getContextSchema),
       },
       {
         name: 'update_ai_readme',
         description:
-          'Update an AI_README.md file when you discover important conventions, patterns, or rules while editing code. Use this to keep documentation in sync with code changes. Supports append, prepend, replace, insert-after, insert-before operations. Auto-validates after update.',
+          'Update an AI_README.md file when you discover important conventions, patterns, or rules while editing code. Use this to keep documentation in sync with code changes. Supports append, prepend, replace, insert-after, insert-before operations. Auto-validates after update. Note: Only update when you find NEW conventions not already documented - avoid duplicate updates.',
         inputSchema: zodToJsonSchema(updateSchema),
       },
       {
