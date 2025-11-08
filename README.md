@@ -28,7 +28,8 @@ Think of it as a **"style guide and context manager for AI"** - ensuring every A
 - 🎯 **Smart Context Routing** - Find relevant README content based on file paths
 - 🔄 **Update & Sync** - AI can both read and update AI_README files
 - ✅ **Validation & Quality** - Ensure README consistency with token limits and structure checks
-- 📝 **Template System** - Initialize new AI_README files from templates
+- 🤖 **Smart Initialization** - Auto-generate AI_README files based on project analysis
+- 🏗️ **Monorepo Support** - Place AI_README.md files at different folder levels; the tool automatically finds and uses the most relevant one
 - 📦 **Easy Integration** - Works seamlessly with Cursor, Claude Code, and other MCP clients
 
 
@@ -36,7 +37,7 @@ Think of it as a **"style guide and context manager for AI"** - ensuring every A
 
 ### Installation
 
-**Option 1: Using npx (Recommended - After npm publish)**
+**Option 1: Using npx (Recommended)**
 
 No installation needed! Just configure and use via npx:
 
@@ -53,7 +54,7 @@ No installation needed! Just configure and use via npx:
 
 The `-y` flag automatically accepts the npx prompt.
 
-**Option 2: Global Installation (After npm publish)**
+**Option 2: Global Installation**
 
 ```bash
 npm install -g ai-readme-mcp
@@ -71,9 +72,9 @@ Then configure:
 }
 ```
 
-**Option 3: Local Development (Current)**
+**Option 3: Local Development**
 
-> **Note:** Use this method before npm package is published.
+> **Note:** Use this method if you want to modify or contribute to the source code.
 
 ```bash
 # Clone this repository to a permanent location
@@ -142,7 +143,7 @@ Add to Cursor's MCP configuration file:
 **Windows:** `%APPDATA%\Cursor\User\mcp.json`
 **macOS/Linux:** `~/.cursor/mcp.json`
 
-**After npm publish (Recommended):**
+**Using npx (Recommended):**
 
 ```json
 {
@@ -155,7 +156,7 @@ Add to Cursor's MCP configuration file:
 }
 ```
 
-**Or if globally installed:**
+**If globally installed:**
 
 ```json
 {
@@ -167,16 +168,14 @@ Add to Cursor's MCP configuration file:
 }
 ```
 
-**Current (local development):**
+**For local development:**
 
 ```json
 {
   "mcpServers": {
     "ai-readme-manager": {
       "command": "node",
-      "args": [
-        "D:\\Home\\WorkSpace\\playground\\ai-readme-mcp\\dist\\index.js"
-      ]
+      "args": ["/path/to/ai-readme-mcp/dist/index.js"]
     }
   }
 }
@@ -193,7 +192,7 @@ Add to `claude_desktop_config.json`:
 **Windows:** `%APPDATA%\claude\claude_desktop_config.json`
 **macOS/Linux:** `~/.config/claude/config.json` or `~/Library/Application Support/Claude/config.json`
 
-**After npm publish (Recommended):**
+**Using npx (Recommended):**
 
 ```json
 {
@@ -206,7 +205,7 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-**Or if globally installed:**
+**If globally installed:**
 
 ```json
 {
@@ -218,14 +217,14 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-**Current (local development):**
+**For local development:**
 
 ```json
 {
   "mcpServers": {
     "ai-readme-manager": {
       "command": "node",
-      "args": ["/absolute/path/to/ai-readme-mcp/dist/index.js"]
+      "args": ["/path/to/ai-readme-mcp/dist/index.js"]
     }
   }
 }
@@ -233,7 +232,20 @@ Add to `claude_desktop_config.json`:
 
 ### Create Your First AI_README
 
-Create `AI_README.md` in your project root:
+You can use the `init_ai_readme` MCP tool to automatically generate a customized AI_README.md based on your project:
+
+**Smart Mode (Default)**:
+The tool automatically detects your project and generates relevant content:
+- Detects project type (library/application/monorepo)
+- Identifies language (TypeScript, Python, Go, Rust, Java, etc.)
+- Recognizes framework (React, Vue, Next.js, Express, NestJS, etc.)
+- Analyzes directory structure
+- Generates framework-specific conventions
+
+Ask your AI assistant:
+> "Please use init_ai_readme to create an AI_README.md for this project"
+
+Or create manually:
 
 ```markdown
 # My Project
@@ -251,13 +263,54 @@ Create `AI_README.md` in your project root:
 Run tests with: `npm test`
 ```
 
+### Multi-Level AI_README (Not Just for Monorepos!)
+
+**The power of this tool is multi-level documentation** - not just for monorepos, but for **any project** that wants to organize conventions by module or feature.
+
+**Why multi-level?**
+- 🎯 **Avoid bloated root README** - Keep each README focused and concise
+- 📍 **Precise context** - AI gets only the relevant conventions for the code it's working on
+- 🔧 **Flexible organization** - Organize by feature, module, or any structure that makes sense
+
+Simply place `AI_README.md` files at different folder levels:
+
+```
+my-monorepo/
+├── AI_README.md                    # Root-level conventions (applies to all)
+├── apps/
+│   ├── frontend/
+│   │   ├── AI_README.md           # Frontend-specific conventions
+│   │   └── src/components/Button.tsx
+│   └── backend/
+│       ├── AI_README.md           # Backend-specific conventions
+│       └── src/api/users.ts
+└── packages/
+    └── shared/
+        ├── AI_README.md           # Shared library conventions
+        └── src/utils.ts
+```
+
+**Smart Empty README Handling:**
+- 📝 If you create an empty `AI_README.md` in a subdirectory, the tool can auto-fill it with relevant conventions
+- 🔗 For subdirectories with parent READMEs, generates differential content (only module-specific conventions)
+- 📋 For root directories, generates full project analysis
+- Ask your AI: "This AI_README.md is empty, can you help fill it?"
+
+When AI works on a file, it automatically gets:
+- The **most relevant** AI_README (closest parent directory)
+- Plus the **root-level** AI_README (for project-wide standards)
+
+For example, when editing `apps/frontend/src/components/Button.tsx`:
+- ✅ Gets `apps/frontend/AI_README.md` (React component standards)
+- ✅ Gets root `AI_README.md` (project-wide Git, testing conventions)
+
 ### Test the Integration
 
-Restart Claude Code, then ask:
+Restart your IDE, then ask your AI assistant:
 
 > "I'm about to create a new component. What conventions should I follow?"
 
-Claude will use the MCP server to retrieve your AI_README context!
+The AI will automatically retrieve your AI_README context!
 
 For detailed setup instructions, see [Quick Start Guide](./docs/QUICK_START.md).
 
@@ -314,9 +367,63 @@ npm run dev
 - **[Quick Start Guide](./docs/QUICK_START.md)** - Get started in 10 minutes
 - **[Contributing Guide](./CONTRIBUTING.md)** - How to contribute
 - [Project Specification](./docs/SPEC.md) - Complete technical specification
-- [AI_README Templates](./docs/templates/) - Example templates for your projects
 
 ## 🛠️ Available MCP Tools
+
+### `init_ai_readme`
+
+Initialize a new AI_README.md file with smart content generation based on project analysis.
+
+```typescript
+// Parameters
+{
+  targetPath: string;              // Required: Directory where AI_README.md will be created
+  projectName?: string;            // Optional: Project name (auto-detected if not provided)
+  overwrite?: boolean;             // Optional: Overwrite existing file (default: false)
+  smart?: boolean;                 // Optional: Enable smart content generation (default: true)
+}
+
+// Returns
+{
+  success: boolean;
+  readmePath: string;
+  action: 'created' | 'filled' | 'overwritten';
+  projectInfo?: {
+    projectName: string;
+    projectType: 'library' | 'application' | 'monorepo' | 'unknown';
+    language: string;
+    framework?: string;
+    packageManager?: string;
+    hasTests: boolean;
+    mainDirs: string[];
+  };
+  message: string;
+}
+```
+
+**Smart Mode Features**:
+- Auto-detects project type, language, and framework
+- Generates framework-specific conventions (React, Vue, Python, etc.)
+- For subdirectories with parent READMEs, generates differential content
+- Handles empty files (< 50 chars) by auto-filling them
+- Analyzes directory structure and dependencies
+
+**Example Usage**:
+
+```typescript
+// Create smart README for React project
+{
+  targetPath: "/path/to/react-app",
+  smart: true
+}
+// Result: Auto-detects React, generates component naming conventions, etc.
+
+// Fill empty subdirectory README
+{
+  targetPath: "/path/to/monorepo/apps/frontend"
+}
+// Result: Generates differential content extending root README
+```
 
 ### `discover_ai_readmes`
 
@@ -440,6 +547,61 @@ Update an AI_README.md file with specified operations.
 }
 ```
 
+### `validate_ai_readmes`
+
+Validate all AI_README.md files in your project for quality and token efficiency.
+
+```typescript
+// Parameters
+{
+  projectRoot: string;             // Required: Project root directory
+  excludePatterns?: string[];      // Optional: Glob patterns to exclude
+  config?: {                       // Optional: Custom validation config
+    maxTokens?: number;
+    rules?: {
+      requireH1?: boolean;
+      requireSections?: string[];
+      allowCodeBlocks?: boolean;
+      maxLineLength?: number;
+    };
+    tokenLimits?: {
+      excellent?: number;          // Default: 200
+      good?: number;              // Default: 400
+      warning?: number;           // Default: 600
+      error?: number;             // Default: 1000
+    };
+  };
+}
+
+// Returns
+{
+  valid: boolean;
+  totalFiles: number;
+  results: Array<{
+    path: string;
+    valid: boolean;
+    tokens: number;
+    rating: 'excellent' | 'good' | 'needs-improvement' | 'too-long';
+    issues: string[];
+    suggestions: string[];
+  }>;
+  summary: string;
+}
+```
+
+**Validation Features**:
+- Token counting for AI consumption optimization
+- Structure validation (H1 heading, sections)
+- Line length checks (default: 100 chars)
+- Code block detection (disabled by default for strict mode)
+- Quality ratings based on token count
+
+**Default Token Limits (Strict Mode)**:
+- 🌟 Excellent: < 200 tokens
+- ✅ Good: < 400 tokens
+- ⚠️ Needs improvement: < 600 tokens
+- ❌ Too long: > 1000 tokens
+
 ## 🚀 What's Next
 
 We're actively working on new features:
@@ -472,4 +634,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Status:** ✅ Published | **Version:** 0.2.0 | **Last Updated:** 2025-11-07
+**Status:** ✅ Published | **Version:** 0.3.0 | **Last Updated:** 2025-11-08
