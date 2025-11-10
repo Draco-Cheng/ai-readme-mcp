@@ -46,9 +46,9 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 
 - 🔍 **Auto-discovers** all AI_README.md files in your project
 - 🎯 **Routes context** - AI gets the most relevant README for the code it's editing
+- 🚀 **Guided initialization** - `init_ai_readme` scans for empty files and guides AI through population
 - ✏️ **Updates automatically** - AI can add new conventions it discovers while coding
 - ✅ **Validates quality** - Ensures READMEs are concise and optimized for AI consumption
-- 🤖 **Smart generation** - Auto-creates AI_README based on your project structure
 
 **Result:** Every AI interaction in your project follows your team's standards and produces consistent, high-quality code.
 
@@ -58,9 +58,9 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 
 - 🔍 **Automatic Discovery** - Scan and index all AI_README.md files in your project
 - 🎯 **Smart Context Routing** - Find relevant README content based on file paths
+- 🚀 **Guided Initialization** - `init_ai_readme` tool scans for empty files and guides AI through population
 - 🔄 **Update & Sync** - AI can both read and update AI_README files
 - ✅ **Validation & Quality** - Ensure README consistency with token limits and structure checks
-- 🤖 **Smart Initialization** - Auto-generate AI_README files based on project analysis
 - 🏗️ **Monorepo Support** - Place AI_README.md files at different folder levels; the tool automatically finds and uses the most relevant one
 - 📦 **Easy Integration** - Works seamlessly with Cursor, Claude Code, and other MCP clients
 
@@ -265,36 +265,80 @@ Add to `claude_desktop_config.json`:
 
 ### Create Your First AI_README
 
-You can use the `init_ai_readme` MCP tool to automatically generate a customized AI_README.md based on your project:
+You have two main approaches to create and populate AI_README files:
 
-**Smart Mode (Default)**:
-The tool automatically detects your project and generates relevant content:
-- Detects project type (library/application/monorepo)
-- Identifies language (TypeScript, Python, Go, Rust, Java, etc.)
-- Recognizes framework (React, Vue, Next.js, Express, NestJS, etc.)
-- Analyzes directory structure
-- Generates framework-specific conventions
+#### Option 1: Automated Initialization (Recommended)
 
-Ask your AI assistant:
-> "Please use init_ai_readme to create an AI_README.md for this project"
+Use the `init_ai_readme` tool to automatically scan and populate empty AI_README files:
 
-Or create manually:
+**Step 1:** Create empty AI_README.md files where needed
+
+```bash
+# Example: Create empty AI_READMEs in different directories
+touch AI_README.md
+touch apps/backend/AI_README.md
+touch apps/frontend/AI_README.md
+```
+
+**Step 2:** Trigger the initialization
+
+In your AI assistant (Claude Code, Cursor, etc.), simply say:
+
+> "Please run init_ai_readme for this project"
+
+Or more explicitly:
+
+> "Initialize AI_README files"
+> "Help me populate the empty AI_README files"
+
+**What happens:**
+- 🔍 Scans your project for empty AI_README files
+- 📝 Creates root-level AI_README if none exist
+- 📋 Provides detailed step-by-step instructions for each file
+- 🤖 AI assistant will then:
+  - Explore relevant directories
+  - Analyze your codebase (tech stack, patterns, conventions)
+  - Populate each AI_README with relevant documentation
+
+**When to use `init_ai_readme`:**
+- First time setting up AI_README in your project
+- After creating new empty AI_README.md files in subdirectories
+- When `get_context_for_file` detects empty AI_README files
+- To batch-process multiple empty AI_README files
+
+#### Option 2: Manual Creation
+
+Create and write AI_README.md files yourself:
 
 ```markdown
 # My Project
 
-## Architecture
+## Tech Stack
 - Framework: React + Express
 - Database: PostgreSQL
+- Testing: Jest + Vitest
+
+## Architecture Patterns
+- Follows MVC pattern for backend
+- Component-based architecture for frontend
+- RESTful API design
 
 ## Coding Conventions
 - Use TypeScript for all files
 - Components in PascalCase
-- Test coverage: 80%+
+- Functions and variables in camelCase
+- Test coverage: 80%+ required
 
 ## Testing
 Run tests with: `npm test`
+Write tests alongside source files
 ```
+
+**Best Practices:**
+- Keep it concise (< 400 tokens is ideal)
+- Focus on conventions, not documentation
+- Update as your project evolves
+- Use AI to help maintain it
 
 ### Multi-Level AI_README (Not Just for Monorepos!)
 
@@ -324,10 +368,11 @@ my-monorepo/
 ```
 
 **Smart Empty README Handling:**
-- 📝 If you create an empty `AI_README.md` in a subdirectory, the tool can auto-fill it with relevant conventions
+- 📝 Create empty `AI_README.md` files in subdirectories where you need specific conventions
+- 🚀 Run `init_ai_readme` tool (just tell your AI: "Please initialize AI_README files")
+- 🤖 AI automatically analyzes each directory and populates conventions
 - 🔗 For subdirectories with parent READMEs, generates differential content (only module-specific conventions)
 - 📋 For root directories, generates full project analysis
-- Ask your AI: "This AI_README.md is empty, can you help fill it?"
 
 When AI works on a file, it automatically gets:
 - The **most relevant** AI_README (closest parent directory)
@@ -408,61 +453,6 @@ npm run dev
 ---
 
 ## 🛠️ Available MCP Tools
-
-### `init_ai_readme`
-
-Initialize a new AI_README.md file with smart content generation based on project analysis.
-
-```typescript
-// Parameters
-{
-  targetPath: string;              // Required: Directory where AI_README.md will be created
-  projectName?: string;            // Optional: Project name (auto-detected if not provided)
-  overwrite?: boolean;             // Optional: Overwrite existing file (default: false)
-  smart?: boolean;                 // Optional: Enable smart content generation (default: true)
-}
-
-// Returns
-{
-  success: boolean;
-  readmePath: string;
-  action: 'created' | 'filled' | 'overwritten';
-  projectInfo?: {
-    projectName: string;
-    projectType: 'library' | 'application' | 'monorepo' | 'unknown';
-    language: string;
-    framework?: string;
-    packageManager?: string;
-    hasTests: boolean;
-    mainDirs: string[];
-  };
-  message: string;
-}
-```
-
-**Smart Mode Features**:
-- Auto-detects project type, language, and framework
-- Generates framework-specific conventions (React, Vue, Python, etc.)
-- For subdirectories with parent READMEs, generates differential content
-- Handles empty files (< 50 chars) by auto-filling them
-- Analyzes directory structure and dependencies
-
-**Example Usage**:
-
-```typescript
-// Create smart README for React project
-{
-  targetPath: "/path/to/react-app",
-  smart: true
-}
-// Result: Auto-detects React, generates component naming conventions, etc.
-
-// Fill empty subdirectory README
-{
-  targetPath: "/path/to/monorepo/apps/frontend"
-}
-// Result: Generates differential content extending root README
-```
 
 ### `discover_ai_readmes`
 
@@ -585,6 +575,59 @@ Update an AI_README.md file with specified operations.
   }]
 }
 ```
+
+### `init_ai_readme`
+
+Initialize and populate empty AI_README files in your project.
+
+```typescript
+// Parameters
+{
+  projectRoot: string;             // Required: Project root directory
+  excludePatterns?: string[];      // Optional: Glob patterns to exclude
+  targetPath?: string;             // Optional: Specific directory to initialize
+}
+
+// Returns
+{
+  success: boolean;
+  message: string;
+  readmesToInitialize: string[];   // Paths to empty AI_README files
+  instructions: string;            // Detailed step-by-step guide for populating
+}
+```
+
+**Features:**
+- 🔍 Scans project for empty or missing AI_README files
+- 📝 Creates root-level AI_README if none exist
+- 📋 Generates detailed step-by-step instructions for each file
+- 🎯 Can target specific directories with `targetPath` parameter
+- 🤖 Guides AI through analysis: tech stack, patterns, conventions
+
+**Example Usage:**
+
+```typescript
+// Initialize all empty AI_READMEs in project
+{
+  projectRoot: "/path/to/project"
+}
+
+// Initialize only in specific directory
+{
+  projectRoot: "/path/to/project",
+  targetPath: "apps/backend"
+}
+```
+
+**Typical Workflow:**
+1. AI assistant runs `init_ai_readme`
+2. Receives detailed instructions for each empty file
+3. Follows instructions:
+   - Uses `Glob` to scan directory
+   - Reads 2-5 key source files
+   - Analyzes tech stack, patterns, conventions
+4. Uses `update_ai_readme` to populate each file
+5. Verifies with `get_context_for_file` or `validate_ai_readmes`
 
 ### `validate_ai_readmes`
 

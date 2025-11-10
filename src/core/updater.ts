@@ -46,17 +46,11 @@ export class ReadmeUpdater {
     operations: UpdateOperation[]
   ): Promise<UpdateResult> {
     try {
-      // Check if file exists
-      if (!existsSync(readmePath)) {
-        return {
-          success: false,
-          error: `File not found: ${readmePath}`,
-          changes: [],
-        };
+      // Read current content (empty string if file doesn't exist or is empty)
+      let content = '';
+      if (existsSync(readmePath)) {
+        content = await readFile(readmePath, 'utf-8');
       }
-
-      // Read current content
-      const content = await readFile(readmePath, 'utf-8');
 
       // Apply operations
       let updatedContent = content;

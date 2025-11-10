@@ -40,6 +40,10 @@ export async function getContextForFile(input: GetContextInput) {
   const router = new ContextRouter(index);
   const contexts = await router.getContextForFile(filePath, includeRoot);
 
+  // Check for empty AI_README files
+  const hasEmptyReadmes = contexts.some(ctx => !ctx.content || ctx.content.trim().length === 0);
+  const hasNoReadmes = contexts.length === 0;
+
   // Format the response with a helpful prompt template
   const formattedContexts = contexts.map((ctx) => ({
     path: ctx.path,
@@ -51,21 +55,27 @@ export async function getContextForFile(input: GetContextInput) {
   // Generate a formatted prompt for the AI
   let promptText = `## 📚 Project Context for: ${filePath}\n\n`;
 
-  if (contexts.length === 0) {
-    // No AI_README found - provide helpful guidance
-    promptText += `⚠️ **No AI_README.md files found in this project.**\n\n`;
-    promptText += `To get the most out of AI assistance, consider creating an AI_README.md file to document:\n`;
-    promptText += `- Project architecture and conventions\n`;
-    promptText += `- Coding standards and best practices\n`;
-    promptText += `- Testing requirements\n`;
-    promptText += `- Common patterns to follow\n\n`;
-    promptText += `**Quick Start:**\n`;
-    promptText += `Use the \`init_ai_readme\` tool to create a template:\n`;
-    promptText += `- Creates AI_README.md from a customizable template\n`;
-    promptText += `- Helps maintain consistency across your team\n`;
-    promptText += `- Improves AI output quality\n`;
-  } else {
-    for (const ctx of formattedContexts) {
+  // Simple check: if empty or no READMEs, suggest using init tool
+  if (hasNoReadmes || hasEmptyReadmes) {
+    promptText += `⚠️ **Empty or missing AI_README files detected.**\n\n`;
+    promptText += `**Recommended Action:** Use the \`init_ai_readme\` tool to automatically populate AI_README files.\n\n`;
+    promptText += `\`\`\`\n`;
+    promptText += `init_ai_readme({ projectRoot: "${projectRoot.replace(/\\/g, '/')}" })\n`;
+    promptText += `\`\`\`\n\n`;
+    promptText += `This tool will:\n`;
+    promptText += `- Scan the project for empty AI_README files\n`;
+    promptText += `- Guide you through populating them with conventions\n`;
+    promptText += `- Ensure consistent documentation across your project\n\n`;
+    promptText += `💡 Alternatively, you can manually create and populate AI_README.md files, then call this tool again.\n\n`;
+    promptText += `---\n\n`;
+  }
+
+  // Filter out empty contexts (content with only whitespace)
+  const nonEmptyContexts = contexts.filter(ctx => ctx.content && ctx.content.trim().length > 0);
+
+  if (nonEmptyContexts.length > 0) {
+    // Show non-empty contexts
+    for (const ctx of nonEmptyContexts) {
       if (ctx.relevance === 'root') {
         promptText += `### Root Conventions (${ctx.path})\n\n`;
       } else if (ctx.relevance === 'direct') {
