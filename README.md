@@ -692,9 +692,8 @@ Validate all AI_README.md files in your project for quality and token efficiency
 
 We're actively working on new features:
 
-- **Watch Mode** - Auto-sync changes when AI_README files are modified
-- **Performance Optimization** - Caching and incremental updates
-- **VSCode Extension** - Visual interface for managing AI_README files
+- **Auto-populate Empty AI_README** - Automatically generate AI_README content when `get_context_for_file` detects empty files, reducing manual initialization steps
+- **Enhanced Tool Triggering** - Improve tool descriptions and prompts to ensure AI assistants trigger tools at the right moments with better precision and reliability
 - **CI/CD Integration** - GitHub Actions for automated README validation
 
 Want to contribute? Check out our [Contributing Guide](./CONTRIBUTING.md)!

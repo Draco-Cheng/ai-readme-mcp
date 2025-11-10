@@ -83,7 +83,9 @@ In `.claude/settings.local.json`, add to the `permissions.allow` array:
     "allow": [
       "mcp__ai-readme-manager__discover_ai_readmes",
       "mcp__ai-readme-manager__get_context_for_file",
-      "mcp__ai-readme-manager__update_ai_readme"
+      "mcp__ai-readme-manager__update_ai_readme",
+      "mcp__ai-readme-manager__validate_ai_readmes",
+      "mcp__ai-readme-manager__init_ai_readme"
     ]
   },
   "enableAllProjectMcpServers": true
@@ -104,52 +106,65 @@ You should see:
 - `discover_ai_readmes` - Scan project for AI_README files
 - `get_context_for_file` - Get relevant context for a file
 - `update_ai_readme` - Update AI_README files
+- `validate_ai_readmes` - Validate AI_README files structure and token count
+- `init_ai_readme` - Initialize and populate empty AI_README files
 
 ## Step 7: Create Your First AI_README
 
-Create a file called `AI_README.md` in your project root:
+You have two options:
+
+### Option 1: Automated Initialization (Recommended)
+
+Create an empty `AI_README.md` file in your project root:
+
+```bash
+touch AI_README.md
+```
+
+Then ask Claude:
+
+> "Please run init_ai_readme for this project"
+
+Claude will automatically:
+- Scan your codebase
+- Analyze tech stack and patterns
+- Populate AI_README with relevant conventions
+
+### Option 2: Manual Creation
+
+Create `AI_README.md` with concise conventions (keep it under 400 tokens):
 
 ```markdown
-# Project Overview
+# Tech Stack
+- Framework: React 18
+- Language: TypeScript 5
+- Build: Vite
+- Testing: Vitest
 
-This is a [your project type] using [your tech stack].
+## Conventions
 
-## Architecture
+### File Structure
+- Components: `src/components/`
+- Utils: `src/utils/`
+- Types: `src/types/`
 
-- **Framework:** [e.g., React, Express, etc.]
-- **Language:** [e.g., TypeScript]
-- **Build Tool:** [e.g., Vite, Webpack]
-
-## Coding Conventions
-
-### File Organization
-- Components go in `src/components/`
-- Utilities go in `src/utils/`
-- Types go in `src/types/`
-
-### Naming Conventions
-- Use PascalCase for component files: `Button.tsx`
-- Use camelCase for utility files: `formatDate.ts`
-- Use kebab-case for CSS files: `button-styles.css`
+### Naming
+- Components: PascalCase (`Button.tsx`)
+- Utils: camelCase (`formatDate.ts`)
+- CSS: kebab-case (`button-styles.css`)
 
 ### Code Style
-- Use TypeScript for all new files
-- Prefer functional components with hooks
-- Always add JSDoc comments for exported functions
-- Write tests for all business logic
+- TypeScript only
+- Functional components + hooks
+- JSDoc for exports
+- 80%+ test coverage
 
-## Testing
-
-- Unit tests using [your test framework]
-- Run tests with: `npm test`
-- Coverage threshold: 80%
-
-## Important Notes
-
-- Never commit `.env` files
-- Always run linter before committing
-- Update this README when architecture changes
+## Critical Rules
+- Never commit `.env`
+- Run linter before commit
 ```
+
+> **Note:** Keep AI_README concise! Focus on actionable conventions, not documentation.
 
 ## Step 8: Test It Out
 
