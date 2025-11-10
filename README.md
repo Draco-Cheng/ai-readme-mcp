@@ -66,9 +66,7 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 
 ---
 
-## 🚀 Quick Start
-
-### Installation
+## 🚀 Installation
 
 **Option 1: Using npx (Recommended)**
 
@@ -263,11 +261,13 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-### Create Your First AI_README
+---
+
+## Create Your First AI_README
 
 You have two main approaches to create and populate AI_README files:
 
-#### Option 1: Automated Initialization (Recommended)
+### Option 1: Automated Initialization (Recommended)
 
 Use the `init_ai_readme` tool to automatically scan and populate empty AI_README files:
 
@@ -306,7 +306,7 @@ Or more explicitly:
 - When `get_context_for_file` detects empty AI_README files
 - To batch-process multiple empty AI_README files
 
-#### Option 2: Manual Creation
+### Option 2: Manual Creation
 
 Create and write AI_README.md files yourself:
 
@@ -340,7 +340,9 @@ Write tests alongside source files
 - Update as your project evolves
 - Use AI to help maintain it
 
-### Multi-Level AI_README (Not Just for Monorepos!)
+---
+
+## Multi-Level AI_README (Not Just for Monorepos!)
 
 **The power of this tool is multi-level documentation** - not just for monorepos, but for **any project** that wants to organize conventions by module or feature.
 

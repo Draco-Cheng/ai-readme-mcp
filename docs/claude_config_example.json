@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "ai-readme-manager": {
-      "command": "node",
-      "args": ["REPLACE_WITH_YOUR_PATH/dist/index.js"],
-      "env": {}
-    }
-  }
-}
