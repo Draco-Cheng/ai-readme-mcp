@@ -66,7 +66,104 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 
 ---
 
-## 🚀 Installation
+## 🚀 Installation & Setup
+
+### For Claude Code (VSCode Extension)
+
+**Step 1: Add MCP Server**
+
+In your project directory, run:
+
+```bash
+claude mcp add --scope project ai-readme-manager npx -- ai-readme-mcp
+```
+
+This creates a `.mcp.json` file that uses `npx` to run the package - no installation or path configuration needed!
+
+**Step 2: Enable Project MCP Servers**
+
+Create or edit `.claude/settings.local.json` in your project:
+
+```json
+{
+  "enableAllProjectMcpServers": true
+}
+```
+
+**Step 3: Auto-approve MCP Tools (Optional but Recommended)**
+
+To avoid "Yes/No" prompts every time and enable "Yes, Do not ask again" option, add the tools to your allow list.
+
+In `.claude/settings.local.json`, add:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "mcp__ai-readme-manager__discover_ai_readmes",
+      "mcp__ai-readme-manager__get_context_for_file",
+      "mcp__ai-readme-manager__update_ai_readme",
+      "mcp__ai-readme-manager__validate_ai_readmes",
+      "mcp__ai-readme-manager__init_ai_readme"
+    ]
+  },
+  "enableAllProjectMcpServers": true
+}
+```
+
+> **Note:** Without this configuration, you'll be prompted for approval every time Claude uses these tools, and the "Do not ask again" option won't appear.
+
+**Step 4: Verify Installation**
+
+```bash
+claude mcp get ai-readme-manager
+```
+
+You should see `Status: ✓ Connected`
+
+### For Cursor
+
+Add to Cursor's MCP configuration file:
+- **Windows:** `%APPDATA%\Cursor\User\mcp.json`
+- **macOS/Linux:** `~/.cursor/mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "npx",
+      "args": ["-y", "ai-readme-mcp"]
+    }
+  }
+}
+```
+
+After configuring, restart Cursor completely.
+
+### For Claude Desktop Application
+
+Add to `claude_desktop_config.json`:
+- **Windows:** `%APPDATA%\claude\claude_desktop_config.json`
+- **macOS:** `~/Library/Application Support/Claude/config.json`
+- **Linux:** `~/.config/claude/config.json`
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "npx",
+      "args": ["-y", "ai-readme-mcp"]
+    }
+  }
+}
+```
+
+### Alternative Installation Methods
+
+The above methods use `npx` (recommended). If you prefer other approaches, you can use these configurations in your MCP config file:
+- **Claude Code:** `.mcp.json` (project root)
+- **Cursor:** `%APPDATA%\Cursor\User\mcp.json` (Windows) or `~/.cursor/mcp.json` (macOS/Linux)
+- **Claude Desktop:** `claude_desktop_config.json` (see paths above)
 
 **Option 1: Using npx (Recommended)**
 
@@ -83,9 +180,11 @@ No installation needed! Just configure and use via npx:
 }
 ```
 
-The `-y` flag automatically accepts the npx prompt.
+> The `-y` flag automatically accepts the npx prompt.
 
 **Option 2: Global Installation**
+
+Install once globally, use everywhere:
 
 ```bash
 npm install -g ai-readme-mcp
@@ -103,163 +202,7 @@ Then configure:
 }
 ```
 
-**Option 3: Local Development**
-
-> **Note:** Use this method if you want to modify or contribute to the source code.
-
-```bash
-# Clone this repository to a permanent location
-git clone https://github.com/Draco-Cheng/ai-readme-mcp.git ~/ai-readme-mcp
-cd ~/ai-readme-mcp
-
-# Install and build
-npm install
-npm run build
-```
-
-Then see configuration section below for manual setup.
-
-### Configuration for Claude Code (VSCode Extension)
-
-**Option 1: Using CLI (Recommended)**
-
-In your project directory, run:
-
-```bash
-# If you cloned to ~/ai-readme-mcp:
-claude mcp add --transport stdio ai-readme-manager --scope project -- node ~/ai-readme-mcp/dist/index.js
-
-# Or use absolute path:
-claude mcp add --transport stdio ai-readme-manager --scope project -- node /path/to/ai-readme-mcp/dist/index.js
-```
-
-This creates a `.mcp.json` file in your project root.
-
-**Option 2: Manual Configuration**
-
-Create `.mcp.json` in your project root:
-
-```json
-{
-  "mcpServers": {
-    "ai-readme-manager": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/ai-readme-mcp/dist/index.js"]
-    }
-  }
-}
-```
-
-Replace `/absolute/path/to/ai-readme-mcp` with your actual installation path.
-
-**Path examples:**
-- **Windows:** `"C:\\Users\\YourName\\ai-readme-mcp\\dist\\index.js"`
-- **macOS/Linux:** `"~/ai-readme-mcp/dist/index.js"` or `"/home/username/ai-readme-mcp/dist/index.js"`
-
-> 💡 **Tip:** Clone to a permanent location like `~/ai-readme-mcp` so the path stays consistent across projects.
-
-**Verify Installation:**
-
-```bash
-claude mcp get ai-readme-manager
-```
-
-You should see `Status: ✓ Connected`
-
-### Configuration for Cursor
-
-Add to Cursor's MCP configuration file:
-
-**Windows:** `%APPDATA%\Cursor\User\mcp.json`
-**macOS/Linux:** `~/.cursor/mcp.json`
-
-**Using npx (Recommended):**
-
-```json
-{
-  "mcpServers": {
-    "ai-readme-manager": {
-      "command": "npx",
-      "args": ["-y", "ai-readme-mcp"]
-    }
-  }
-}
-```
-
-**If globally installed:**
-
-```json
-{
-  "mcpServers": {
-    "ai-readme-manager": {
-      "command": "ai-readme-mcp"
-    }
-  }
-}
-```
-
-**For local development:**
-
-```json
-{
-  "mcpServers": {
-    "ai-readme-manager": {
-      "command": "node",
-      "args": ["/path/to/ai-readme-mcp/dist/index.js"]
-    }
-  }
-}
-```
-
-**Verify Installation:**
-
-After configuring, restart Cursor completely. The MCP server should be available to AI assistants in Cursor.
-
-### Configuration for Claude Desktop Application
-
-Add to `claude_desktop_config.json`:
-
-**Windows:** `%APPDATA%\claude\claude_desktop_config.json`
-**macOS/Linux:** `~/.config/claude/config.json` or `~/Library/Application Support/Claude/config.json`
-
-**Using npx (Recommended):**
-
-```json
-{
-  "mcpServers": {
-    "ai-readme-manager": {
-      "command": "npx",
-      "args": ["-y", "ai-readme-mcp"]
-    }
-  }
-}
-```
-
-**If globally installed:**
-
-```json
-{
-  "mcpServers": {
-    "ai-readme-manager": {
-      "command": "ai-readme-mcp"
-    }
-  }
-}
-```
-
-**For local development:**
-
-```json
-{
-  "mcpServers": {
-    "ai-readme-manager": {
-      "command": "node",
-      "args": ["/path/to/ai-readme-mcp/dist/index.js"]
-    }
-  }
-}
-```
+> **Pros:** Faster startup (no npx download). **Cons:** Need to manually update when new versions release.
 
 ---
 
@@ -443,6 +386,51 @@ npm run build
 # Development mode with watch
 npm run dev
 ```
+
+### Local Development Configuration
+
+If you're developing or modifying the source code, configure your MCP client to use your local build:
+
+**For Claude Code - Add with CLI:**
+
+```bash
+# Linux/macOS:
+claude mcp add --transport stdio ai-readme-manager --scope project -- node ~/ai-readme-mcp/dist/index.js
+
+# Windows:
+claude mcp add --transport stdio ai-readme-manager --scope project -- node C:\Users\YourName\ai-readme-mcp\dist\index.js
+```
+
+**For Claude Code - Manual `.mcp.json`:**
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/absolute/path/to/ai-readme-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+**For Cursor or Claude Desktop:**
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "node",
+      "args": ["/absolute/path/to/ai-readme-mcp/dist/index.js"]
+    }
+  }
+}
+```
+
+**Path examples:**
+- **Windows:** `"C:\\Users\\YourName\\ai-readme-mcp\\dist\\index.js"` (use `\\` for escaping)
+- **macOS/Linux:** `"/home/username/ai-readme-mcp/dist/index.js"`
 
 ---
 
@@ -695,6 +683,7 @@ We're actively working on new features:
 - **Auto-populate Empty AI_README** - Automatically generate AI_README content when `get_context_for_file` detects empty files, reducing manual initialization steps
 - **Enhanced Tool Triggering** - Improve tool descriptions and prompts to ensure AI assistants trigger tools at the right moments with better precision and reliability
 - **CI/CD Integration** - GitHub Actions for automated README validation
+- **VSCode Extension** - Native VSCode extension with visual UI for managing AI_README files, offering a more integrated experience alongside the current MCP server
 
 Want to contribute? Check out our [Contributing Guide](./CONTRIBUTING.md)!
 

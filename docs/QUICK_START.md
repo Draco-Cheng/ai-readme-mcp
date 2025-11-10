@@ -25,15 +25,38 @@ dist/index.d.ts   1.36 KB
 
 ## Step 2: Configure Claude Code
 
-**Recommended:** Use the CLI to add the MCP server:
+**Recommended:** Use npx (no path configuration needed):
 
 ```bash
-claude mcp add --transport stdio ai-readme-manager --scope project -- node /absolute/path/to/ai-readme-mcp/dist/index.js
+claude mcp add --scope project ai-readme-manager npx -- ai-readme-mcp
 ```
 
-This will create `.mcp.json` in your project root.
+This will create `.mcp.json` in your project root using `npx` - works on all platforms!
+
+**Alternative:** Use local installation with absolute path:
+
+```bash
+# Linux/macOS:
+claude mcp add --transport stdio ai-readme-manager --scope project -- node /home/username/ai-readme-mcp/dist/index.js
+
+# Windows (~ doesn't work, use absolute path):
+claude mcp add --transport stdio ai-readme-manager --scope project -- node C:\Users\YourName\ai-readme-mcp\dist\index.js
+```
 
 **Or manually create `.mcp.json`:**
+
+```json
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "npx",
+      "args": ["-y", "ai-readme-mcp"]
+    }
+  }
+}
+```
+
+Or with local installation:
 
 ```json
 {
@@ -47,9 +70,9 @@ This will create `.mcp.json` in your project root.
 }
 ```
 
-**Path examples:**
-- Windows: `"C:\\Users\\YourName\\projects\\ai-readme-mcp\\dist\\index.js"`
-- macOS/Linux: `"/home/username/projects/ai-readme-mcp/dist/index.js"`
+**Path examples for local installation:**
+- Windows: `"C:\\Users\\YourName\\ai-readme-mcp\\dist\\index.js"` (use `\\` for escaping)
+- macOS/Linux: `"/home/username/ai-readme-mcp/dist/index.js"`
 
 ## Step 3: Enable Project MCP Servers
 
