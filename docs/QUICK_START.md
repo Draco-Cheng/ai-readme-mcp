@@ -1,6 +1,8 @@
 # Quick Start Guide
 
-This guide will help you get the AI_README MCP Server running with Claude Code in 5 minutes.
+This guide will help you get the AI_README MCP Server running with your AI assistant in 5 minutes.
+
+**Supports:** GitHub Copilot (VSCode 1.102+), Claude Code, Cursor, Claude Desktop
 
 ## Step 1: Build the MCP Server
 
@@ -93,6 +95,35 @@ claude mcp get ai-readme-manager
 ```
 
 You should see `Status: ✓ Connected`
+
+---
+
+## Alternative: For GitHub Copilot (VSCode 1.102+)
+
+If you're using GitHub Copilot instead of Claude Code:
+
+**Requirements:**
+- VSCode 1.102 or later
+- GitHub Copilot & Copilot Chat extensions
+
+**Configuration:**
+
+Add to your VSCode `settings.json` (Ctrl+, then search for "MCP"):
+
+```json
+{
+  "github.copilot.chat.mcp.servers": {
+    "ai-readme-manager": {
+      "command": "npx",
+      "args": ["-y", "ai-readme-mcp"]
+    }
+  }
+}
+```
+
+Restart VSCode and the MCP tools will be available in GitHub Copilot Chat!
+
+---
 
 ## Step 5: (Optional) Auto-approve MCP Tools
 

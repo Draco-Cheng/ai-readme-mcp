@@ -10,7 +10,7 @@
 
 **AI_README MCP Server** is a Model Context Protocol (MCP) server that helps AI assistants understand your project conventions through dedicated `AI_README.md` guide files. It automatically discovers, routes, and manages these files so AI can generate consistent, high-quality code that matches your team's standards.
 
-**Works with:** Cursor, Claude Code, and other MCP-compatible AI tools.
+**Works with:** GitHub Copilot (VSCode 1.102+), Claude Code, Cursor, and other MCP-compatible AI tools.
 
 ---
 
@@ -78,7 +78,7 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 In your project directory, run:
 
 ```bash
-claude mcp add --scope project ai-readme-manager npx -- ai-readme-mcp
+claude mcp add --scope project ai-readme-manager npx -- -y ai-readme-mcp
 ```
 
 This creates a `.mcp.json` file that uses `npx` to run the package - no installation or path configuration needed!
@@ -142,6 +142,36 @@ Add to Cursor's MCP configuration file:
 ```
 
 After configuring, restart Cursor completely.
+
+### For GitHub Copilot (VSCode 1.102+)
+
+**Requirements:**
+- VSCode 1.102 or later
+- GitHub Copilot & Copilot Chat extensions installed
+
+**Option 1: Using VSCode Settings UI**
+
+1. Open VSCode Settings (Ctrl+,)
+2. Search for "MCP"
+3. Click "Edit in settings.json"
+4. Add the MCP server configuration
+
+**Option 2: Manual Configuration**
+
+Add to your VSCode `settings.json`:
+
+```json
+{
+  "github.copilot.chat.mcp.servers": {
+    "ai-readme-manager": {
+      "command": "npx",
+      "args": ["-y", "ai-readme-mcp"]
+    }
+  }
+}
+```
+
+After configuring, restart VSCode and you'll see the MCP tools available in GitHub Copilot Chat!
 
 ### For Claude Desktop Application
 

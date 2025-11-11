@@ -1,6 +1,6 @@
 {
   "name": "ai-readme-mcp",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "MCP server for managing AI_README.md files in projects",
   "type": "module",
   "bin": {
@@ -45,8 +45,12 @@
     "readme",
     "context",
     "claude",
+    "copilot",
+    "github-copilot",
+    "cursor",
     "llm",
-    "model-context-protocol"
+    "model-context-protocol",
+    "vscode"
   ],
   "author": "Draco Cheng <draco.cheng@outlook.com>",
   "license": "MIT",
