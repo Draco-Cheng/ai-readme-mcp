@@ -20,9 +20,9 @@ When working with AI assistants (like Claude, GPT, or other AI coding tools), yo
 
 - ❌ **Inconsistent code style** - AI generates code that doesn't match your project's conventions
 - ❌ **Repeated instructions** - You have to tell the AI the same rules over and over
-- ❌ **Team inconsistency** - Different team members get different AI outputs
+- ❌ **Team inconsistency** - Different team members get different AI outputs, leading to fragmented code quality
 - ❌ **Context loss** - AI forgets your project's specific patterns and best practices
-- ❌ **Outdated documentation** - Project conventions change, but documentation lags behind
+- ❌ **No single source of truth** - Team conventions exist in Slack messages, PRs, and people's heads, not in a format AI can use
 
 ## 💡 The Solution
 
@@ -32,13 +32,15 @@ Think of it as:
 - 📖 A "style guide" that AI reads before writing code
 - 🎓 An "onboarding document" that teaches AI your project's conventions
 - 🔧 A "configuration file" for AI behavior in your codebase
+- 🤝 A **"team contract"** that ensures every developer's AI assistant follows the same standards
 
 ### How It Works
 
 1. **Create** `AI_README.md` files in your project (root or specific directories)
 2. **Document** your conventions: coding standards, architecture patterns, naming rules, testing requirements
-3. **AI reads it automatically** before making changes - ensuring consistent, high-quality output
-4. **Keep it in sync** - AI can update the README as your project evolves
+3. **Commit to git** - Share conventions with your entire team
+4. **AI reads it automatically** before making changes - ensuring every team member's AI follows the same rules
+5. **Keep it in sync** - AI can update the README as your project evolves
 
 ### What This MCP Server Does
 
@@ -58,6 +60,7 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 
 - 🔍 **Automatic Discovery** - Scan and index all AI_README.md files in your project
 - 🎯 **Smart Context Routing** - Find relevant README content based on file paths
+- 🤝 **Team Consistency** - Every team member's AI assistant reads the same conventions from git, ensuring uniform code quality
 - 🚀 **Guided Initialization** - `init_ai_readme` tool scans for empty files and guides AI through population
 - 🔄 **Update & Sync** - AI can both read and update AI_README files
 - ✅ **Validation & Quality** - Ensure README consistency with token limits and structure checks
