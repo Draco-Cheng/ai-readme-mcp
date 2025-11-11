@@ -8,6 +8,7 @@
 
 ## 📑 Quick Navigation
 
+
 - [Installation & Setup](#-installation--setup)
   - [For Claude Code](#for-claude-code-vscode-extension)
   - [For Cursor](#for-cursor)
@@ -17,6 +18,7 @@
 - [Create Your First AI_README](#create-your-first-ai_readme)
 - [Multi-Level AI_README](#multi-level-ai_readme-not-just-for-monorepos)
 - [Available MCP Tools](#️-available-mcp-tools)
+
 
 ---
 
