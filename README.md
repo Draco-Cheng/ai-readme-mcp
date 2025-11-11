@@ -6,6 +6,20 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
 [![Node](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org/)
 
+## 📑 Quick Navigation
+
+- [Installation & Setup](#-installation--setup)
+  - [For Claude Code](#for-claude-code-vscode-extension)
+  - [For Cursor](#for-cursor)
+  - [For GitHub Copilot](#for-github-copilot-vscode-1102)
+  - [For Claude Desktop](#for-claude-desktop-application)
+  - [Alternative Installation Methods](#alternative-installation-methods)
+- [Create Your First AI_README](#create-your-first-ai_readme)
+- [Multi-Level AI_README](#multi-level-ai_readme-not-just-for-monorepos)
+- [Available MCP Tools](#️-available-mcp-tools)
+
+---
+
 ## 📋 Overview
 
 **AI_README MCP Server** is a Model Context Protocol (MCP) server that helps AI assistants understand your project conventions through dedicated `AI_README.md` guide files. It automatically discovers, routes, and manages these files so AI can generate consistent, high-quality code that matches your team's standards.
