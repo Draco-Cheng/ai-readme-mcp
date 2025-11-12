@@ -10,6 +10,9 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import {
   discoverAIReadmes,
   discoverSchema,
@@ -36,10 +39,17 @@ import {
   type InitInput,
 } from './tools/init.js';
 
+// Read version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, '../package.json'), 'utf-8')
+);
+
 const server = new Server(
   {
     name: 'ai-readme-mcp',
-    version: '0.5.1',
+    version: packageJson.version,
   },
   {
     capabilities: {
@@ -76,31 +86,43 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           'Gets relevant AI_README context for a file path. Returns project conventions and patterns that MUST be followed.\n\n' +
           '🔍 Auto-trigger keywords (when you see these, call this tool IMMEDIATELY):\n' +
           '"add", "create", "implement", "modify", "edit", "refactor", "suggest", "what should", "how to structure", "optimize", "improve"\n\n' +
+          '🚩 DETECT CONVENTION CONFLICTS:\n' +
+          'After reading context, check if user\'s request conflicts with AI_README:\n' +
+          '• User says "use X" but AI_README says "use Y"\n' +
+          '• User says "I don\'t like X, change to Y"\n' +
+          '• User establishes new architectural pattern\n' +
+          '→ This is an ARCHITECTURAL DECISION, not just code change!\n' +
+          '→ Must update_ai_readme FIRST before writing code\n\n' +
           '✅ CORRECT workflow:\n' +
           '1. User requests: "refactor this" / "add feature" / "create component"\n' +
           '2. → Call get_context_for_file FIRST (understand conventions)\n' +
-          '3. → Plan with TodoWrite (based on conventions learned)\n' +
-          '4. → Execute with Write/Edit (following the plan)\n\n' +
+          '3. → Check for conflicts between user request & AI_README\n' +
+          '4. → If conflict: update_ai_readme FIRST to record new decision\n' +
+          '5. → Plan with TodoWrite (based on conventions learned)\n' +
+          '6. → Execute with Write/Edit (following the plan)\n\n' +
           '❌ WRONG workflow:\n' +
-          '1. User requests: "refactor this"\n' +
-          '2. ❌ TodoWrite immediately (planning without context)\n' +
-          '3. ❌ get_context later (too late, already planned wrong approach)\n' +
-          '4. ❌ Write/Edit (executing flawed plan)\n\n' +
+          '1. User requests: "I don\'t like Tailwind, use CSS Modules"\n' +
+          '2. ❌ get_context → see "Tailwind" → ignore conflict\n' +
+          '3. ❌ Write/Edit immediately (changed code but not conventions)\n' +
+          '4. ❌ AI_README still says "Tailwind" (stale documentation!)\n\n' +
           '📝 Common workflows:\n' +
           '• Following existing conventions:\n' +
           '  get_context_for_file → TodoWrite (optional) → Write/Edit\n\n' +
-          '• Establishing NEW conventions:\n' +
-          '  update_ai_readme → get_context_for_file → TodoWrite → Write/Edit\n\n' +
+          '• Establishing NEW conventions (ARCHITECTURAL DECISION):\n' +
+          '  get_context_for_file → DETECT CONFLICT → update_ai_readme → get_context_for_file → TodoWrite → Write/Edit\n\n' +
           '• Empty README detected:\n' +
           '  init_ai_readme → get_context_for_file → TodoWrite → Write/Edit\n\n' +
           '• Document discovered patterns:\n' +
           '  Write/Edit → update_ai_readme\n\n' +
           '💡 Pro tip: Works even if target file doesn\'t exist yet!\n\n' +
           '📌 Example:\n' +
-          'User: "Refactor Button.tsx"\n' +
+          'User: "I don\'t like Tailwind, refactor Button.tsx to use CSS Modules"\n' +
           'You: get_context_for_file({ filePath: "src/components/Button.tsx" })\n' +
-          '→ Learn: CSS Modules, PascalCase, Atomic Design structure\n' +
-          '→ Then plan refactoring based on these conventions',
+          '→ Context shows: "Styling: Tailwind CSS"\n' +
+          '→ CONFLICT DETECTED! User wants CSS Modules ≠ AI_README says Tailwind\n' +
+          '→ This is architectural decision, not just refactoring!\n' +
+          '→ Must call update_ai_readme first to change "Tailwind" → "CSS Modules"\n' +
+          '→ Then refactor code to match new convention',
         inputSchema: zodToJsonSchema(getContextSchema),
       },
       {
@@ -115,15 +137,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '- Focus on: tech stack, naming rules, patterns, architectural decisions\n' +
           '- AVOID: project background, how-to guides, documentation, obvious practices\n\n' +
           '**When to use:**\n' +
-          '1. BEFORE code changes: Establishing NEW conventions\n' +
-          '   - User requests style/approach change (e.g., "use CSS Modules")\n' +
-          '   - Making architectural decisions\n' +
-          '   - Choosing between approaches (e.g., state management)\n' +
+          '1. BEFORE code changes: Establishing NEW conventions (ARCHITECTURAL DECISIONS)\n' +
+          '   - User requests style/approach change (e.g., "use CSS Modules", "change to X")\n' +
+          '   - User says "I don\'t like X, use Y instead"\n' +
+          '   - User says "let\'s use X from now on"\n' +
+          '   - Making architectural decisions that affect multiple files\n' +
+          '   - Choosing between approaches (e.g., state management, styling method)\n' +
           '   - Setting up new architectural patterns\n' +
+          '   - 🚩 KEY SIGNALS: "change to", "use instead", "don\'t like", "prefer", "switch to"\n' +
           '   - Workflow: update_ai_readme → get_context_for_file → Write/Edit\n\n' +
           '2. AFTER code changes: Documenting discovered patterns\n' +
           '   - Found consistent patterns in existing code\n' +
           '   - Workflow: Write/Edit → update_ai_readme\n\n' +
+          '**🎯 Identifying Architectural Decisions:**\n' +
+          'Ask yourself:\n' +
+          '- Does this affect how FUTURE code should be written?\n' +
+          '- Does this change a TECHNOLOGY CHOICE (e.g., Tailwind → CSS Modules)?\n' +
+          '- Will this apply to MULTIPLE FILES/COMPONENTS?\n' +
+          '- Is user expressing a PREFERENCE that becomes a rule?\n' +
+          'If YES to any → This is architectural, update AI_README FIRST!\n\n' +
           '**Quality checklist before updating:**\n' +
           'Is this a CONVENTION or PATTERN (not documentation)?\n' +
           'Will this help AI generate better code?\n' +
@@ -135,7 +167,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '- Components in PascalCase\n' +
           '- Test coverage: 80%+\n\n' +
           '**Example (BAD - too verbose):**\n' +
-          '- We use CSS Modules for styling because it provides better type safety and scoping compared to Tailwind...',
+          '- We use CSS Modules for styling because it provides better type safety and scoping compared to Tailwind...\n\n' +
+          '**Real-world example:**\n' +
+          'User: "I don\'t like Tailwind, use CSS Modules"\n' +
+          '→ This is ARCHITECTURAL DECISION (technology choice)\n' +
+          '→ Call update_ai_readme to change "Styling: Tailwind" → "Styling: CSS Modules"\n' +
+          '→ Then modify code following new convention',
         inputSchema: zodToJsonSchema(updateSchema),
       },
       {
