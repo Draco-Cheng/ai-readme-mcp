@@ -39,7 +39,7 @@ import {
 const server = new Server(
   {
     name: 'ai-readme-mcp',
-    version: '0.5.0',
+    version: '0.5.1',
   },
   {
     capabilities: {
