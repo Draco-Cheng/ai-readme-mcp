@@ -61,19 +61,46 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'get_context_for_file',
         description:
-          '⚠️ REQUIRED: Call this tool BEFORE creating or editing ANY file to get project conventions.\n\n' +
-          'Gets relevant AI_README context for a specific file path. Returns formatted guidelines that MUST be followed when writing code.\n\n' +
-          '**When to call:**\n' +
-          '- BEFORE using Write tool (creating new files)\n' +
-          '- BEFORE using Edit tool (modifying existing files)\n' +
-          '- AFTER updating AI_README (to get fresh context)\n' +
-          '- Works even if the target file does not exist yet\n\n' +
-          '**Workflows:**\n' +
-          '1. Following conventions: get_context_for_file → Write/Edit\n' +
-          '2. Establishing NEW conventions: update_ai_readme → get_context_for_file → Write/Edit\n' +
-          '3. Empty AI_README detected: Use `init_ai_readme` tool (tool will suggest this)\n' +
-          '4. Document discovered patterns: Write/Edit → update_ai_readme\n\n' +
-          '**Example:** Before creating Button.tsx, call get_context_for_file with filePath="src/components/Button.tsx" to learn styling preferences (CSS Modules vs Tailwind), naming conventions, component patterns, etc.',
+          '🚨 MANDATORY FIRST STEP: Call this BEFORE planning or coding\n\n' +
+          '═══════════════════════════════════════════════════════════════\n' +
+          '⚠️  CRITICAL RULE: You MUST call this tool BEFORE:\n' +
+          '   • Planning with TodoWrite (to plan based on conventions)\n' +
+          '   • Using Write tool (creating files)\n' +
+          '   • Using Edit tool (modifying files)\n' +
+          '   • Making architectural decisions\n' +
+          '   • Suggesting code implementations\n' +
+          '═══════════════════════════════════════════════════════════════\n\n' +
+          '❓ WHY call this before planning?\n' +
+          'Planning requires understanding project conventions. Without context, you might plan an approach that conflicts with existing architecture (e.g., planning to use Tailwind when project uses CSS Modules).\n\n' +
+          '📋 What this tool does:\n' +
+          'Gets relevant AI_README context for a file path. Returns project conventions and patterns that MUST be followed.\n\n' +
+          '🔍 Auto-trigger keywords (when you see these, call this tool IMMEDIATELY):\n' +
+          '"add", "create", "implement", "modify", "edit", "refactor", "suggest", "what should", "how to structure", "optimize", "improve"\n\n' +
+          '✅ CORRECT workflow:\n' +
+          '1. User requests: "refactor this" / "add feature" / "create component"\n' +
+          '2. → Call get_context_for_file FIRST (understand conventions)\n' +
+          '3. → Plan with TodoWrite (based on conventions learned)\n' +
+          '4. → Execute with Write/Edit (following the plan)\n\n' +
+          '❌ WRONG workflow:\n' +
+          '1. User requests: "refactor this"\n' +
+          '2. ❌ TodoWrite immediately (planning without context)\n' +
+          '3. ❌ get_context later (too late, already planned wrong approach)\n' +
+          '4. ❌ Write/Edit (executing flawed plan)\n\n' +
+          '📝 Common workflows:\n' +
+          '• Following existing conventions:\n' +
+          '  get_context_for_file → TodoWrite (optional) → Write/Edit\n\n' +
+          '• Establishing NEW conventions:\n' +
+          '  update_ai_readme → get_context_for_file → TodoWrite → Write/Edit\n\n' +
+          '• Empty README detected:\n' +
+          '  init_ai_readme → get_context_for_file → TodoWrite → Write/Edit\n\n' +
+          '• Document discovered patterns:\n' +
+          '  Write/Edit → update_ai_readme\n\n' +
+          '💡 Pro tip: Works even if target file doesn\'t exist yet!\n\n' +
+          '📌 Example:\n' +
+          'User: "Refactor Button.tsx"\n' +
+          'You: get_context_for_file({ filePath: "src/components/Button.tsx" })\n' +
+          '→ Learn: CSS Modules, PascalCase, Atomic Design structure\n' +
+          '→ Then plan refactoring based on these conventions',
         inputSchema: zodToJsonSchema(getContextSchema),
       },
       {
@@ -90,6 +117,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '**When to use:**\n' +
           '1. BEFORE code changes: Establishing NEW conventions\n' +
           '   - User requests style/approach change (e.g., "use CSS Modules")\n' +
+          '   - Making architectural decisions\n' +
           '   - Choosing between approaches (e.g., state management)\n' +
           '   - Setting up new architectural patterns\n' +
           '   - Workflow: update_ai_readme → get_context_for_file → Write/Edit\n\n' +
