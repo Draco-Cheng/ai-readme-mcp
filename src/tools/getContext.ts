@@ -11,7 +11,12 @@ export const getContextSchema = z.object({
   projectRoot: z.string().describe('The root directory of the project'),
   filePath: z
     .string()
-    .describe('The file path to get context for (relative to project root)'),
+    .describe(
+      'The file path to get context for (relative to project root). ' +
+      'MUST be a FILE path, not a directory. ' +
+      'Examples: "src/app/page.tsx", "README.md", "package.json". ' +
+      'If you want context for a directory, specify any file within it (e.g., "src/components/Button.tsx" instead of "src/components").'
+    ),
   includeRoot: z
     .boolean()
     .optional()
