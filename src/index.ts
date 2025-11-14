@@ -78,14 +78,23 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '   • Using Write tool (creating files)\n' +
           '   • Using Edit tool (modifying files)\n' +
           '   • Making architectural decisions\n' +
-          '   • Suggesting code implementations\n' +
+          '   • Suggesting code implementations\n\n' +
+          '   ⚡ THIS APPLIES TO ALL CHANGES - BIG OR SMALL!\n' +
+          '   Even simple edits (adding error handling, fixing a bug,\n' +
+          '   improving validation) require understanding project conventions.\n' +
           '═══════════════════════════════════════════════════════════════\n\n' +
           '❓ WHY call this before planning?\n' +
           'Planning requires understanding project conventions. Without context, you might plan an approach that conflicts with existing architecture (e.g., planning to use Tailwind when project uses CSS Modules).\n\n' +
+          '❓ WHY call this even for small changes?\n' +
+          '• Error handling: Does project use try-catch, error boundaries, or custom error classes?\n' +
+          '• Logging: console.log, custom logger, or structured logging?\n' +
+          '• Constants: Where to define them? Inline, config file, or separate constants file?\n' +
+          '• Code style: Specific patterns the project follows?\n' +
+          'Without checking, you might introduce inconsistent patterns.\n\n' +
           '📋 What this tool does:\n' +
           'Gets relevant AI_README context for a file path. Returns project conventions and patterns that MUST be followed.\n\n' +
           '🔍 Auto-trigger keywords (when you see these, call this tool IMMEDIATELY):\n' +
-          '"add", "create", "implement", "modify", "edit", "refactor", "suggest", "what should", "how to structure", "optimize", "improve"\n\n' +
+          '"add", "create", "implement", "modify", "edit", "refactor", "suggest", "what should", "how to structure", "optimize", "improve", "fix"\n\n' +
           '🚩 DETECT CONVENTION CONFLICTS:\n' +
           'After reading context, check if user\'s request conflicts with AI_README:\n' +
           '• User says "use X" but AI_README says "use Y"\n' +
@@ -105,6 +114,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '2. ❌ get_context → see "Tailwind" → ignore conflict\n' +
           '3. ❌ Write/Edit immediately (changed code but not conventions)\n' +
           '4. ❌ AI_README still says "Tailwind" (stale documentation!)\n\n' +
+          '❌ ANOTHER WRONG workflow (small changes):\n' +
+          '1. User: "Add error handling to middleware.ts"\n' +
+          '2. ❌ Skip get_context_for_file (thinking it\'s a small change)\n' +
+          '3. ❌ Write/Edit immediately with generic try-catch\n' +
+          '4. ❌ Missed that project uses custom error handling pattern\n' +
+          '5. ❌ Introduced inconsistent code that doesn\'t match project style\n\n' +
           '📝 Common workflows:\n' +
           '• Following existing conventions:\n' +
           '  get_context_for_file → TodoWrite (optional) → Write/Edit\n\n' +
@@ -115,14 +130,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '• Document discovered patterns:\n' +
           '  Write/Edit → update_ai_readme\n\n' +
           '💡 Pro tip: Works even if target file doesn\'t exist yet!\n\n' +
-          '📌 Example:\n' +
+          '📌 Example 1 (Major change):\n' +
           'User: "I don\'t like Tailwind, refactor Button.tsx to use CSS Modules"\n' +
           'You: get_context_for_file({ filePath: "src/components/Button.tsx" })\n' +
           '→ Context shows: "Styling: Tailwind CSS"\n' +
           '→ CONFLICT DETECTED! User wants CSS Modules ≠ AI_README says Tailwind\n' +
           '→ This is architectural decision, not just refactoring!\n' +
           '→ Must call update_ai_readme first to change "Tailwind" → "CSS Modules"\n' +
-          '→ Then refactor code to match new convention',
+          '→ Then refactor code to match new convention\n\n' +
+          '📌 Example 2 (Small change - STILL NEED MCP!):\n' +
+          'User: "Add error handling to middleware.ts"\n' +
+          'You: get_context_for_file({ filePath: "src/middleware.ts" })\n' +
+          '→ Context shows: "Error handling: Use custom ErrorHandler class"\n' +
+          '→ Now you know: Don\'t use generic try-catch, use ErrorHandler\n' +
+          '→ Edit with correct pattern that matches project conventions\n' +
+          '→ Result: Consistent code that follows project standards',
         inputSchema: zodToJsonSchema(getContextSchema),
       },
       {
