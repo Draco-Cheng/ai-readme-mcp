@@ -15,33 +15,33 @@ export class ContextRouter {
   }
 
   /**
-   * Get relevant AI_README contexts for a specific file path
-   * @param filePath - The file path relative to project root
+   * Get relevant AI_README contexts for a specific path (file or directory)
+   * @param targetPath - The path relative to project root (can be file or directory)
    * @param includeRoot - Whether to include root-level README (default: true)
    */
-  async getContextForFile(
-    filePath: string,
+  async getContextForPath(
+    targetPath: string,
     includeRoot: boolean = true
   ): Promise<ReadmeContext[]> {
     const contexts: ReadmeContext[] = [];
 
     // Find matching READMEs
     for (const readme of this.index.readmes) {
-      const match = this.matchesPath(filePath, readme);
+      const match = this.matchesPath(targetPath, readme);
 
       if (!match) continue;
 
       // Skip root if not requested
       if (!includeRoot && readme.level === 0) continue;
 
-      // Calculate distance from file to README
-      const distance = this.calculateDistance(filePath, readme);
+      // Calculate distance from path to README
+      const distance = this.calculateDistance(targetPath, readme);
 
       // Get content
       const content = await this.getReadmeContent(readme);
 
       // Determine relevance
-      const relevance = this.determineRelevance(filePath, readme);
+      const relevance = this.determineRelevance(targetPath, readme);
 
       contexts.push({
         path: readme.path,
@@ -65,33 +65,61 @@ export class ContextRouter {
   }
 
   /**
-   * Get contexts for multiple files
+   * Get contexts for multiple paths (files or directories)
    */
-  async getContextForFiles(filePaths: string[]): Promise<Map<string, ReadmeContext[]>> {
+  async getContextForPaths(paths: string[]): Promise<Map<string, ReadmeContext[]>> {
     const results = new Map<string, ReadmeContext[]>();
 
-    for (const filePath of filePaths) {
-      const contexts = await this.getContextForFile(filePath);
-      results.set(filePath, contexts);
+    for (const path of paths) {
+      const contexts = await this.getContextForPath(path);
+      results.set(path, contexts);
     }
 
     return results;
   }
 
   /**
-   * Check if a file path matches a README's patterns
+   * Get the directory from a path (handles both file and directory paths)
    */
-  private matchesPath(filePath: string, readme: ReadmeEntry): boolean {
+  private getFileDir(targetPath: string): string {
+    // If it has an extension, it's likely a file; otherwise treat as directory
+    const isDirectory = !/\.[^./\\]+$/.test(targetPath);
+    return isDirectory ? targetPath : dirname(targetPath);
+  }
+
+  /**
+   * Check if a path matches a README's patterns
+   */
+  private matchesPath(targetPath: string, readme: ReadmeEntry): boolean {
+    const readmeDir = dirname(readme.path);
+    const targetDir = this.getFileDir(targetPath);
+
+    // Root README always matches everything
+    if (readmeDir === '.') {
+      return true;
+    }
+
+    // Fast path: Direct directory match
+    if (targetDir === readmeDir) {
+      return true;
+    }
+
+    // Fast path: Check if target is under this README's directory
+    if (targetDir.startsWith(readmeDir + '/')) {
+      return true;
+    }
+
+    // Pattern matching (slower but handles edge cases)
     return readme.patterns.some(pattern => {
-      return minimatch(filePath, pattern, { dot: true });
+      return minimatch(targetPath, pattern, { dot: true });
     });
   }
 
   /**
-   * Calculate the directory distance between a file and a README
+   * Calculate the directory distance between a path and a README
    */
-  private calculateDistance(filePath: string, readme: ReadmeEntry): number {
-    const fileDir = dirname(filePath);
+  private calculateDistance(targetPath: string, readme: ReadmeEntry): number {
+    const fileDir = this.getFileDir(targetPath);
     const readmeDir = dirname(readme.path);
 
     // If README is at root
@@ -129,13 +157,13 @@ export class ContextRouter {
   }
 
   /**
-   * Determine the relevance type of a README for a file
+   * Determine the relevance type of a README for a path
    */
   private determineRelevance(
-    filePath: string,
+    targetPath: string,
     readme: ReadmeEntry
   ): 'root' | 'direct' | 'parent' {
-    const fileDir = dirname(filePath);
+    const fileDir = this.getFileDir(targetPath);
     const readmeDir = dirname(readme.path);
 
     // Root level README

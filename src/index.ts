@@ -92,7 +92,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '• Code style: Specific patterns the project follows?\n' +
           'Without checking, you might introduce inconsistent patterns.\n\n' +
           '📋 What this tool does:\n' +
-          'Gets relevant AI_README context for a file path. Returns project conventions and patterns that MUST be followed.\n\n' +
+          'Gets relevant AI_README context for a path (file or directory). Returns project conventions and patterns that MUST be followed.\n\n' +
           '🔍 Auto-trigger keywords (when you see these, call this tool IMMEDIATELY):\n' +
           '"add", "create", "implement", "modify", "edit", "refactor", "suggest", "what should", "how to structure", "optimize", "improve", "fix"\n\n' +
           '🚩 DETECT CONVENTION CONFLICTS:\n' +
@@ -132,7 +132,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '💡 Pro tip: Works even if target file doesn\'t exist yet!\n\n' +
           '📌 Example 1 (Major change):\n' +
           'User: "I don\'t like Tailwind, refactor Button.tsx to use CSS Modules"\n' +
-          'You: get_context_for_file({ filePath: "src/components/Button.tsx" })\n' +
+          'You: get_context_for_file({ path: "src/components/Button.tsx" })\n' +
           '→ Context shows: "Styling: Tailwind CSS"\n' +
           '→ CONFLICT DETECTED! User wants CSS Modules ≠ AI_README says Tailwind\n' +
           '→ This is architectural decision, not just refactoring!\n' +
@@ -140,11 +140,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '→ Then refactor code to match new convention\n\n' +
           '📌 Example 2 (Small change - STILL NEED MCP!):\n' +
           'User: "Add error handling to middleware.ts"\n' +
-          'You: get_context_for_file({ filePath: "src/middleware.ts" })\n' +
+          'You: get_context_for_file({ path: "src/middleware.ts" })\n' +
           '→ Context shows: "Error handling: Use custom ErrorHandler class"\n' +
           '→ Now you know: Don\'t use generic try-catch, use ErrorHandler\n' +
           '→ Edit with correct pattern that matches project conventions\n' +
-          '→ Result: Consistent code that follows project standards',
+          '→ Result: Consistent code that follows project standards\n\n' +
+          '📌 Example 3 (Directory context):\n' +
+          'User: "Add a new component in src/components"\n' +
+          'You: get_context_for_file({ path: "src/components" })\n' +
+          '→ Context shows component conventions for that directory\n' +
+          '→ Create new component following the conventions',
         inputSchema: zodToJsonSchema(getContextSchema),
       },
       {

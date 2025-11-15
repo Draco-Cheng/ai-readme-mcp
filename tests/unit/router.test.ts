@@ -19,9 +19,9 @@ describe('ContextRouter', () => {
     router = new ContextRouter(index);
   });
 
-  describe('getContextForFile()', () => {
+  describe('getContextForPath()', () => {
     it('should find direct parent README for frontend component', async () => {
-      const contexts = await router.getContextForFile(
+      const contexts = await router.getContextForPath(
         'apps/frontend/src/components/atoms/Button.tsx'
       );
 
@@ -36,7 +36,7 @@ describe('ContextRouter', () => {
     });
 
     it('should include root README by default', async () => {
-      const contexts = await router.getContextForFile(
+      const contexts = await router.getContextForPath(
         'apps/frontend/src/components/atoms/Button.tsx'
       );
 
@@ -46,7 +46,7 @@ describe('ContextRouter', () => {
     });
 
     it('should exclude root README when includeRoot is false', async () => {
-      const contexts = await router.getContextForFile(
+      const contexts = await router.getContextForPath(
         'apps/frontend/src/components/atoms/Button.tsx',
         false
       );
@@ -56,7 +56,7 @@ describe('ContextRouter', () => {
     });
 
     it('should find correct README for backend file', async () => {
-      const contexts = await router.getContextForFile(
+      const contexts = await router.getContextForPath(
         'apps/backend/src/routes/users.ts'
       );
 
@@ -68,7 +68,7 @@ describe('ContextRouter', () => {
     });
 
     it('should calculate correct distance', async () => {
-      const contexts = await router.getContextForFile(
+      const contexts = await router.getContextForPath(
         'apps/frontend/src/components/atoms/Button.tsx'
       );
 
@@ -81,7 +81,7 @@ describe('ContextRouter', () => {
     });
 
     it('should sort contexts by distance (closest first)', async () => {
-      const contexts = await router.getContextForFile(
+      const contexts = await router.getContextForPath(
         'apps/frontend/src/components/atoms/Button.tsx'
       );
 
@@ -95,7 +95,7 @@ describe('ContextRouter', () => {
     });
 
     it('should return content from cached README', async () => {
-      const contexts = await router.getContextForFile(
+      const contexts = await router.getContextForPath(
         'apps/frontend/src/components/atoms/Button.tsx'
       );
 
@@ -108,7 +108,7 @@ describe('ContextRouter', () => {
     });
 
     it('should handle file in root directory', async () => {
-      const contexts = await router.getContextForFile('README.md');
+      const contexts = await router.getContextForPath('README.md');
 
       assert.ok(contexts.length > 0);
       const rootContext = contexts.find(c => c.path === 'AI_README.md');
@@ -116,7 +116,7 @@ describe('ContextRouter', () => {
     });
 
     it('should handle file in packages/shared', async () => {
-      const contexts = await router.getContextForFile(
+      const contexts = await router.getContextForPath(
         'packages/shared/src/utils/format.ts'
       );
 
@@ -125,20 +125,42 @@ describe('ContextRouter', () => {
       assert.strictEqual(contexts[0]?.path, 'AI_README.md');
       assert.strictEqual(contexts[0]?.relevance, 'root');
     });
+
+    it('should handle root directory path "."', async () => {
+      const contexts = await router.getContextForPath('.');
+
+      assert.ok(contexts.length > 0, 'Should return at least one context');
+      const rootContext = contexts.find(c => c.path === 'AI_README.md');
+      assert.ok(rootContext, 'Should include root README');
+      assert.strictEqual(rootContext.relevance, 'root', 'Should be root relevance');
+      assert.strictEqual(rootContext.distance, 0, 'Distance should be 0');
+    });
+
+    it('should handle directory path without file', async () => {
+      const contexts = await router.getContextForPath('apps/frontend');
+
+      assert.ok(contexts.length > 0, 'Should return at least one context');
+      const frontendContext = contexts.find(c =>
+        c.path === 'apps/frontend/AI_README.md'
+      );
+      assert.ok(frontendContext, 'Should include frontend README');
+      assert.strictEqual(frontendContext.relevance, 'direct', 'Should be direct relevance');
+      assert.strictEqual(frontendContext.distance, 0, 'Distance should be 0 for direct match');
+    });
   });
 
-  describe('getContextForFiles()', () => {
-    it('should get contexts for multiple files', async () => {
-      const files = [
+  describe('getContextForPaths()', () => {
+    it('should get contexts for multiple paths', async () => {
+      const paths = [
         'apps/frontend/src/components/atoms/Button.tsx',
         'apps/backend/src/routes/users.ts',
       ];
 
-      const results = await router.getContextForFiles(files);
+      const results = await router.getContextForPaths(paths);
 
       assert.strictEqual(results.size, 2, 'Should have 2 results');
-      assert.ok(results.get(files[0]), 'Should have result for first file');
-      assert.ok(results.get(files[1]), 'Should have result for second file');
+      assert.ok(results.get(paths[0]), 'Should have result for first path');
+      assert.ok(results.get(paths[1]), 'Should have result for second path');
     });
   });
 

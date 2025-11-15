@@ -9,13 +9,13 @@ import { ContextRouter } from '../core/router.js';
 
 export const getContextSchema = z.object({
   projectRoot: z.string().describe('The root directory of the project'),
-  filePath: z
+  path: z
     .string()
     .describe(
-      'The file path to get context for (relative to project root). ' +
-      'MUST be a FILE path, not a directory. ' +
-      'Examples: "src/app/page.tsx", "README.md", "package.json". ' +
-      'If you want context for a directory, specify any file within it (e.g., "src/components/Button.tsx" instead of "src/components").'
+      'The path to get context for (relative to project root). ' +
+      'Can be either a FILE path or a DIRECTORY path. ' +
+      'Examples: "src/components/Button.tsx", "src/components", "README.md", "src/app". ' +
+      'The tool will find all relevant AI_README files in the path\'s directory and parent directories.'
     ),
   includeRoot: z
     .boolean()
@@ -31,7 +31,7 @@ export const getContextSchema = z.object({
 export type GetContextInput = z.infer<typeof getContextSchema>;
 
 export async function getContextForFile(input: GetContextInput) {
-  const { projectRoot, filePath, includeRoot, excludePatterns } = input;
+  const { projectRoot, path, includeRoot, excludePatterns } = input;
 
   // First, scan the project to build the index
   const scanner = new AIReadmeScanner(projectRoot, {
@@ -43,7 +43,7 @@ export async function getContextForFile(input: GetContextInput) {
 
   // Create router and get context
   const router = new ContextRouter(index);
-  const contexts = await router.getContextForFile(filePath, includeRoot);
+  const contexts = await router.getContextForPath(path, includeRoot);
 
   // Check for empty AI_README files
   const hasEmptyReadmes = contexts.some(ctx => !ctx.content || ctx.content.trim().length === 0);
@@ -58,7 +58,7 @@ export async function getContextForFile(input: GetContextInput) {
   }));
 
   // Generate a formatted prompt for the AI
-  let promptText = `## 📚 Project Context for: ${filePath}\n\n`;
+  let promptText = `## 📚 Project Context for: ${path}\n\n`;
 
   // Simple check: if empty or no READMEs, suggest using init tool
   if (hasNoReadmes || hasEmptyReadmes) {
@@ -100,7 +100,7 @@ export async function getContextForFile(input: GetContextInput) {
   }
 
   return {
-    filePath,
+    path,
     totalContexts: contexts.length,
     contexts: formattedContexts,
     formattedPrompt: promptText,
