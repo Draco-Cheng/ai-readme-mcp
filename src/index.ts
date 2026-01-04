@@ -113,7 +113,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           "- Extremely concise (< 400 tokens).",
           "- Only actionable conventions (tech, naming, patterns).",
           "- NO explanations or examples.",
-        ].join(""),
+        ].join("\n"),
         inputSchema: zodToJsonSchema(updateSchema),
       },
       {
@@ -141,7 +141,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '- Follow the step-by-step instructions to inspect each directory.',
           '- Use update_ai_readme to record the conventions.',
           '- Re-run get_context_for_file to confirm coverage before coding.',
-        ].join(""),
+        ].join("\n"),
         inputSchema: zodToJsonSchema(initSchema),
       },
     ],
