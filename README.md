@@ -94,7 +94,7 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 In your project directory, run:
 
 ```bash
-claude mcp add --scope project ai-readme-manager npx -- -y ai-readme-mcp
+claude mcp add --scope project ai-readme-manager npx -- -y ai-readme-mcp@latest
 ```
 
 This creates a `.mcp.json` file that uses `npx` to run the package - no installation or path configuration needed!
@@ -151,7 +151,7 @@ Add to Cursor's MCP configuration file:
   "mcpServers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp"]
+      "args": ["-y", "ai-readme-mcp@latest"]
     }
   }
 }
@@ -181,7 +181,7 @@ Add to your VSCode `settings.json`:
   "github.copilot.chat.mcp.servers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp"]
+      "args": ["-y", "ai-readme-mcp@latest"]
     }
   }
 }
@@ -201,7 +201,7 @@ Add to `claude_desktop_config.json`:
   "mcpServers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp"]
+      "args": ["-y", "ai-readme-mcp@latest"]
     }
   }
 }
@@ -223,20 +223,20 @@ No installation needed! Just configure and use via npx:
   "mcpServers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp"]
+      "args": ["-y", "ai-readme-mcp@latest"]
     }
   }
 }
 ```
 
-> The `-y` flag automatically accepts the npx prompt.
+> The `-y` flag automatically accepts the npx prompt. The `@latest` ensures you always get the newest version.
 
 **Option 2: Global Installation**
 
 Install once globally, use everywhere:
 
 ```bash
-npm install -g ai-readme-mcp
+npm install -g ai-readme-mcp@latest
 ```
 
 Then configure:
