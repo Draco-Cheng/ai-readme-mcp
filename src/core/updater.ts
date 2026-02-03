@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
+import { dirname } from 'path';
 
 export interface UpdateOperation {
   type: 'replace' | 'append' | 'prepend' | 'insert-after' | 'insert-before';
@@ -46,6 +47,16 @@ export class ReadmeUpdater {
     operations: UpdateOperation[]
   ): Promise<UpdateResult> {
     try {
+      // Check if parent directory exists
+      const dir = dirname(readmePath);
+      if (!existsSync(dir)) {
+        return {
+          success: false,
+          error: `File not found: ${readmePath}`,
+          changes: [],
+        };
+      }
+
       // Read current content (empty string if file doesn't exist or is empty)
       let content = '';
       if (existsSync(readmePath)) {

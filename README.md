@@ -89,6 +89,8 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 
 ### For Claude Code (VSCode Extension)
 
+> **💡 Model Recommendation:** For the best experience, use larger models (Sonnet or Opus) which have stronger instruction-following capabilities and more reliably trigger MCP tools. Smaller models like Haiku may not consistently call the tools when appropriate.
+
 **Step 1: Add MCP Server**
 
 In your project directory, run:
