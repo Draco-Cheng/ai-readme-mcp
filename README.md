@@ -302,31 +302,26 @@ Or more explicitly:
 
 ### Option 2: Manual Creation
 
-Create and write AI_README.md files yourself:
+Create and write AI_README.md files yourself. **There's no required format** - AI treats it as plain text, so even a single line works!
+
+**Simple examples that work perfectly:**
 
 ```markdown
-# My Project
-
-## Tech Stack
-- Framework: React + Express
-- Database: PostgreSQL
-- Testing: Jest + Vitest
-
-## Architecture Patterns
-- Follows MVC pattern for backend
-- Component-based architecture for frontend
-- RESTful API design
-
-## Coding Conventions
-- Use TypeScript for all files
-- Components in PascalCase
-- Functions and variables in camelCase
-- Test coverage: 80%+ required
-
-## Testing
-Run tests with: `npm test`
-Write tests alongside source files
+Never use emoji in code or comments.
 ```
+
+```markdown
+Use Tailwind CSS, not inline styles.
+Always use TypeScript strict mode.
+```
+
+```markdown
+This is a Next.js 14 app with App Router.
+Use server components by default.
+Database: Prisma + PostgreSQL.
+```
+
+**Key point:** Write whatever helps AI understand your preferences. A few clear sentences are often better than lengthy documentation.
 
 **Best Practices:**
 - Keep it concise (< 400 tokens is ideal)

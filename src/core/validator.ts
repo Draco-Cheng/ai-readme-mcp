@@ -97,11 +97,14 @@ export class ReadmeValidator {
     // Validate code blocks
     this.validateCodeBlocks(content, issues);
 
+    // Detect redundant content
+    this.detectRedundantContent(content, lines, issues);
+
     // Calculate score
     const score = this.calculateScore(issues, tokens);
 
     return {
-      valid: !issues.some((i) => i.type === 'error'),
+      valid: !issues.some((i) => i.type === 'error' || i.type === 'warning'),
       filePath: readmePath,
       issues,
       score,
@@ -218,6 +221,83 @@ export class ReadmeValidator {
           suggestion: 'Remove code examples or move them to separate documentation.',
         });
       }
+    }
+  }
+
+  /**
+   * Detect redundant content that wastes tokens
+   * AI can discover this information itself, so including it wastes context
+   */
+  private detectRedundantContent(content: string, lines: string[], issues: ValidationIssue[]): void {
+    const lowerContent = content.toLowerCase();
+
+    // Detect "Project Structure" section - AI can use Glob to discover this
+    // Match: ## Project Structure, ## Structure, # Project Structure
+    const hasProjectStructure =
+      lines.some((line) => /^#{1,2}\s*(project\s+)?structure/i.test(line.trim())) ||
+      // Also detect directory listing patterns: - `src/` or - src/
+      (content.match(/^-\s+`?src\//m) && content.match(/^-\s+`?(tests?|lib|dist)\//m));
+
+    if (hasProjectStructure) {
+      issues.push({
+        type: 'warning',
+        rule: 'redundant-content',
+        message: 'Found "Project Structure" section - AI can discover directories with Glob tool',
+        suggestion: 'Remove directory listings. Only mention cross-directory dependencies (e.g., "UI components in libs/ui")',
+      });
+    }
+
+    // Detect "Naming Conventions" section - AI already knows standard conventions
+    // Match: ## Naming, ## Naming Conventions, ## File Naming
+    const hasNamingSection = lines.some((line) =>
+      /^#{1,2}\s*(file\s+)?naming(\s+conventions?)?/i.test(line.trim())
+    );
+    const hasStandardNamingRules =
+      lowerContent.includes('camelcase') ||
+      lowerContent.includes('pascalcase') ||
+      lowerContent.includes('kebab-case');
+
+    if (hasNamingSection && hasStandardNamingRules) {
+      issues.push({
+        type: 'warning',
+        rule: 'redundant-content',
+        message: 'Found standard naming conventions - AI already knows camelCase/PascalCase/kebab-case',
+        suggestion: 'Remove standard naming rules. Only mention project-specific conventions that differ from standard',
+      });
+    }
+
+    // Detect "Testing" section - AI can read package.json for test commands
+    // Match: ## Testing, ## Tests, ## Test
+    const hasTestingSection = lines.some((line) =>
+      /^#{1,2}\s*tests?(ing)?$/i.test(line.trim())
+    );
+    const hasGenericTestInfo =
+      lowerContent.includes('npm test') ||
+      lowerContent.includes('npm run test') ||
+      lowerContent.includes('test files:') ||
+      /tests?\/\*\*\//.test(lowerContent); // test/**/*.test.ts patterns
+
+    if (hasTestingSection && hasGenericTestInfo) {
+      issues.push({
+        type: 'warning',
+        rule: 'redundant-content',
+        message: 'Found generic testing section - AI can read test commands from package.json',
+        suggestion: 'Remove test file patterns and npm commands. Only keep unique testing conventions',
+      });
+    }
+
+    // Check for Cross-directory dependencies section
+    const hasCrossDirSection = lines.some((line) =>
+      /^#{1,2}\s*cross[- ]?dir(ectory)?\s*(dep(endenc(y|ies))?)?/i.test(line.trim())
+    );
+
+    if (!hasCrossDirSection) {
+      issues.push({
+        type: 'info',
+        rule: 'structure',
+        message: 'No "Cross-directory dependencies" section found',
+        suggestion: 'Add "## Cross-directory dependencies" section if this directory uses resources from other directories (can be empty if none)',
+      });
     }
   }
 

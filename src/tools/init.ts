@@ -124,37 +124,31 @@ export async function initAIReadme(input: InitInput) {
     promptText += `   - Configuration files (package.json, tsconfig.json, etc.)\n`;
     promptText += `   - Main source files\n`;
     promptText += `   - Important modules/components\n\n`;
-    promptText += `3. **Analyze and identify:**\n`;
-    promptText += `   - 📦 **Tech Stack**: Frameworks, libraries, languages, tools\n`;
-    promptText += `   - 🏗️ **Architecture**: Project structure, design patterns\n`;
-    promptText += `   - 📝 **Coding Conventions**: Naming, formatting, patterns\n`;
-    promptText += `   - 🗂️ **File Structure**: Directory organization, module boundaries\n\n`;
-    promptText += `4. **Populate AI_README:**\n`;
+    promptText += `3. **Analyze and write a concise AI_README:**\n\n`;
+    promptText += `   Use update_ai_readme to populate. **No fixed format required** - a few clear sentences is often enough!\n\n`;
+    promptText += `   **What to include (pick what's relevant):**\n`;
+    promptText += `   - Tech choices (framework, styling, database)\n`;
+    promptText += `   - **Cross-directory dependencies** (IMPORTANT for monorepos: "UI components in libs/ui", "shared types in packages/common")\n`;
+    promptText += `   - Key conventions or restrictions (e.g., "no emoji", "use server components")\n`;
+    promptText += `   - Shared resources other directories should know about\n\n`;
+    promptText += `   **Example - simple is fine:**\n`;
     promptText += `   \`\`\`\n`;
-    promptText += `   Use update_ai_readme:\n`;
-    promptText += `   {\n`;
-    promptText += `     readmePath: "${readmePath}",\n`;
-    promptText += `     operations: [{\n`;
-    promptText += `       type: "append",\n`;
-    promptText += `       content: "<your analysis in markdown format>"\n`;
-    promptText += `     }]\n`;
-    promptText += `   }\n`;
+    promptText += `   Next.js 14 App Router with TypeScript.\n`;
+    promptText += `   Use Tailwind CSS, not inline styles.\n`;
+    promptText += `   Shared UI components in libs/ui-components.\n`;
     promptText += `   \`\`\`\n\n`;
-    promptText += `   **Include these sections:**\n`;
-    promptText += `   - \`## Tech Stack\` - List frameworks, libraries, tools\n`;
-    promptText += `   - \`## Architecture Patterns\` - Design patterns, project structure\n`;
-    promptText += `   - \`## Coding Conventions\` - Naming, formatting, best practices\n`;
-    promptText += `   - \`## File Structure\` - Directory organization (brief)\n\n`;
-    promptText += `   **Keep it concise:** AI_READMEs should be <400 tokens. Focus on actionable conventions.\n\n`;
+    promptText += `   **Keep it concise:** <400 tokens. Focus on what helps AI generate better code.\n\n`;
   }
 
+  promptText += `## 🔍 Validation & Optimization\n\n`;
+  promptText += `After populating each AI_README, run validation and fix any issues:\n\n`;
+  promptText += `1. **Run validate_ai_readmes** to check for problems\n`;
+  promptText += `2. **Fix any warnings** - remove redundant content (Project Structure, Naming Conventions, Testing sections)\n`;
+  promptText += `3. **Add "## Cross-directory dependencies"** section (can be empty or "None" if no external dependencies)\n`;
+  promptText += `4. **Re-validate** until all files pass with no warnings\n\n`;
+
   promptText += `---\n\n`;
-  promptText += `💡 **Tips:**\n`;
-  promptText += `- Work through each README sequentially\n`;
-  promptText += `- Be concise - every token counts!\n`;
-  promptText += `- Focus on conventions that help generate better code\n`;
-  promptText += `- After completing all, you can verify with \`validate_ai_readmes\`\n\n`;
-  promptText += `**Start with the first AI_README now!**\n`;
+  promptText += `💡 **Remember:** AI_README is for AI, not humans. Write what helps AI understand your project - a few sentences often beats lengthy documentation.\n`;
 
   return {
     success: true,

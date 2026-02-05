@@ -29,24 +29,20 @@ This is a medium-length README that provides essential information about the pro
 - Feature B: Does something else
 - Feature C: Additional functionality
 
-## Structure
+## Tech Stack
 
-- src/ - Source code
-- tests/ - Test files
-- docs/ - Documentation
+- TypeScript for type safety
+- React for UI components
+- Node.js for backend
 
-## Usage
+## Coding Conventions
 
-Install dependencies and run the project:
+Use functional components with hooks.
+Prefer composition over inheritance.
 
-\`\`\`bash
-npm install
-npm start
-\`\`\`
+## Cross-directory dependencies
 
-## Contributing
-
-Please follow the coding conventions outlined in this project.
+None - this is a standalone module.
 `;
 
 const LONG_README = `# Test Project
@@ -189,12 +185,14 @@ describe('ReadmeValidator', () => {
       assert.strictEqual(result.valid, true, 'Should be valid');
       assert.ok(result.stats, 'Should have stats');
       assert.ok(
-        result.stats.tokens >= 100 && result.stats.tokens <= 600,
+        result.stats.tokens >= 50 && result.stats.tokens <= 400,
         'Should have moderate token count'
       );
     });
 
     it('should detect code blocks', async () => {
+      const readmeWithCode = MEDIUM_README + '\n```bash\nnpm install\n```\n';
+      await writeFile(TEST_README, readmeWithCode, 'utf-8');
       const validator = new ReadmeValidator({ rules: { allowCodeBlocks: false } });
       const result = await validator.validate(TEST_README);
 

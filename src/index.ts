@@ -171,6 +171,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '- Call init_ai_readme.',
           '- Follow the step-by-step instructions to inspect each directory.',
           '- Use update_ai_readme to record the conventions.',
+          '- Run validate_ai_readmes to check for problems.',
+          '- Fix any warnings (remove redundant content, add Cross-directory dependencies section).',
           '- Re-run get_context_for_file to confirm coverage before coding.',
         ].join("\n"),
         inputSchema: zodToJsonSchema(initSchema),

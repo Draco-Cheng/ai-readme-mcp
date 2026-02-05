@@ -168,7 +168,8 @@ export type ValidationRule =
   | 'code-blocks'
   | 'line-length'
   | 'empty-content'
-  | 'structure';
+  | 'structure'
+  | 'redundant-content';
 
 /**
  * Validation issue
