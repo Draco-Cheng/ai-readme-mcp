@@ -15,7 +15,8 @@
   - [For GitHub Copilot](#for-github-copilot-vscode-1102)
   - [For Claude Desktop](#for-claude-desktop-application)
   - [Alternative Installation Methods](#alternative-installation-methods)
-- [Create Your First AI_README](#create-your-first-ai_readme)
+- [Quick Start](#-quick-start)
+- [Manual Creation & Editing](#️-manual-creation--editing)
 - [Multi-Level AI_README](#multi-level-ai_readme-not-just-for-monorepos)
 - [Available MCP Tools](#️-available-mcp-tools)
 
@@ -257,11 +258,7 @@ Then configure:
 
 ---
 
-## Create Your First AI_README
-
-You have two main approaches to create and populate AI_README files:
-
-### Option 1: Automated Initialization (Recommended)
+## 🚀 Quick Start
 
 Use the `init_ai_readme` tool to automatically scan and populate empty AI_README files:
 
@@ -300,9 +297,13 @@ Or more explicitly:
 - When `get_context_for_file` detects empty AI_README files
 - To batch-process multiple empty AI_README files
 
-### Option 2: Manual Creation
+---
 
-Create and write AI_README.md files yourself. **There's no required format** - AI treats it as plain text, so even a single line works!
+## ✏️ Manual Creation & Editing
+
+You can always create and edit AI_README.md files yourself - **no tools required**. There's no required format; AI treats it as plain text, so even a single line works!
+
+This is your project's documentation. Feel free to edit it anytime - whether you're setting up for the first time, adding new conventions, or correcting something the AI wrote.
 
 **Simple examples that work perfectly:**
 
@@ -326,8 +327,9 @@ Database: Prisma + PostgreSQL.
 **Best Practices:**
 - Keep it concise (< 400 tokens is ideal)
 - Focus on conventions, not documentation
-- Update as your project evolves
-- Use AI to help maintain it
+- Update as your project evolves - add new rules whenever you notice AI doing something wrong
+- Review AI-made updates with `git diff AI_README.md` and edit freely
+- Use AI to help maintain it, but you're always the final editor
 
 ---
 
