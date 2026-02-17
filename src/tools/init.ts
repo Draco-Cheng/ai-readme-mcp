@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { writeFile, readFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { AIReadmeScanner } from '../core/scanner.js';
@@ -109,7 +109,7 @@ export async function initAIReadme(input: InitInput) {
   promptText += `You must populate the following AI_README files by analyzing their respective directories:\n\n`;
 
   for (let i = 0; i < targetReadmes.length; i++) {
-    const readme = targetReadmes[i];
+    const readme = targetReadmes[i]!;
     const readmePath = readme.path.replace(/\\/g, '/');
     const dirPath = readme.dirPath.replace(/\\/g, '/');
 
