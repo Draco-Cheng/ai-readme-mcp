@@ -33,8 +33,11 @@
     "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.11.5",
+    "semantic-release": "^25.0.3",
     "tsup": "^8.0.1",
     "tsx": "^4.20.6",
     "typescript": "^5.3.3"
