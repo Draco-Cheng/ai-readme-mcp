@@ -143,6 +143,16 @@ claude mcp get ai-readme-manager
 
 You should see `Status: ✓ Connected`
 
+**Optional: Add to CLAUDE.md**
+
+If you want to reinforce tool usage, you can add the following to your project's `CLAUDE.md`:
+
+```markdown
+## MCP: ai-readme-manager
+Before any code-related task, ALWAYS call `mcp__ai-readme-manager__get_context_for_file` first.
+When establishing new conventions or making architectural decisions, call `mcp__ai-readme-manager__update_ai_readme` to record them.
+```
+
 ### For Cursor
 
 Add to Cursor's MCP configuration file:
@@ -729,7 +739,7 @@ Validate all AI_README.md files in your project for quality and token efficiency
 We're actively working on new features:
 
 - **Auto-populate Empty AI_README** - Automatically generate AI_README content when `get_context_for_file` detects empty files, reducing manual initialization steps
-- **Enhanced Tool Triggering** - Improve tool descriptions and prompts to ensure AI assistants trigger tools at the right moments with better precision and reliability
+- **Enhanced Tool Triggering** - ~~Claude 4.6+ deferred tool loading workaround via `CLAUDE.md` (see Step 4 above)~~ ✅ Resolved: Add `CLAUDE.md` to your project root
 - **CI/CD Integration** - GitHub Actions for automated README validation
 - **VSCode Extension** - Native VSCode extension with visual UI for managing AI_README files, offering a more integrated experience alongside the current MCP server
 

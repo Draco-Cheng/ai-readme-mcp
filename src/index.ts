@@ -51,6 +51,13 @@ const server = new Server(
     capabilities: {
       tools: {},
     },
+    instructions: [
+      "This server manages AI_README.md files that document project conventions for AI assistants.",
+      "",
+      "ALWAYS call get_context_for_file before any code-related task — editing, creating, reviewing, or suggesting changes to any file.",
+      "",
+      "When establishing new conventions or making architectural decisions, call update_ai_readme to record them.",
+    ].join("\n"),
   }
 );
 
@@ -72,7 +79,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           '- User asks: optimize, improve, analyze, review, suggest, think, opinion.',
           '- User mentions: file name, component name, project, codebase, backend, frontend, infra, devops, CI/CD, docker, config.',
           '- User asks: "what can", "what should", "how to", "can you", "help me".',
-          '- User wants to: create, build, add, implement, setup, configure, deploy, migrate.',
+          '- User wants to: create, build, add, implement, setup, configure, deploy, migrate, optimize, refactor, improve, analyze, review, suggest, think, opinion.',
           '- User selects an option that leads to code changes (e.g., choosing from a list of approaches).',
           '- User says: "next step", "next phase", "next section", "continue", "proceed", "go ahead", "start", "do it", "yes" (confirming action).',
           '- Before: Write, Edit, TodoWrite, Bash (for build/deploy), suggesting ANY code changes.',
