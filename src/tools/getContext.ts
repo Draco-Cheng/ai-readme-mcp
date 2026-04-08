@@ -62,16 +62,13 @@ export async function getContextForFile(input: GetContextInput) {
 
   // Simple check: if empty or no READMEs, suggest using init tool
   if (hasNoReadmes || hasEmptyReadmes) {
-    promptText += `⚠️ **Empty or missing AI_README files detected.**\n\n`;
-    promptText += `**Recommended Action:** Use the \`init_ai_readme\` tool to automatically populate AI_README files.\n\n`;
+    promptText += `🚨 **STOP — DO NOT PROCEED WITH ANY CODE TASK.**\n\n`;
+    promptText += `Empty or missing AI_README files detected. You MUST call \`init_ai_readme\` before continuing.\n\n`;
+    promptText += `**Call this now:**\n`;
     promptText += `\`\`\`\n`;
     promptText += `init_ai_readme({ projectRoot: "${projectRoot.replace(/\\/g, '/')}" })\n`;
     promptText += `\`\`\`\n\n`;
-    promptText += `This tool will:\n`;
-    promptText += `- Scan the project for empty AI_README files\n`;
-    promptText += `- Guide you through populating them with conventions\n`;
-    promptText += `- Ensure consistent documentation across your project\n\n`;
-    promptText += `💡 Alternatively, you can manually create and populate AI_README.md files, then call this tool again.\n\n`;
+    promptText += `Do NOT proceed with the original task until AI_README files are populated.\n\n`;
     promptText += `---\n\n`;
   }
 

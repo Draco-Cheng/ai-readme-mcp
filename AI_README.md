@@ -1,27 +1,27 @@
-# AI_README MCP Server
+# AI_README
 
-MCP server for managing AI_README.md files - provides context to AI assistants about project conventions.
-
-## Tech Stack
-- TypeScript (ES2022, Node16 modules, strict mode)
-- MCP SDK (`@modelcontextprotocol/sdk`)
-- Zod for schema validation
-- tsup for bundling
-- tsx for testing
+Node.js MCP server (TypeScript, ESM) that manages AI_README.md files for AI assistants.
+Built with `@modelcontextprotocol/sdk`, compiled via `tsup`, tested with `tsx --test`.
 
 ## Architecture
-- `src/index.ts` - MCP server entry, tool registration
-- `src/tools/` - Tool implementations (discover, getContext, update, validate, init)
-- `src/core/` - Core logic (scanner, router, updater, validator, detector)
-- `src/types/` - TypeScript interfaces and types
 
-## Coding Conventions
-- ESM-only (`"type": "module"`, `.js` extensions in imports)
-- Zod schemas for input validation, exported alongside tools
-- Tool functions return structured objects, server wraps as JSON
-- Prefer `fs-extra` over native fs
-- Use `glob` package for file pattern matching
+- `src/index.ts` — MCP server entry point; registers all tools via `@modelcontextprotocol/sdk`
+- `src/tools/` — one file per MCP tool (`getContext`, `update`, `validate`, `discover`, `init`); each exports a zod schema + handler function
+- `src/core/` — shared logic: `scanner.ts` (glob-based AI_README discovery), `router.ts` (context routing by path proximity), `updater.ts` (file write + backup), `validator.ts`, `detector.ts`
+- `src/types/index.ts` — all shared TypeScript interfaces and types
+
+## Conventions
+
+- All imports use `.js` extension (ESM)
+- Tool input schemas defined with `zod`; converted to JSON Schema via `zod-to-json-schema`
+- No default exports; use named exports throughout
+- Tests live in `tests/` using Node.js built-in test runner (`tsx --test`)
+- Build output goes to `dist/`; never edit dist files directly
 
 ## Cross-directory dependencies
-- Tools in `src/tools/` import core modules from `src/core/`
-- Types exported from `src/types/index.ts` used everywhere
+
+- `src/tools/` depends on `src/core/` and `src/types/`
+- `src/core/` depends on `src/types/` only
+- Test fixtures in `tests/fixtures/sample-monorepo/` are used by integration tests
+
+

@@ -59,11 +59,16 @@ export async function initAIReadme(input: InitInput) {
     }
   }
 
-  // If no AI_README exists at all, create one at project root
-  if (index.readmes.length === 0) {
-    const rootReadmePath = join(projectRoot, 'AI_README.md');
+  // Check if root-level AI_README is missing (even if sub-directories have one)
+  const rootReadmePath = join(projectRoot, 'AI_README.md');
+  const hasRootReadme = index.readmes.some(r => {
+    const normalized = r.path.replace(/\\/g, '/');
+    const normalizedRoot = projectRoot.replace(/\\/g, '/');
+    return normalized === `${normalizedRoot}/AI_README.md` || normalized === rootReadmePath.replace(/\\/g, '/');
+  });
 
-    // Create empty file if it doesn't exist
+  if (index.readmes.length === 0) {
+    // No AI_README exists at all — create one at project root
     if (!existsSync(rootReadmePath)) {
       await writeFile(rootReadmePath, '', 'utf-8');
     }
@@ -86,9 +91,16 @@ export async function initAIReadme(input: InitInput) {
 
   // If no empty READMEs found
   if (targetReadmes.length === 0) {
+    const populatedPaths = index.readmes.map(r => `- ${r.path.replace(/\\/g, '/')}`).join('\n');
+    const rootWarning = !hasRootReadme && index.readmes.length > 0
+      ? `\n\n⚠️ **No root-level AI_README.md found.**\n` +
+        `Sub-directory README(s) exist but there is no project-wide conventions file at the root.\n` +
+        `Ask the user: "Do you want me to create a root-level AI_README.md for project-wide conventions?"`
+      : '';
+
     return {
       success: true,
-      message: '✅ All AI_README files are already populated!',
+      message: `✅ All existing AI_README files are already populated!\n\nFound:\n${populatedPaths}${rootWarning}`,
       initialized: [],
     };
   }

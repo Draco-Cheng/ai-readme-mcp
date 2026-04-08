@@ -143,15 +143,19 @@ claude mcp get ai-readme-manager
 
 You should see `Status: ✓ Connected`
 
-**Optional: Add to CLAUDE.md**
+**Step 4: Add `CLAUDE.md` Instructions**
 
-If you want to reinforce tool usage, you can add the following to your project's `CLAUDE.md`:
+Add the following to your project's `CLAUDE.md` to ensure Claude consistently calls the MCP tools before every code task:
 
 ```markdown
 ## MCP: ai-readme-manager
 Before any code-related task, ALWAYS call `mcp__ai-readme-manager__get_context_for_file` first.
+If `get_context_for_file` reports empty or missing AI_README files, call `mcp__ai-readme-manager__init_ai_readme` to initialize them.
+If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `mcp__ai-readme-manager__update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `mcp__ai-readme-manager__update_ai_readme` to record them.
 ```
+
+> **Why this matters:** Without `CLAUDE.md`, Claude may skip calling the MCP tools, causing it to generate code that ignores your project's conventions. This step is essential for reliable tool triggering.
 
 ### For Cursor
 
@@ -171,6 +175,18 @@ Add to Cursor's MCP configuration file:
 ```
 
 After configuring, restart Cursor completely.
+
+**Add `AGENTS.md` Instructions**
+
+Add the following to your project's `AGENTS.md` to ensure Cursor consistently uses the MCP tools before every code task:
+
+```markdown
+## MCP: ai-readme-manager
+Before any code-related task, ALWAYS use the `get_context_for_file` tool from the `ai-readme-manager` MCP server first.
+If `get_context_for_file` reports empty or missing AI_README files, use `init_ai_readme` to initialize them.
+If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and use `update_ai_readme` to resolve the conflict before proceeding.
+When establishing new conventions or making architectural decisions, use `update_ai_readme` to record them.
+```
 
 ### For GitHub Copilot (VSCode 1.102+)
 
@@ -202,6 +218,18 @@ Add to your VSCode `settings.json`:
 
 After configuring, restart VSCode and you'll see the MCP tools available in GitHub Copilot Chat!
 
+**Add `AGENTS.md` Instructions**
+
+Add the following to your project's `AGENTS.md` to ensure Copilot consistently uses the MCP tools before every code task:
+
+```markdown
+## MCP: ai-readme-manager
+Before any code-related task, ALWAYS use the `get_context_for_file` tool from the `ai-readme-manager` MCP server first.
+If `get_context_for_file` reports empty or missing AI_README files, use `init_ai_readme` to initialize them.
+If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and use `update_ai_readme` to resolve the conflict before proceeding.
+When establishing new conventions or making architectural decisions, use `update_ai_readme` to record them.
+```
+
 ### For Claude Desktop Application
 
 Add to `claude_desktop_config.json`:
@@ -218,6 +246,18 @@ Add to `claude_desktop_config.json`:
     }
   }
 }
+```
+
+**Add `AGENTS.md` Instructions**
+
+Add the following to your project's `AGENTS.md` to ensure Claude Desktop consistently uses the MCP tools before every code task:
+
+```markdown
+## MCP: ai-readme-manager
+Before any code-related task, ALWAYS use the `get_context_for_file` tool from the `ai-readme-manager` MCP server first.
+If `get_context_for_file` reports empty or missing AI_README files, use `init_ai_readme` to initialize them.
+If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and use `update_ai_readme` to resolve the conflict before proceeding.
+When establishing new conventions or making architectural decisions, use `update_ai_readme` to record them.
 ```
 
 ### Alternative Installation Methods
@@ -285,12 +325,7 @@ touch apps/frontend/AI_README.md
 
 In your AI assistant (Claude Code, Cursor, etc.), simply say:
 
-> "Please run init_ai_readme for this project"
-
-Or more explicitly:
-
-> "Initialize AI_README files"
-> "Help me populate the empty AI_README files"
+> "Please use the init_ai_readme MCP tool for this project"
 
 **What happens:**
 - 🔍 Scans your project for empty AI_README files
