@@ -143,7 +143,7 @@ claude mcp get ai-readme-manager
 
 You should see `Status: ✓ Connected`
 
-**Step 4: Add `CLAUDE.md` Instructions**
+**Step 5: Add `CLAUDE.md` Instructions**
 
 Add the following to your project's `CLAUDE.md` to ensure Claude consistently calls the MCP tools before every code task:
 
