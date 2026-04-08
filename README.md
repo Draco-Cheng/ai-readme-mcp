@@ -218,9 +218,9 @@ Add to your VSCode `settings.json`:
 
 After configuring, restart VSCode and you'll see the MCP tools available in GitHub Copilot Chat!
 
-**Add `AGENTS.md` Instructions**
+**Add `.github/copilot-instructions.md` Instructions**
 
-Add the following to your project's `AGENTS.md` to ensure Copilot consistently uses the MCP tools before every code task:
+Create `.github/copilot-instructions.md` in your project to ensure Copilot consistently uses the MCP tools before every code task:
 
 ```markdown
 ## MCP: ai-readme-manager
@@ -248,9 +248,9 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-**Add `AGENTS.md` Instructions**
+**Add `CLAUDE.md` Instructions**
 
-Add the following to your project's `AGENTS.md` to ensure Claude Desktop consistently uses the MCP tools before every code task:
+Add the following to your project's `CLAUDE.md` to ensure Claude Desktop consistently uses the MCP tools before every code task:
 
 ```markdown
 ## MCP: ai-readme-manager
@@ -305,6 +305,8 @@ Then configure:
 ```
 
 > **Pros:** Faster startup (no npx download). **Cons:** Need to manually update when new versions release.
+
+> **Don't forget:** After configuring the MCP server, add the instructions file for your AI tool — see the setup section for your specific client above (`CLAUDE.md`, `AGENTS.md`, or `.github/copilot-instructions.md`).
 
 ---
 
