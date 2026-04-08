@@ -626,6 +626,7 @@ Update an AI_README.md file with specified operations.
 - Review changes: `git diff AI_README.md`
 - Undo changes: `git checkout AI_README.md`
 - Commit changes: `git add AI_README.md && git commit -m "Update AI_README"`
+```
 
 **Example Usage:**
 
