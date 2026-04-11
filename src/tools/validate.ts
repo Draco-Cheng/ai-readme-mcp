@@ -7,7 +7,7 @@ import type { ValidationConfig } from '../types/index.js';
  * Zod schema for validate_ai_readmes tool
  */
 export const validateSchema = z.object({
-  projectRoot: z.string().describe('The root directory of the project'),
+  projectRoot: z.string().describe('The root directory of the project. Use the current working directory (e.g., from environment or pwd). If unsure, pass the project root path.'),
   excludePatterns: z.array(z.string()).optional().describe(
     'Glob patterns to exclude (e.g., ["node_modules/**", ".git/**"])'
   ),

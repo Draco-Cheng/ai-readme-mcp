@@ -149,8 +149,8 @@ Add the following to your project's `CLAUDE.md` to ensure Claude consistently ca
 
 ```markdown
 ## MCP: ai-readme-manager
-Before any code-related task, ALWAYS call `mcp__ai-readme-manager__get_context_for_file` first.
-If `get_context_for_file` reports empty or missing AI_README files, call `mcp__ai-readme-manager__init_ai_readme` to initialize them.
+Before any code-related task, ALWAYS call `mcp__ai-readme-manager__get_context_for_file(projectRoot, path)` first.
+If `get_context_for_file` reports empty or missing AI_README files, call `mcp__ai-readme-manager__init_ai_readme(projectRoot)` to initialize them.
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `mcp__ai-readme-manager__update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `mcp__ai-readme-manager__update_ai_readme` to record them.
 ```
@@ -182,10 +182,10 @@ Add the following to your project's `AGENTS.md` to ensure Cursor consistently us
 
 ```markdown
 ## MCP: ai-readme-manager
-Before any code-related task, ALWAYS use the `get_context_for_file` tool from the `ai-readme-manager` MCP server first.
-If `get_context_for_file` reports empty or missing AI_README files, use `init_ai_readme` to initialize them.
-If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and use `update_ai_readme` to resolve the conflict before proceeding.
-When establishing new conventions or making architectural decisions, use `update_ai_readme` to record them.
+Before any code-related task, ALWAYS call `get_context_for_file(projectRoot, path)` first.
+If `get_context_for_file` reports empty or missing AI_README files, call `init_ai_readme(projectRoot)` to initialize them.
+If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
+When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
 ```
 
 ### For GitHub Copilot (VSCode 1.102+)
@@ -224,10 +224,10 @@ Create `.github/copilot-instructions.md` in your project to ensure Copilot consi
 
 ```markdown
 ## MCP: ai-readme-manager
-Before any code-related task, ALWAYS use the `get_context_for_file` tool from the `ai-readme-manager` MCP server first.
-If `get_context_for_file` reports empty or missing AI_README files, use `init_ai_readme` to initialize them.
-If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and use `update_ai_readme` to resolve the conflict before proceeding.
-When establishing new conventions or making architectural decisions, use `update_ai_readme` to record them.
+Before any code-related task, ALWAYS call `get_context_for_file(projectRoot, path)` first.
+If `get_context_for_file` reports empty or missing AI_README files, call `init_ai_readme(projectRoot)` to initialize them.
+If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
+When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
 ```
 
 ### For Claude Desktop Application
@@ -254,10 +254,10 @@ Add the following to your project's `CLAUDE.md` to ensure Claude Desktop consist
 
 ```markdown
 ## MCP: ai-readme-manager
-Before any code-related task, ALWAYS use the `get_context_for_file` tool from the `ai-readme-manager` MCP server first.
-If `get_context_for_file` reports empty or missing AI_README files, use `init_ai_readme` to initialize them.
-If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and use `update_ai_readme` to resolve the conflict before proceeding.
-When establishing new conventions or making architectural decisions, use `update_ai_readme` to record them.
+Before any code-related task, ALWAYS call `get_context_for_file(projectRoot, path)` first.
+If `get_context_for_file` reports empty or missing AI_README files, call `init_ai_readme(projectRoot)` to initialize them.
+If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
+When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
 ```
 
 ### Alternative Installation Methods

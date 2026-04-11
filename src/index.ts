@@ -197,7 +197,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 // Register tool: call_tool
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
+  const { name, arguments: rawArgs } = request.params;
+
+  // Apply fallbacks for commonly missing required params
+  const args = {
+    ...rawArgs,
+    projectRoot: (rawArgs as Record<string, unknown>)?.projectRoot ?? process.cwd(),
+    ...(name === 'get_context_for_file' && !(rawArgs as Record<string, unknown>)?.path
+      ? { path: '.' }
+      : {}),
+  };
 
   try {
     if (name === "discover_ai_readmes") {

@@ -10,7 +10,7 @@ import { existsSync } from 'fs';
 import { AIReadmeScanner } from '../core/scanner.js';
 
 export const initSchema = z.object({
-  projectRoot: z.string().describe('The root directory of the project'),
+  projectRoot: z.string().describe('The root directory of the project. Use the current working directory (e.g., from environment or pwd). If unsure, pass the project root path.'),
   excludePatterns: z
     .array(z.string())
     .optional()

@@ -8,13 +8,14 @@ import { AIReadmeScanner } from '../core/scanner.js';
 import { ContextRouter } from '../core/router.js';
 
 export const getContextSchema = z.object({
-  projectRoot: z.string().describe('The root directory of the project'),
+  projectRoot: z.string().describe('The root directory of the project. Use the current working directory (e.g., from environment or pwd). If unsure, pass the project root path.'),
   path: z
     .string()
     .describe(
       'The path to get context for (relative to project root). ' +
       'Can be either a FILE path or a DIRECTORY path. ' +
       'Examples: "src/components/Button.tsx", "src/components", "README.md", "src/app". ' +
+      'Use "." to get root-level context when no specific file is known. ' +
       'The tool will find all relevant AI_README files in the path\'s directory and parent directories.'
     ),
   includeRoot: z
