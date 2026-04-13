@@ -298,7 +298,7 @@ openclaw mcp list
 
 To ensure OpenClaw's agent consistently reads project conventions before each code change, add the following to your skill or system prompt:
 
-```
+```markdown
 ## MCP: ai-readme-manager
 Before any code-related task, ALWAYS call get_context_for_file(projectRoot, path) first.
 If get_context_for_file reports empty or missing AI_README files, call init_ai_readme(projectRoot) to initialize them.
