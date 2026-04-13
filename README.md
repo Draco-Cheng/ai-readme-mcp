@@ -300,10 +300,10 @@ To ensure OpenClaw's agent consistently reads project conventions before each co
 
 ```markdown
 ## MCP: ai-readme-manager
-Before any code-related task, ALWAYS call get_context_for_file(projectRoot, path) first.
-If get_context_for_file reports empty or missing AI_README files, call init_ai_readme(projectRoot) to initialize them.
-If the request or plan conflicts with AI_README conventions, STOP and call update_ai_readme to resolve the conflict before proceeding.
-When establishing new conventions or making architectural decisions, call update_ai_readme to record them.
+Before any code-related task, ALWAYS call `get_context_for_file(projectRoot, path)` first.
+If `get_context_for_file` reports empty or missing AI_README files, call `init_ai_readme(projectRoot)` to initialize them.
+If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
+When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
 ```
 
 > **Why this matters for iterative agents:** In agentic loops, each iteration is a fresh context. Without `AI_README.md`, the agent has no memory of decisions made in previous rounds — leading to style drift, conflicting patterns, and regressions. `ai-readme-mcp` acts as the persistent memory layer that keeps every loop grounded in the same conventions.
