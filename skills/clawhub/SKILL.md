@@ -16,6 +16,40 @@ metadata:
 
 Manages `AI_README.md` files that document your project's conventions for AI assistants. Gives your agent persistent memory of project rules across every session and every iteration.
 
+## Setup
+
+Before this skill works, you must register the MCP server with OpenClaw:
+
+**Option 1: CLI (Recommended)**
+
+On macOS/Linux:
+```bash
+openclaw mcp set ai-readme-manager '{"command":"npx","args":["-y","ai-readme-mcp@latest"]}'
+```
+
+On Windows (cmd):
+```cmd
+openclaw mcp set ai-readme-manager "{\"command\":\"npx\",\"args\":[\"-y\",\"ai-readme-mcp@latest\"]}"
+```
+
+**Option 2: Edit config file**
+
+Add to `~/.openclaw/openclaw.json`:
+```json
+{
+  "mcp": {
+    "servers": {
+      "ai-readme-manager": {
+        "command": "npx",
+        "args": ["-y", "ai-readme-mcp@latest"]
+      }
+    }
+  }
+}
+```
+
+Then restart OpenClaw and verify with `openclaw mcp list`.
+
 ## When to use
 
 Call `get_context_for_file` before any code-related task — editing, creating, or reviewing files in a project.
