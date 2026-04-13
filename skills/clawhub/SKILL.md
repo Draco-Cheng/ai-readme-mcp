@@ -1,0 +1,36 @@
+---
+name: ai-readme-manager
+description: Manages AI_README.md files so AI agents remember your project conventions across every session
+version: 1.2.6
+metadata:
+  openclaw:
+    install:
+      - kind: node
+        package: ai-readme-mcp
+        bins: [ai-readme-mcp]
+    homepage: https://github.com/Draco-Cheng/ai-readme-mcp
+    emoji: "📋"
+---
+
+# AI README Manager
+
+Manages `AI_README.md` files that document your project's conventions for AI assistants. Gives your agent persistent memory of project rules across every session and every iteration.
+
+## When to use
+
+Call `get_context_for_file` before any code-related task — editing, creating, or reviewing files in a project.
+
+## Tools available
+
+- `get_context_for_file` — get relevant project conventions for a specific file path
+- `init_ai_readme` — initialize and populate empty AI_README files in a project
+- `update_ai_readme` — record new conventions or architectural decisions
+- `validate_ai_readmes` — check quality and token efficiency of all AI_README files
+- `discover_ai_readmes` — scan and list all AI_README files in a project
+
+## Instructions
+
+Before any code-related task, ALWAYS call `get_context_for_file(projectRoot, path)` first.
+If it reports empty or missing AI_README files, call `init_ai_readme(projectRoot)` to initialize them.
+If your plan conflicts with AI_README conventions, STOP and call `update_ai_readme` to resolve the conflict before proceeding.
+When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.

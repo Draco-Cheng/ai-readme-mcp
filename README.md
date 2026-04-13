@@ -14,6 +14,7 @@
   - [For Cursor](#for-cursor)
   - [For GitHub Copilot](#for-github-copilot-vscode-1102)
   - [For Claude Desktop](#for-claude-desktop-application)
+  - [For OpenClaw](#for-openclaw)
   - [Alternative Installation Methods](#alternative-installation-methods)
 - [Quick Start](#-quick-start)
 - [Manual Creation & Editing](#️-manual-creation--editing)
@@ -27,7 +28,7 @@
 
 **AI_README MCP Server** is a Model Context Protocol (MCP) server that helps AI assistants understand your project conventions through dedicated `AI_README.md` guide files. It automatically discovers, routes, and manages these files so AI can generate consistent, high-quality code that matches your team's standards.
 
-**Works with:** GitHub Copilot (VSCode 1.102+), Claude Code, Cursor, and other MCP-compatible AI tools.
+**Works with:** GitHub Copilot (VSCode 1.102+), Claude Code, Cursor, OpenClaw, and other MCP-compatible AI tools.
 
 ---
 
@@ -259,6 +260,52 @@ If `get_context_for_file` reports empty or missing AI_README files, call `init_a
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
 ```
+
+### For OpenClaw
+
+> **Perfect for vibe coding / iterative AI development** — OpenClaw users often run AI agents in tight loops to build or refactor code. Without persistent context, each iteration risks breaking conventions set in previous rounds. `ai-readme-mcp` gives your agent a stable memory of project rules across every loop.
+
+**Option 1: CLI (Recommended)**
+
+```bash
+openclaw mcp set ai-readme-manager '{"command":"npx","args":["-y","ai-readme-mcp@latest"]}'
+```
+
+**Option 2: Edit config file directly**
+
+Add to `~/.openclaw/openclaw.json`:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "ai-readme-manager": {
+        "command": "npx",
+        "args": ["-y", "ai-readme-mcp@latest"]
+      }
+    }
+  }
+}
+```
+
+After configuring, restart OpenClaw to load the new MCP server. Verify with:
+
+```bash
+openclaw mcp list
+```
+
+**Add skill instructions**
+
+To ensure OpenClaw's agent consistently reads project conventions before each code change, add the following to your skill or system prompt:
+
+```
+Before any code-related task, ALWAYS call get_context_for_file(projectRoot, path) first.
+If get_context_for_file reports empty or missing AI_README files, call init_ai_readme(projectRoot) to initialize them.
+If the request or plan conflicts with AI_README conventions, STOP and call update_ai_readme to resolve the conflict before proceeding.
+When establishing new conventions or making architectural decisions, call update_ai_readme to record them.
+```
+
+> **Why this matters for iterative agents:** In agentic loops, each iteration is a fresh context. Without `AI_README.md`, the agent has no memory of decisions made in previous rounds — leading to style drift, conflicting patterns, and regressions. `ai-readme-mcp` acts as the persistent memory layer that keeps every loop grounded in the same conventions.
 
 ### Alternative Installation Methods
 
