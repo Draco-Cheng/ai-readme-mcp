@@ -24,12 +24,12 @@ Before this skill works, you must register the MCP server with OpenClaw:
 
 On macOS/Linux:
 ```bash
-openclaw mcp set ai-readme-manager '{"command":"npx","args":["-y","ai-readme-mcp@latest"]}'
+openclaw mcp set ai-readme-manager '{"command":"npx","args":["ai-readme-mcp@1.2.7"]}'
 ```
 
 On Windows (cmd):
 ```cmd
-openclaw mcp set ai-readme-manager "{\"command\":\"npx\",\"args\":[\"-y\",\"ai-readme-mcp@latest\"]}"
+openclaw mcp set ai-readme-manager "{\"command\":\"npx\",\"args\":[\"ai-readme-mcp@1.2.7\"]}"
 ```
 
 **Option 2: Edit config file**
@@ -41,7 +41,7 @@ Add to `~/.openclaw/openclaw.json`:
     "servers": {
       "ai-readme-manager": {
         "command": "npx",
-        "args": ["-y", "ai-readme-mcp@latest"]
+        "args": ["ai-readme-mcp@1.2.7"]
       }
     }
   }
