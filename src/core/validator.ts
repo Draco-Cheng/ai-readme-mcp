@@ -100,6 +100,9 @@ export class ReadmeValidator {
     // Detect redundant content
     this.detectRedundantContent(content, lines, issues);
 
+    // Detect filler language
+    this.detectFillerLanguage(lines, issues);
+
     // Calculate score
     const score = this.calculateScore(issues, tokens);
 
@@ -297,6 +300,79 @@ export class ReadmeValidator {
         rule: 'structure',
         message: 'No "Cross-directory dependencies" section found',
         suggestion: 'Add "## Cross-directory dependencies" section if this directory uses resources from other directories (can be empty if none)',
+      });
+    }
+  }
+
+  /**
+   * Detect filler language that wastes tokens without adding information
+   * Reports lines with filler and suggests compressed alternatives
+   */
+  private detectFillerLanguage(lines: string[], issues: ValidationIssue[]): void {
+    // Patterns to detect and their replacements
+    // Format: [regex, replacement or ''] — '' means delete phrase
+    const fillerPatterns: Array<[RegExp, string]> = [
+      // Articles (only at word boundaries in prose context)
+      [/\b(in order to)\b/gi, 'to'],
+      [/\b(make sure to|make sure that)\b/gi, 'ensure'],
+      [/\b(the reason (is|was) because)\b/gi, 'because'],
+      [/\b(it is important to note that|it is worth noting that)\b/gi, ''],
+      [/\b(it might be worth|it would be good to|you could consider|you may want to)\b/gi, ''],
+      [/\b(please note that|note that)\b/gi, ''],
+      [/\b(basically|essentially|generally speaking|in general)\b/gi, ''],
+      [/\b(just|really|actually|simply)\b/gi, ''],
+      [/\b(furthermore|additionally|in addition|moreover|however,? )\b/gi, ''],
+      [/\b(you should always|you should|you must remember to|remember to|always remember to)\b/gi, ''],
+      [/\b(make use of)\b/gi, 'use'],
+      [/\b(utilize|utilise)\b/gi, 'use'],
+      [/\b(implement a solution for)\b/gi, 'fix'],
+      [/\b(in the event that)\b/gi, 'if'],
+      [/\b(at this point in time|at the present time)\b/gi, 'now'],
+      [/\b(due to the fact that)\b/gi, 'because'],
+      [/\b(a large number of)\b/gi, 'many'],
+      [/\b(a wide variety of)\b/gi, 'various'],
+      [/\b(sure,? |certainly,? |of course,? |happy to |I'd recommend )\b/gi, ''],
+    ];
+
+    const fillerLines: Array<{ lineNum: number; line: string; compressed: string; found: string[] }> = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line || line.trim().startsWith('```') || line.trim().startsWith('    ')) {
+        continue; // skip code blocks and indented code
+      }
+      // Skip lines that are headings or pure code
+      if (line.trim().match(/^#{1,6}\s/)) continue;
+
+      const foundPatterns: string[] = [];
+      let compressed = line;
+
+      for (const [pattern, replacement] of fillerPatterns) {
+        const match = compressed.match(pattern);
+        if (match) {
+          foundPatterns.push(match[0]);
+          compressed = compressed.replace(pattern, replacement);
+        }
+      }
+
+      // Clean up double spaces left by removals
+      compressed = compressed.replace(/\s{2,}/g, ' ').trim();
+
+      if (foundPatterns.length > 0 && compressed !== line.trim()) {
+        fillerLines.push({ lineNum: i + 1, line: line.trim(), compressed, found: foundPatterns });
+      }
+    }
+
+    if (fillerLines.length > 0) {
+      const examples = fillerLines.slice(0, 3).map(f =>
+        `  Line ${f.lineNum}: "${f.line.slice(0, 60)}${f.line.length > 60 ? '...' : ''}" → "${f.compressed.slice(0, 60)}${f.compressed.length > 60 ? '...' : ''}"`
+      ).join('\n');
+
+      issues.push({
+        type: 'warning',
+        rule: 'filler-language',
+        message: `Found ${fillerLines.length} line(s) with filler language (wasted tokens):\n${examples}`,
+        suggestion: 'Run compress_ai_readme to auto-compress filler language and reduce token count.',
       });
     }
   }

@@ -1,27 +1,18 @@
 # AI_README
 
-Node.js MCP server (TypeScript, ESM) that manages AI_README.md files for AI assistants.
-Built with `@modelcontextprotocol/sdk`, compiled via `tsup`, tested with `tsx --test`.
-
-## Architecture
-
-- `src/index.ts` — MCP server entry point; registers all tools via `@modelcontextprotocol/sdk`
-- `src/tools/` — one file per MCP tool (`getContext`, `update`, `validate`, `discover`, `init`); each exports a zod schema + handler function
-- `src/core/` — shared logic: `scanner.ts` (glob-based AI_README discovery), `router.ts` (context routing by path proximity), `updater.ts` (file write + backup), `validator.ts`, `detector.ts`
-- `src/types/index.ts` — all shared TypeScript interfaces and types
+TypeScript ESM MCP server (Node >=18). Built with `@modelcontextprotocol/sdk`, `zod`, `zod-to-json-schema`, `fs-extra`, `glob`, `minimatch`, `remark`/`unified`. Bundled via `tsup`. Tests via `tsx --test`.
 
 ## Conventions
-
-- All imports use `.js` extension (ESM)
-- Tool input schemas defined with `zod`; converted to JSON Schema via `zod-to-json-schema`
-- No default exports; use named exports throughout
-- Tests live in `tests/` using Node.js built-in test runner (`tsx --test`)
-- Build output goes to `dist/`; never edit dist files directly
+- ESM only (`"type": "module"`); use `.js` extensions in imports
+- Named exports only — no default exports
+- Zod schemas defined in tool files, not in core
+- Core classes accept optional config via constructor; defaults live in `src/types/index.ts`
+- Tool handlers parse with zod schema then delegate to core class — no business logic in tool files
+- `compress_ai_readme` uses deterministic regex transforms only — no LLM calls
+- Version sourced at runtime from `package.json` via `readFileSync`
+- Build output to `dist/`; `prepublishOnly` runs build
 
 ## Cross-directory dependencies
-
-- `src/tools/` depends on `src/core/` and `src/types/`
-- `src/core/` depends on `src/types/` only
-- Test fixtures in `tests/fixtures/sample-monorepo/` are used by integration tests
+`src/tools/` imports from `src/core/` and `src/types/`. `src/core/` imports from `src/types/` only. No circular dependencies.
 
 

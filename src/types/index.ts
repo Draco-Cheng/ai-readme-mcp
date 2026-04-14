@@ -169,7 +169,43 @@ export type ValidationRule =
   | 'line-length'
   | 'empty-content'
   | 'structure'
-  | 'redundant-content';
+  | 'redundant-content'
+  | 'filler-language';
+
+/**
+ * A single compress suggestion for a line
+ */
+export interface CompressSuggestion {
+  /** Line number (1-based) */
+  line: number;
+  /** Original line text */
+  original: string;
+  /** Suggested compressed version */
+  compressed: string;
+  /** Filler patterns found */
+  patterns: string[];
+}
+
+/**
+ * Result of compress operation
+ */
+export interface CompressResult {
+  /** Path to the AI_README.md file */
+  readmePath: string;
+  /** Original content */
+  originalContent: string;
+  /** Compressed content */
+  compressedContent: string;
+  /** Token counts before/after */
+  tokensBefore: number;
+  tokensAfter: number;
+  /** Token reduction percentage */
+  reductionPercent: number;
+  /** Lines that were changed */
+  changes: CompressSuggestion[];
+  /** Whether the file was written */
+  written: boolean;
+}
 
 /**
  * Validation issue

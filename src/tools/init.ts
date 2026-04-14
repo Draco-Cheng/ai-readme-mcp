@@ -152,15 +152,44 @@ export async function initAIReadme(input: InitInput) {
     promptText += `   **Keep it concise:** <400 tokens. Focus on what helps AI generate better code.\n\n`;
   }
 
+  promptText += `## Writing Style: Dense Format\n\n`;
+  promptText += `AI_README is read by AI, not humans. Use dense prose to save tokens:\n\n`;
+  promptText += `**Remove these words entirely:**\n`;
+  promptText += `- Articles: a, an, the (in prose)\n`;
+  promptText += `- Filler: just, really, basically, actually, simply, essentially, generally\n`;
+  promptText += `- Hedging: "it might be worth", "you could consider", "it would be good to"\n`;
+  promptText += `- Fluff connectives: however, furthermore, additionally, in addition\n`;
+  promptText += `- Verbose phrases: "in order to" → "to", "make sure to" → "ensure", "utilize" → "use"\n`;
+  promptText += `- Prefixes: "You should", "Remember to", "Make sure to" — just state the rule\n\n`;
+  promptText += `**Fragments are OK** — incomplete sentences are fine, AI understands them:\n`;
+  promptText += `\`\`\`\n`;
+  promptText += `❌ You should always run the tests before committing any changes.\n`;
+  promptText += `✅ Run tests before commit.\n\n`;
+  promptText += `❌ This module is responsible for handling all authentication logic.\n`;
+  promptText += `✅ Handles auth logic.\n`;
+  promptText += `\`\`\`\n\n`;
+  promptText += `**Preserve exactly (never compress):**\n`;
+  promptText += `- Code blocks (\`\`\`...\`\`\`) and inline code (\`...\`)\n`;
+  promptText += `- File paths, URLs, commands\n`;
+  promptText += `- Technical terms, library names, version numbers\n\n`;
+  promptText += `**More examples:**\n`;
+  promptText += `\`\`\`\n`;
+  promptText += `❌ The application uses a microservices architecture with the following components.\n`;
+  promptText += `✅ Microservices. API gateway routes requests to services.\n\n`;
+  promptText += `❌ It is important to note that all exports must be named, not default.\n`;
+  promptText += `✅ Named exports only.\n`;
+  promptText += `\`\`\`\n\n`;
+
   promptText += `## 🔍 Validation & Optimization\n\n`;
   promptText += `After populating each AI_README, run validation and fix any issues:\n\n`;
   promptText += `1. **Run validate_ai_readmes** to check for problems\n`;
   promptText += `2. **Fix any warnings** - remove redundant content (Project Structure, Naming Conventions, Testing sections)\n`;
-  promptText += `3. **Add "## Cross-directory dependencies"** section (can be empty or "None" if no external dependencies)\n`;
-  promptText += `4. **Re-validate** until all files pass with no warnings\n\n`;
+  promptText += `3. **Fix filler-language warnings** - compress verbose lines or run compress_ai_readme\n`;
+  promptText += `4. **Add "## Cross-directory dependencies"** section (can be empty or "None" if no external dependencies)\n`;
+  promptText += `5. **Re-validate** until all files pass with no warnings\n\n`;
 
   promptText += `---\n\n`;
-  promptText += `💡 **Remember:** AI_README is for AI, not humans. Write what helps AI understand your project - a few sentences often beats lengthy documentation.\n`;
+  promptText += `💡 **Remember:** AI_README is for AI, not humans. Write what helps AI understand your project - dense format beats lengthy documentation.\n`;
 
   return {
     success: true,

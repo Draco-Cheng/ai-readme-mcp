@@ -34,6 +34,11 @@ import {
   type ValidateInput,
 } from "./tools/validate.js";
 import { initAIReadme, initSchema, type InitInput } from "./tools/init.js";
+import {
+  compressAIReadme,
+  compressSchema,
+  type CompressInput,
+} from "./tools/compress.js";
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -168,6 +173,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: zodToJsonSchema(validateSchema),
       },
       {
+        name: "compress_ai_readme",
+        description: [
+          "Compress an AI_README.md file using deterministic filler-language removal (no LLM call).",
+          "",
+          "WHEN TO CALL:",
+          "- validate_ai_readmes reports 'filler-language' warnings.",
+          "- validate_ai_readmes reports token count is too high.",
+          "- After init_ai_readme, to tighten up generated content.",
+          "- Any time you want to reduce AI_README token footprint without losing information.",
+          "",
+          "WHAT IT DOES (pure text transforms, deterministic):",
+          "- Removes filler: just, really, basically, actually, simply, essentially",
+          "- Shortens verbose phrases: 'in order to' → 'to', 'utilize' → 'use', 'make sure to' → 'ensure'",
+          "- Removes hedging: 'you should', 'remember to', 'it might be worth', 'please note that'",
+          "- Removes fluff connectives: furthermore, additionally, in addition, moreover",
+          "- NEVER modifies: code blocks (``` fenced), inline code (`...`), headings, file paths, URLs, commands",
+          "- Output may contain sentence fragments — this is intentional. Fragments are valid dense format.",
+          "",
+          "USE dryRun:true FIRST to preview changes before writing.",
+        ].join("\n"),
+        inputSchema: zodToJsonSchema(compressSchema),
+      },
+      {
         name: "init_ai_readme",
         description: [
           "Initialize and populate empty AI_README files within a project.",
@@ -274,6 +302,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
+    if (name === "compress_ai_readme") {
+      const input = compressSchema.parse(args) as CompressInput;
+      const result = await compressAIReadme(input);
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
     throw new Error(`Unknown tool: ${name}`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -295,7 +336,7 @@ async function main() {
 
   console.error("AI_README MCP Server started");
   console.error(
-    "Available tools: discover_ai_readmes, get_context_for_file, update_ai_readme, validate_ai_readmes, init_ai_readme"
+    "Available tools: discover_ai_readmes, get_context_for_file, update_ai_readme, validate_ai_readmes, init_ai_readme, compress_ai_readme"
   );
 }
 
