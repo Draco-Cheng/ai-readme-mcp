@@ -51,6 +51,31 @@ export type ValidateInput = z.infer<typeof validateSchema>;
  * });
  * ```
  */
+function buildValidationMessage(
+  totalFiles: number,
+  validFiles: number,
+  totalIssues: number,
+  averageScore: number,
+  results: Awaited<ReturnType<InstanceType<typeof ReadmeValidator>['validate']>>[]
+): string {
+  if (totalIssues === 0) {
+    return `All ${totalFiles} README files passed validation! Average score: ${averageScore}/100`;
+  }
+
+  let msg = `Found ${totalIssues} issues across ${totalFiles} README files. ${validFiles} files passed validation.`;
+
+  // Check if any file has filler-language or token-count warnings → suggest compress
+  const fillerFiles = results.filter(r =>
+    r.issues.some(i => i.rule === 'filler-language' || (i.rule === 'token-count' && i.type !== 'info'))
+  );
+  if (fillerFiles.length > 0) {
+    const paths = fillerFiles.map(r => r.filePath).join(', ');
+    msg += `\n\n💡 Run compress_ai_readme on: ${paths}\n   Use dryRun:true first to preview changes.`;
+  }
+
+  return msg;
+}
+
 export async function validateAIReadmes(input: ValidateInput) {
   const { projectRoot, excludePatterns, config: userConfig } = input;
 
@@ -115,9 +140,7 @@ export async function validateAIReadmes(input: ValidateInput) {
         issuesBySeverity,
       },
       results,
-      message: totalIssues === 0
-        ? `All ${totalFiles} README files passed validation! Average score: ${averageScore}/100`
-        : `Found ${totalIssues} issues across ${totalFiles} README files. ${validFiles} files passed validation.`,
+      message: buildValidationMessage(totalFiles, validFiles, totalIssues, averageScore, results),
     };
   } catch (error) {
     return {

@@ -16,3 +16,9 @@ TypeScript ESM MCP server (Node >=18). Built with `@modelcontextprotocol/sdk`, `
 `src/tools/` imports from `src/core/` and `src/types/`. `src/core/` imports from `src/types/` only. No circular dependencies.
 
 
+
+
+
+## Release Conventions
+- Version bump on release: update in 3 places — `package.json`, `openclaw.plugin.json`, `skills/clawhub/SKILL.md`
+- After version bump: `npm publish`, then `clawhub package publish . --source-repo Draco-Cheng/ai-readme-mcp --source-commit <hash>`

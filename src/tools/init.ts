@@ -152,8 +152,8 @@ export async function initAIReadme(input: InitInput) {
     promptText += `   **Keep it concise:** <400 tokens. Focus on what helps AI generate better code.\n\n`;
   }
 
-  promptText += `## Writing Style: Dense Format\n\n`;
-  promptText += `AI_README is read by AI, not humans. Use dense prose to save tokens:\n\n`;
+  promptText += `## Writing Style: Token-Efficient Format\n\n`;
+  promptText += `AI_README is read by AI, not humans. Use token-efficient prose to minimize context consumption:\n\n`;
   promptText += `**Remove these words entirely:**\n`;
   promptText += `- Articles: a, an, the (in prose)\n`;
   promptText += `- Filler: just, really, basically, actually, simply, essentially, generally\n`;
@@ -189,7 +189,7 @@ export async function initAIReadme(input: InitInput) {
   promptText += `5. **Re-validate** until all files pass with no warnings\n\n`;
 
   promptText += `---\n\n`;
-  promptText += `💡 **Remember:** AI_README is for AI, not humans. Write what helps AI understand your project - dense format beats lengthy documentation.\n`;
+  promptText += `💡 **Remember:** AI_README is for AI, not humans. Write what helps AI understand your project - token-efficient format beats lengthy documentation.\n`;
 
   return {
     success: true,

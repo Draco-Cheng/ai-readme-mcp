@@ -87,11 +87,17 @@ export async function updateAIReadme(input: UpdateInput) {
       ? '\n\n💡 NEXT STEP: Use get_context_for_file before writing code to ensure you\'re following the updated conventions.'
       : '';
 
+    const compressTip = validation.issues.some(
+      i => i.rule === 'filler-language' || (i.rule === 'token-count' && i.type !== 'info')
+    )
+      ? `\n\n💡 Run compress_ai_readme on ${readmePath} to reduce token footprint. Use dryRun:true first to preview.`
+      : '';
+
     return {
       success: true,
       readmePath,
       changes: result.changes,
-      summary: `Successfully updated ${readmePath} with ${result.changes.length} operation(s). Use 'git diff' to review changes.${workflowTip}`,
+      summary: `Successfully updated ${readmePath} with ${result.changes.length} operation(s). Use 'git diff' to review changes.${workflowTip}${compressTip}`,
       validation: {
         valid: validation.valid,
         score: validation.score,

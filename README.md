@@ -18,8 +18,10 @@
   - [Alternative Installation Methods](#alternative-installation-methods)
 - [Quick Start](#-quick-start)
 - [Manual Creation & Editing](#️-manual-creation--editing)
+- [Validate & Compress AI_README Files](#️-validate--compress-ai_readme-files)
 - [Multi-Level AI_README](#multi-level-ai_readme-not-just-for-monorepos)
 - [Available MCP Tools](#️-available-mcp-tools)
+  - [compress_ai_readme](#compress_ai_readme)
 
 
 ---
@@ -82,6 +84,7 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 - 🚀 **Guided Initialization** - `init_ai_readme` tool scans for empty files and guides AI through population
 - 🔄 **Update & Sync** - AI can both read and update AI_README files
 - ✅ **Validation & Quality** - Ensure README consistency with token limits and structure checks
+- 🗜️ **Auto-Compression** - `compress_ai_readme` removes filler language and verbose phrases automatically, reducing token footprint without losing information
 - 🏗️ **Monorepo Support** - Place AI_README.md files at different folder levels; the tool automatically finds and uses the most relevant one
 - 📦 **Easy Integration** - Works seamlessly with Cursor, Claude Code, and other MCP clients
 
@@ -425,6 +428,16 @@ Database: Prisma + PostgreSQL.
 - Update as your project evolves - add new rules whenever you notice AI doing something wrong
 - Review AI-made updates with `git diff AI_README.md` and edit freely
 - Use AI to help maintain it, but you're always the final editor
+
+---
+
+## 🗜️ Validate & Compress AI_README Files
+
+Keep your AI_README files concise and token-efficient with a single prompt to your AI assistant:
+
+> Validate and compress all AI_README files using `validate_ai_readmes` and `compress_ai_readme`.
+
+The AI will automatically run the full cycle: `validate_ai_readmes` → `compress_ai_readme` (dry-run preview) → apply → re-validate.
 
 ---
 
@@ -816,6 +829,49 @@ Validate all AI_README.md files in your project for quality and token efficiency
 - ✅ Good: < 400 tokens
 - ⚠️ Needs improvement: < 600 tokens
 - ❌ Too long: > 1000 tokens
+
+### `compress_ai_readme`
+
+Compress an AI_README.md file using deterministic filler-language removal. No LLM call — pure regex transforms.
+
+```typescript
+// Parameters
+{
+  readmePath: string;    // Required: Absolute path to AI_README.md file
+  dryRun?: boolean;      // Optional: Preview changes without writing (default: false)
+}
+
+// Returns
+{
+  success: boolean;
+  readmePath: string;
+  summary: string;                  // Human-readable summary with token diff
+  tokensBefore: number;
+  tokensAfter: number;
+  reductionPercent: number;
+  changes: Array<{
+    line: number;
+    original: string;
+    compressed: string;
+    patterns: string[];             // Filler patterns that were removed
+  }>;
+  written: boolean;                 // false if dryRun or no changes found
+}
+```
+
+**What it removes (prose only — code blocks are never touched):**
+- Filler words: `just`, `really`, `basically`, `actually`, `simply`, `essentially`
+- Verbose phrases: `in order to` → `to`, `utilize` → `use`, `make sure to` → `ensure`
+- Hedging: `you should`, `remember to`, `it might be worth`, `please note that`
+- Fluff connectives: `furthermore`, `additionally`, `in addition`, `moreover`
+
+**Output may contain sentence fragments — this is intentional.** Token-efficient format is valid for AI_README files.
+
+**Typical Workflow:**
+1. Run `validate_ai_readmes` — note any `filler-language` warnings
+2. Run `compress_ai_readme` with `dryRun: true` to preview
+3. Run again without `dryRun` to apply
+4. Re-run `validate_ai_readmes` to confirm improvement
 
 ---
 

@@ -17,7 +17,7 @@ export type CompressInput = z.infer<typeof compressSchema>;
 /**
  * Compress an AI_README.md file using deterministic filler-language removal.
  *
- * Applies dense-format compression rules:
+ * Applies token-efficient compression rules:
  * - Removes filler words (just, really, basically, actually...)
  * - Shortens verbose phrases ("in order to" → "to", "utilize" → "use"...)
  * - Removes hedging ("you should", "make sure to", "it might be worth"...)

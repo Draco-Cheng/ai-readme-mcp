@@ -189,7 +189,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           "- Removes hedging: 'you should', 'remember to', 'it might be worth', 'please note that'",
           "- Removes fluff connectives: furthermore, additionally, in addition, moreover",
           "- NEVER modifies: code blocks (``` fenced), inline code (`...`), headings, file paths, URLs, commands",
-          "- Output may contain sentence fragments — this is intentional. Fragments are valid dense format.",
+          "- Output may contain sentence fragments — this is intentional. Fragments are valid token-efficient format.",
           "",
           "USE dryRun:true FIRST to preview changes before writing.",
         ].join("\n"),
