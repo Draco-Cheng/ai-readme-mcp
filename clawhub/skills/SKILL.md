@@ -1,7 +1,7 @@
 ---
 name: ai-readme-manager
 description: Manages AI_README.md files so AI agents remember your project conventions across every session
-version: 1.3.1
+version: 1.3.2
 metadata:
   openclaw:
     install:

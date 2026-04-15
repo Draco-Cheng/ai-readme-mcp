@@ -1,6 +1,6 @@
 {
   "name": "ai-readme-mcp",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "MCP server for managing AI_README.md files in projects",
   "type": "module",
   "bin": {
@@ -64,14 +64,5 @@
   "homepage": "https://github.com/Draco-Cheng/ai-readme-mcp#readme",
   "engines": {
     "node": ">=18.0.0"
-  },
-  "openclaw": {
-    "extensions": ["mcp"],
-    "compat": {
-      "pluginApi": "*"
-    },
-    "build": {
-      "openclawVersion": "0.9.0"
-    }
   }
 }

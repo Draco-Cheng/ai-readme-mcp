@@ -20,5 +20,8 @@ TypeScript ESM MCP server (Node >=18). Built with `@modelcontextprotocol/sdk`, `
 
 
 ## Release Conventions
-- Version bump on release: update in 3 places — `package.json`, `openclaw.plugin.json`, `skills/clawhub/SKILL.md`
-- After version bump: `npm publish`, then `clawhub package publish . --source-repo Draco-Cheng/ai-readme-mcp --source-commit <hash>`
+- Version bump on release: update in 3 places — `package.json`, `clawhub/plugin/package.json`, `clawhub/plugin/openclaw.plugin.json`
+- `clawhub/skills/SKILL.md` version is updated separately (CLAWHUB Skill publish)
+- `clawhub/plugin/index.js` uses `ai-readme-mcp@latest` — no version bump needed there
+- After version bump: `npm publish`, then `clawhub package publish ./clawhub/plugin --source-repo Draco-Cheng/ai-readme-mcp --source-commit <hash>`
+- CLAWHUB publish uses `./clawhub/plugin` folder only — keeps `.claude/` and src out of scan
