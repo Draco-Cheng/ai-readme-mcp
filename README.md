@@ -21,7 +21,6 @@
 - [Validate & Compress AI_README Files](#️-validate--compress-ai_readme-files)
 - [Multi-Level AI_README](#multi-level-ai_readme-not-just-for-monorepos)
 - [Available MCP Tools](#️-available-mcp-tools)
-  - [compress_ai_readme](#compress_ai_readme)
 
 
 ---
