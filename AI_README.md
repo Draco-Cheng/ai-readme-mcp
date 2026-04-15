@@ -15,13 +15,8 @@ TypeScript ESM MCP server (Node >=18). Built with `@modelcontextprotocol/sdk`, `
 ## Cross-directory dependencies
 `src/tools/` imports from `src/core/` and `src/types/`. `src/core/` imports from `src/types/` only. No circular dependencies.
 
-
-
-
-
 ## Release Conventions
 - Version bump on release: update in 3 places — `package.json`, `clawhub/plugin/package.json`, `clawhub/plugin/openclaw.plugin.json`
 - `clawhub/skills/SKILL.md` version is updated separately (CLAWHUB Skill publish)
-- `clawhub/plugin/index.js` uses `ai-readme-mcp@latest` — no version bump needed there
 - After version bump: `npm publish`, then `clawhub package publish ./clawhub/plugin --source-repo Draco-Cheng/ai-readme-mcp --source-commit <hash>`
 - CLAWHUB publish uses `./clawhub/plugin` folder only — keeps `.claude/` and src out of scan

@@ -73,6 +73,9 @@ export class ReadmeUpdater {
         changes.push(result.change);
       }
 
+      // Normalize: collapse 3+ consecutive blank lines to 2, ensure single trailing newline
+      updatedContent = updatedContent.replace(/\n{3,}/g, '\n\n').replace(/\n*$/, '\n');
+
       // Write updated content
       await writeFile(readmePath, updatedContent, 'utf-8');
 
@@ -121,16 +124,49 @@ export class ReadmeUpdater {
       }
 
       case 'replace': {
+        const originalContent = updatedLines.join('\n');
+
+        // If file is empty, fall back to prepend instead of failing
+        if (originalContent.trim() === '') {
+          updatedLines = [operation.content];
+          linesAdded = operation.content.split('\n').length;
+          break;
+        }
+
         // Replace specific text
         if (!operation.searchText) {
           throw new Error('searchText is required for replace operation');
         }
 
-        const originalContent = updatedLines.join('\n');
-        const newContent = originalContent.replace(
-          operation.searchText,
-          operation.content
-        );
+        // Try exact match first
+        let newContent = originalContent.replace(operation.searchText, operation.content);
+
+        // If exact match fails, try normalized match (trim each line, collapse blank lines)
+        if (originalContent === newContent) {
+          const normalize = (s: string) =>
+            s.split('\n').map(l => l.trimEnd()).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+
+          const normalizedOriginal = normalize(originalContent);
+          const normalizedSearch = normalize(operation.searchText);
+
+          if (normalizedOriginal.includes(normalizedSearch)) {
+            // Find and replace using normalized positions mapped back to original
+            const searchLines = normalizedSearch.split('\n');
+            const originalLines = originalContent.split('\n');
+            const trimmedLines = originalLines.map(l => l.trimEnd());
+
+            // Find the start line where normalized search begins
+            outer: for (let i = 0; i <= trimmedLines.length - searchLines.length; i++) {
+              for (let j = 0; j < searchLines.length; j++) {
+                if (trimmedLines[i + j] !== searchLines[j]) continue outer;
+              }
+              // Found match at line i
+              const matched = originalLines.slice(i, i + searchLines.length).join('\n');
+              newContent = originalContent.replace(matched, operation.content);
+              break;
+            }
+          }
+        }
 
         if (originalContent === newContent) {
           throw new Error(`Text not found: ${operation.searchText}`);
