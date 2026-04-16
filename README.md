@@ -129,7 +129,8 @@ In `.claude/settings.local.json`, add:
       "mcp__ai-readme-manager__get_context_for_file",
       "mcp__ai-readme-manager__update_ai_readme",
       "mcp__ai-readme-manager__validate_ai_readmes",
-      "mcp__ai-readme-manager__init_ai_readme"
+      "mcp__ai-readme-manager__init_ai_readme",
+      "mcp__ai-readme-manager__compress_ai_readme"
     ]
   },
   "enableAllProjectMcpServers": true
