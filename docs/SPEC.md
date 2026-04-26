@@ -532,7 +532,7 @@ Add to Claude Code configuration file:
   "mcpServers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp@latest"],
+      "args": ["ai-readme-mcp@latest"],
       "env": {
         "PROJECT_ROOT": "${workspaceFolder}"
       }

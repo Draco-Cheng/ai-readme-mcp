@@ -30,7 +30,7 @@ dist/index.d.ts   1.36 KB
 **Recommended:** Use npx (no path configuration needed):
 
 ```bash
-claude mcp add --scope project ai-readme-manager npx -- -y ai-readme-mcp@latest
+claude mcp add --scope project ai-readme-manager npx -- ai-readme-mcp@latest
 ```
 
 This will create `.mcp.json` in your project root using `npx` - works on all platforms!
@@ -52,7 +52,7 @@ claude mcp add --transport stdio ai-readme-manager --scope project -- node C:\Us
   "mcpServers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp@latest"]
+      "args": ["ai-readme-mcp@latest"]
     }
   }
 }
@@ -115,7 +115,7 @@ Add to your VSCode `settings.json` (Ctrl+, then search for "MCP"):
   "github.copilot.chat.mcp.servers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp@latest"]
+      "args": ["ai-readme-mcp@latest"]
     }
   }
 }

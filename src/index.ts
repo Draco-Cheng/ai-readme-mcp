@@ -66,6 +66,8 @@ const server = new Server(
       "If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call update_ai_readme to resolve the conflict before proceeding.",
       "",
       "When establishing new conventions or making architectural decisions, call update_ai_readme to record them.",
+      "",
+      "If AI_README is missing a convention that is already used in 2+ files, call update_ai_readme to record it.",
     ].join("\n"),
   }
 );
@@ -150,6 +152,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           "- You created a reusable pattern others should follow.",
           "- You established a file/folder structure for a new feature.",
           "- You made decisions that affect future development.",
+          "",
+          "D. MISSING / UNDOCUMENTED (during get_context or code review):",
+          "- AI_README is missing a convention that is ALREADY USED in 2+ existing files.",
+          "- A pattern exists in code but not in AI_README — record it so future code follows it.",
+          "- Do NOT record one-off choices or speculative future patterns.",
           "",
           "RULE: If a decision will affect MORE THAN ONE FILE or FUTURE CODE → RECORD IT.",
           "",

@@ -100,7 +100,7 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 In your project directory, run:
 
 ```bash
-claude mcp add --scope project ai-readme-manager npx -- -y ai-readme-mcp@latest
+claude mcp add --scope project ai-readme-manager npx -- ai-readme-mcp@latest
 ```
 
 This creates a `.mcp.json` file that uses `npx` to run the package - no installation or path configuration needed!
@@ -157,6 +157,7 @@ Before any code-related task, ALWAYS call `mcp__ai-readme-manager__get_context_f
 If `get_context_for_file` reports empty or missing AI_README files, call `mcp__ai-readme-manager__init_ai_readme(projectRoot)` to initialize them.
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `mcp__ai-readme-manager__update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `mcp__ai-readme-manager__update_ai_readme` to record them.
+If AI_README is missing a convention that is already used in 2+ files, call `mcp__ai-readme-manager__update_ai_readme` to record it.
 ```
 
 > **Why this matters:** Without `CLAUDE.md`, Claude may skip calling the MCP tools, causing it to generate code that ignores your project's conventions. This step is essential for reliable tool triggering.
@@ -172,7 +173,7 @@ Add to Cursor's MCP configuration file:
   "mcpServers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp@latest"]
+      "args": ["ai-readme-mcp@latest"]
     }
   }
 }
@@ -190,6 +191,7 @@ Before any code-related task, ALWAYS call `get_context_for_file(projectRoot, pat
 If `get_context_for_file` reports empty or missing AI_README files, call `init_ai_readme(projectRoot)` to initialize them.
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
+If AI_README is missing a convention that is already used in 2+ files, call `update_ai_readme` to record it.
 ```
 
 ### For GitHub Copilot (VSCode 1.102+)
@@ -214,7 +216,7 @@ Add to your VSCode `settings.json`:
   "github.copilot.chat.mcp.servers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp@latest"]
+      "args": ["ai-readme-mcp@latest"]
     }
   }
 }
@@ -232,6 +234,7 @@ Before any code-related task, ALWAYS call `get_context_for_file(projectRoot, pat
 If `get_context_for_file` reports empty or missing AI_README files, call `init_ai_readme(projectRoot)` to initialize them.
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
+If AI_README is missing a convention that is already used in 2+ files, call `update_ai_readme` to record it.
 ```
 
 ### For Claude Desktop Application
@@ -246,7 +249,7 @@ Add to `claude_desktop_config.json`:
   "mcpServers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp@latest"]
+      "args": ["ai-readme-mcp@latest"]
     }
   }
 }
@@ -262,6 +265,7 @@ Before any code-related task, ALWAYS call `get_context_for_file(projectRoot, pat
 If `get_context_for_file` reports empty or missing AI_README files, call `init_ai_readme(projectRoot)` to initialize them.
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
+If AI_README is missing a convention that is already used in 2+ files, call `update_ai_readme` to record it.
 ```
 
 ### For OpenClaw
@@ -271,7 +275,7 @@ When establishing new conventions or making architectural decisions, call `updat
 **Option 1: CLI (Recommended)**
 
 ```bash
-openclaw mcp set ai-readme-manager '{"command":"npx","args":["-y","ai-readme-mcp@latest"]}'
+openclaw mcp set ai-readme-manager '{"command":"npx","args":["ai-readme-mcp@latest"]}'
 ```
 
 **Option 2: Edit config file directly**
@@ -284,7 +288,7 @@ Add to `~/.openclaw/openclaw.json`:
     "servers": {
       "ai-readme-manager": {
         "command": "npx",
-        "args": ["-y", "ai-readme-mcp@latest"]
+        "args": ["ai-readme-mcp@latest"]
       }
     }
   }
@@ -327,7 +331,7 @@ No installation needed! Just configure and use via npx:
   "mcpServers": {
     "ai-readme-manager": {
       "command": "npx",
-      "args": ["-y", "ai-readme-mcp@latest"]
+      "args": ["ai-readme-mcp@latest"]
     }
   }
 }
