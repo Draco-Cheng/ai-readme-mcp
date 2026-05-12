@@ -3,7 +3,7 @@ import { existsSync } from 'fs';
 import { dirname } from 'path';
 
 export interface UpdateOperation {
-  type: 'replace' | 'append' | 'prepend' | 'insert-after' | 'insert-before';
+  type: 'replace' | 'append' | 'prepend' | 'insert-after' | 'insert-before' | 'rewrite';
   section?: string; // Section heading to target (e.g., "## Coding Conventions")
   searchText?: string; // Text to search for (for replace operations)
   content: string; // Content to add/replace
@@ -109,6 +109,17 @@ export class ReadmeUpdater {
     let linesRemoved = 0;
 
     switch (operation.type) {
+      case 'rewrite': {
+        // Replace the entire file content. Use this when the file is bloated
+        // beyond repair or has duplicated content that makes targeted replace
+        // impractical. Caller is responsible for providing the full new content.
+        const previousLines = updatedLines.length;
+        updatedLines = operation.content.split('\n');
+        linesAdded = updatedLines.length;
+        linesRemoved = previousLines;
+        break;
+      }
+
       case 'append': {
         // Add content to the end
         updatedLines.push('', operation.content);

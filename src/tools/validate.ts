@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ReadmeValidator } from '../core/validator.js';
 import { AIReadmeScanner } from '../core/scanner.js';
+import { pickWritingGuideTier, renderWritingGuide } from '../core/writingGuide.js';
 import type { ValidationConfig } from '../types/index.js';
 
 /**
@@ -71,6 +72,31 @@ function buildValidationMessage(
   if (fillerFiles.length > 0) {
     const paths = fillerFiles.map(r => r.filePath).join(', ');
     msg += `\n\n💡 Run compress_ai_readme on: ${paths}\n   Use dryRun:true first to preview changes.`;
+  }
+
+  // Tiered writing-philosophy reminder. Individual issue suggestions don't convey
+  // the overall direction (concise, fragments OK, AI-not-human audience), so when
+  // files are drifting we surface the same guide taught at init time.
+  const tiered = results.map(r => ({
+    result: r,
+    score: r.score ?? 100,
+    tokens: r.stats?.tokens ?? 0,
+    tier: pickWritingGuideTier(r.score ?? 100, r.stats?.tokens ?? 0),
+  }));
+
+  const fullTier = tiered.filter(t => t.tier === 'full');
+  const lightTier = tiered.filter(t => t.tier === 'light');
+
+  if (fullTier.length > 0) {
+    const paths = fullTier
+      .map(t => `${t.result.filePath} (score: ${t.score}, tokens: ${t.tokens})`)
+      .join('\n  - ');
+    msg += `\n\n🚨 These files need rewriting, not patching:\n  - ${paths}\n\n${renderWritingGuide('full')}`;
+  } else if (lightTier.length > 0) {
+    const paths = lightTier
+      .map(t => `${t.result.filePath} (score: ${t.score}, tokens: ${t.tokens})`)
+      .join('\n  - ');
+    msg += `\n\n⚠️  These files are drifting — tighten them up:\n  - ${paths}\n\n${renderWritingGuide('light')}`;
   }
 
   return msg;

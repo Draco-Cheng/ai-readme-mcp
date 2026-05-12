@@ -4,10 +4,11 @@
  */
 
 import { z } from 'zod';
-import { writeFile, readFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { AIReadmeScanner } from '../core/scanner.js';
+import { TOKEN_EFFICIENT_FORMAT_GUIDE } from '../core/writingGuide.js';
 
 export const initSchema = z.object({
   projectRoot: z.string().describe('The root directory of the project. Use the current working directory (e.g., from environment or pwd). If unsure, pass the project root path.'),
@@ -121,7 +122,7 @@ export async function initAIReadme(input: InitInput) {
   promptText += `You must populate the following AI_README files by analyzing their respective directories:\n\n`;
 
   for (let i = 0; i < targetReadmes.length; i++) {
-    const readme = targetReadmes[i];
+    const readme = targetReadmes[i]!;
     const readmePath = readme.path.replace(/\\/g, '/');
     const dirPath = readme.dirPath.replace(/\\/g, '/');
 
@@ -152,33 +153,7 @@ export async function initAIReadme(input: InitInput) {
     promptText += `   **Keep it concise:** <400 tokens. Focus on what helps AI generate better code.\n\n`;
   }
 
-  promptText += `## Writing Style: Token-Efficient Format\n\n`;
-  promptText += `AI_README is read by AI, not humans. Use token-efficient prose to minimize context consumption:\n\n`;
-  promptText += `**Remove these words entirely:**\n`;
-  promptText += `- Articles: a, an, the (in prose)\n`;
-  promptText += `- Filler: just, really, basically, actually, simply, essentially, generally\n`;
-  promptText += `- Hedging: "it might be worth", "you could consider", "it would be good to"\n`;
-  promptText += `- Fluff connectives: however, furthermore, additionally, in addition\n`;
-  promptText += `- Verbose phrases: "in order to" → "to", "make sure to" → "ensure", "utilize" → "use"\n`;
-  promptText += `- Prefixes: "You should", "Remember to", "Make sure to" — just state the rule\n\n`;
-  promptText += `**Fragments are OK** — incomplete sentences are fine, AI understands them:\n`;
-  promptText += `\`\`\`\n`;
-  promptText += `❌ You should always run the tests before committing any changes.\n`;
-  promptText += `✅ Run tests before commit.\n\n`;
-  promptText += `❌ This module is responsible for handling all authentication logic.\n`;
-  promptText += `✅ Handles auth logic.\n`;
-  promptText += `\`\`\`\n\n`;
-  promptText += `**Preserve exactly (never compress):**\n`;
-  promptText += `- Code blocks (\`\`\`...\`\`\`) and inline code (\`...\`)\n`;
-  promptText += `- File paths, URLs, commands\n`;
-  promptText += `- Technical terms, library names, version numbers\n\n`;
-  promptText += `**More examples:**\n`;
-  promptText += `\`\`\`\n`;
-  promptText += `❌ The application uses a microservices architecture with the following components.\n`;
-  promptText += `✅ Microservices. API gateway routes requests to services.\n\n`;
-  promptText += `❌ It is important to note that all exports must be named, not default.\n`;
-  promptText += `✅ Named exports only.\n`;
-  promptText += `\`\`\`\n\n`;
+  promptText += `${TOKEN_EFFICIENT_FORMAT_GUIDE}\n`;
 
   promptText += `## 🔍 Validation & Optimization\n\n`;
   promptText += `After populating each AI_README, run validation and fix any issues:\n\n`;

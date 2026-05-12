@@ -68,6 +68,8 @@ const server = new Server(
       "When establishing new conventions or making architectural decisions, call update_ai_readme to record them.",
       "",
       "If AI_README is missing a convention that is already used in 2+ files, call update_ai_readme to record it.",
+      "",
+      "NEVER edit AI_README.md files directly with Write/Edit/other file-editing tools — always use update_ai_readme. Direct edits bypass validation, conflict detection, and quality scoring.",
     ].join("\n"),
   }
 );

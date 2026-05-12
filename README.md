@@ -158,6 +158,7 @@ If `get_context_for_file` reports empty or missing AI_README files, call `mcp__a
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `mcp__ai-readme-manager__update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `mcp__ai-readme-manager__update_ai_readme` to record them.
 If AI_README is missing a convention that is already used in 2+ files, call `mcp__ai-readme-manager__update_ai_readme` to record it.
+NEVER edit AI_README.md files directly with Write/Edit/other file-editing tools — always use `mcp__ai-readme-manager__update_ai_readme`. Direct edits bypass validation, conflict detection, and quality scoring.
 ```
 
 > **Why this matters:** Without `CLAUDE.md`, Claude may skip calling the MCP tools, causing it to generate code that ignores your project's conventions. This step is essential for reliable tool triggering.
@@ -192,6 +193,7 @@ If `get_context_for_file` reports empty or missing AI_README files, call `init_a
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
 If AI_README is missing a convention that is already used in 2+ files, call `update_ai_readme` to record it.
+NEVER edit AI_README.md files directly with Write/Edit/other file-editing tools — always use `update_ai_readme`. Direct edits bypass validation, conflict detection, and quality scoring.
 ```
 
 ### For GitHub Copilot (VSCode 1.102+)
@@ -235,6 +237,7 @@ If `get_context_for_file` reports empty or missing AI_README files, call `init_a
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
 If AI_README is missing a convention that is already used in 2+ files, call `update_ai_readme` to record it.
+NEVER edit AI_README.md files directly with Write/Edit/other file-editing tools — always use `update_ai_readme`. Direct edits bypass validation, conflict detection, and quality scoring.
 ```
 
 ### For Claude Desktop Application
@@ -266,6 +269,7 @@ If `get_context_for_file` reports empty or missing AI_README files, call `init_a
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
 If AI_README is missing a convention that is already used in 2+ files, call `update_ai_readme` to record it.
+NEVER edit AI_README.md files directly with Write/Edit/other file-editing tools — always use `update_ai_readme`. Direct edits bypass validation, conflict detection, and quality scoring.
 ```
 
 ### For OpenClaw
