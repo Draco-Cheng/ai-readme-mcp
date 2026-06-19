@@ -289,6 +289,33 @@ export class ReadmeValidator {
       });
     }
 
+    // Detect exhaustive enumerations - AI reads full endpoint/field/file lists
+    // from the source. A README that lists every router, column, or file is
+    // re-stating the code, not documenting non-obvious conventions.
+    // Heuristic: a single line packing many inline-code tokens (e.g.
+    // `/auth /products /sizes ...` or `colA colB colC ...`) is a code dump.
+    const INLINE_LIST_THRESHOLD = 6; // 6+ inline-code spans on one line = enumeration
+    const dumpLine = lines.find((line) => {
+      if (line.trim().startsWith('#') || line.trim().startsWith('```')) return false;
+      const inlineSpans = line.match(/`[^`]+`/g) ?? [];
+      // Either many separate spans, or one span stuffed with many space-separated tokens
+      const stuffedSpan = inlineSpans.some(
+        (s) => (s.replace(/`/g, '').trim().split(/\s+/).length) >= INLINE_LIST_THRESHOLD
+      );
+      return inlineSpans.length >= INLINE_LIST_THRESHOLD || stuffedSpan;
+    });
+
+    if (dumpLine) {
+      issues.push({
+        type: 'warning',
+        rule: 'redundant-content',
+        message:
+          'Found an exhaustive enumeration (long inline list of endpoints/fields/files) - AI reads these from the source',
+        suggestion:
+          'Drop the full list. Keep only non-obvious entries or state the convention (e.g. "all routers proxy-prefixed /api") instead of listing every route.',
+      });
+    }
+
     // Check for Cross-directory dependencies section
     const hasCrossDirSection = lines.some((line) =>
       /^#{1,2}\s*cross[- ]?dir(ectory)?\s*(dep(endenc(y|ies))?)?/i.test(line.trim())
