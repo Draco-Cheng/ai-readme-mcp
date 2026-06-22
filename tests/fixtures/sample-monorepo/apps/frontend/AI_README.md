@@ -1,4 +1,4 @@
-# Frontend
+# Frontend AI_README
 
 React with TypeScript. Components use atomic structure (`src/components/atoms/`, etc.). Named exports only.
 

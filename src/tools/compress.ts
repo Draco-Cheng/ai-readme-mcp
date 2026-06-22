@@ -2,79 +2,9 @@ import { z } from 'zod';
 import { dirname } from 'path';
 import { ReadmeCompressor } from '../core/compressor.js';
 import { ReadmeValidator } from '../core/validator.js';
-import { pickWritingGuideTier, renderWritingGuide } from '../core/writingGuide.js';
-import { analyzeSections, type SectionStat } from '../core/sectionAnalysis.js';
+import { pickWritingGuideTier } from '../core/writingGuide.js';
+import { buildOverBudgetGuidance } from '../core/overBudgetGuidance.js';
 import { DEFAULT_VALIDATION_CONFIG } from '../types/index.js';
-
-/**
- * Build the over-budget rewrite instruction shared by both the "filler stripped
- * but still too long" and "no filler but already too long" paths.
- *
- * Filler-stripping is deterministic regex — it removes padding but cannot shorten
- * content that is long because it says a lot. When the file is STILL over budget
- * after compression (or was never padded to begin with), the only fix is an LLM
- * rewrite. The MCP server has no model of its own, so it hands the job to the
- * calling agent via the same 'rewrite' operation update_ai_readme uses.
- */
-function buildRewriteInstruction(readmePath: string, tokens: number, score: number): string {
-  const guide = renderWritingGuide('full');
-  return (
-    `\n\n🛠️  MANDATORY REWRITE — ${readmePath} is at ${tokens} tokens (target: <400), score ${score}/100. ` +
-    `Compression removed all filler it could, but the file is still over budget because the content is long, not padded. ` +
-    `Deterministic filler-stripping cannot fix this — an LLM rewrite can.\n\n` +
-    `Your NEXT tool call MUST be update_ai_readme on this same file with a single 'rewrite' operation that replaces the entire content from scratch. ` +
-    `Do not proceed with any other task until this rewrite is done.\n\n` +
-    `Exact call shape:\n` +
-    `  update_ai_readme({\n` +
-    `    readmePath: "${readmePath}",\n` +
-    `    operations: [{ type: "rewrite", content: "<full new file content here>" }]\n` +
-    `  })\n\n` +
-    `This is NOT a squeeze — it is a CUT. The file is long because it records things AI can find itself, not because the sentences are wordy. Removing words won't fix it; removing low-value INFORMATION will.\n\n` +
-    `Rewrite requirements:\n` +
-    `  - Target: <400 tokens, ideally <200\n` +
-    `  - Apply the restraint test to every line: keep it ONLY if it is project-specific AND non-obvious — a fact AI would get wrong by reading the code alone. If AI can re-derive it from the code, DELETE it.\n` +
-    `  - DELETE outright: project/directory structure, standard naming, framework defaults, generic test commands, code examples, AND exhaustive enumerations (full endpoint lists, every field/column, per-file descriptions) — AI reads these from the source.\n` +
-    `  - KEEP: tech choices with a trap ("bcrypt direct, NOT passlib"), cross-directory deps, invariants/gotchas, the WHY behind a non-obvious rule.\n` +
-    `  - Collapse "one line per instance" into "one rule + why". Prefer fewer, higher-signal lines.\n` +
-    `  - Use fragments and bullets, not prose paragraphs.\n` +
-    `  - Read the current file first to extract the real signal.\n\n` +
-    `After the rewrite, verify with validate_ai_readmes, then resume your original task.\n\n` +
-    `${guide}`
-  );
-}
-
-/**
- * Build the SPLIT instruction — used when an over-budget file is dominated by a
- * single section documenting one subsystem (e.g. a catalog-import pipeline with
- * its own OOM/subprocess/retry traps). Rewriting can't shrink it without losing
- * signal, so the fix is to MOVE that section into a child-directory AI_README.
- *
- * Like the rewrite handoff, the MCP server only detects the dominant section and
- * names it; the agent decides which child directory it belongs to (a semantic
- * call) and performs the move with existing tools.
- */
-function buildSplitInstruction(
-  readmePath: string,
-  tokens: number,
-  section: SectionStat,
-  thresholdPct: number
-): string {
-  const pct = Math.round(section.fraction * 100);
-  return (
-    `\n\n✂️  SPLIT, don't squeeze — ${readmePath} is at ${tokens} tokens, and ONE section ` +
-    `"${section.heading}" (line ${section.line}) alone is ~${section.tokens} tokens (${pct}% of the file, over the ${Math.round(thresholdPct * 100)}% split threshold).\n` +
-    `This section documents a subsystem dense with its own non-obvious traps — it is NOT filler, so compression/rewrite would have to DELETE real signal to fit. The right fix is to relocate it, not shrink it.\n\n` +
-    `Do this BEFORE any other task:\n` +
-    `  1. Identify the directory that subsystem actually lives in (read the section — it references the real files/paths). The child AI_README goes THERE so get_context_for_file surfaces it only when editing that subsystem.\n` +
-    `  2. Create/extend that directory's AI_README with the section content:\n` +
-    `       update_ai_readme({ readmePath: "<subsystem-dir>/AI_README.md", operations: [{ type: "rewrite", content: "<the section, as a standalone file with its own # H1>" }] })\n` +
-    `  3. Remove the section from ${readmePath} and leave ONE pointer line in its place, e.g.:\n` +
-    `       update_ai_readme({ readmePath: "${readmePath}", operations: [{ type: "replace", searchText: "<the whole section>", content: "<subsystem>: see <subsystem-dir>/AI_README.md" }] })\n\n` +
-    `Why this breaks the loop: the heavy subsystem detail no longer counts against the parent file's budget on every unrelated edit, and each file stays independently within budget — so you stop oscillating between compress and re-bloat.\n\n` +
-    `If NO child directory fits (the dense content genuinely belongs at this level), fall back to a rewrite instead — apply the restraint test and cut what AI can re-derive.\n\n` +
-    `After splitting, verify both files with validate_ai_readmes, then resume your original task.`
-  );
-}
 
 export const compressSchema = z.object({
   readmePath: z.string().describe('Absolute path to the AI_README.md file to compress'),
@@ -88,37 +18,6 @@ export const compressSchema = z.object({
 });
 
 export type CompressInput = z.infer<typeof compressSchema>;
-
-/**
- * Decide how to handle an over-budget file: SPLIT (a single subsystem section
- * dominates → relocate it) or REWRITE (genuinely bloated → cut). Returns the
- * over-budget instruction text plus a short reason for the summary line.
- *
- * Both triggers from the design must hold for a split:
- *   1. file is over budget (caller already established this), AND
- *   2. one section occupies >= sectionSplitThreshold of the file.
- * When compression couldn't shrink the file (filler-free, point 3), that's the
- * caller's signal the length is structural — exactly when split/rewrite apply.
- */
-function buildOverBudgetGuidance(
-  readmePath: string,
-  content: string,
-  tokens: number,
-  score: number,
-  thresholdFraction: number
-): { instruction: string; mode: 'split' | 'rewrite' } {
-  const { dominant } = analyzeSections(content);
-  if (dominant && dominant.fraction >= thresholdFraction) {
-    return {
-      instruction: buildSplitInstruction(readmePath, tokens, dominant, thresholdFraction),
-      mode: 'split',
-    };
-  }
-  return {
-    instruction: buildRewriteInstruction(readmePath, tokens, score),
-    mode: 'rewrite',
-  };
-}
 
 /**
  * Compress an AI_README.md file using deterministic filler-language removal.

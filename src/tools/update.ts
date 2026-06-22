@@ -1,9 +1,12 @@
 import { z } from 'zod';
 import { existsSync } from 'fs';
+import { readFile } from 'fs/promises';
 import { dirname } from 'path';
 import { ReadmeUpdater, UpdateOperation } from '../core/updater.js';
 import { ReadmeValidator } from '../core/validator.js';
 import { pickWritingGuideTier, renderWritingGuide } from '../core/writingGuide.js';
+import { buildOverBudgetGuidance } from '../core/overBudgetGuidance.js';
+import { DEFAULT_VALIDATION_CONFIG } from '../types/index.js';
 
 /**
  * Zod schema for update operation
@@ -125,11 +128,30 @@ export async function updateAIReadme(input: UpdateInput) {
       ? ` (was: ${beforeScore}/${beforeTokens}t → now: ${score}/${tokens}t)`
       : '';
 
+    // For the severe (full) tier, decide SPLIT vs REWRITE the same way compress
+    // does — a single subsystem section dominating the file should be relocated,
+    // not squeezed. Without this, update only ever says "rewrite", so an edit that
+    // pushes a subsystem-heavy file over budget forces the agent to either delete
+    // load-bearing safety rules or give up at the <400 gate.
+    let fullTierGuidance: { instruction: string; mode: 'split' | 'rewrite' } | null = null;
+    if (tier === 'full') {
+      const splitThreshold =
+        config?.sectionSplitThreshold ?? DEFAULT_VALIDATION_CONFIG.sectionSplitThreshold;
+      const content = await readFile(readmePath, 'utf-8').catch(() => '');
+      fullTierGuidance = buildOverBudgetGuidance(
+        readmePath,
+        content,
+        tokens,
+        score,
+        splitThreshold
+      );
+    }
+
     let writingGuideTip = '';
     if (tier === 'full' && madeWorse) {
-      writingGuideTip = `\n\n🚨 STOP — your edit made ${readmePath} worse${delta}.\nThis isn't a patch problem. The file needs to be rewritten from scratch using the guide below.\nDO NOT continue editing this file or downstream code until you have rewritten it.\n\n${guide}`;
+      writingGuideTip = `\n\n🚨 STOP — your edit made ${readmePath} worse${delta}.\nThis isn't a patch problem.${fullTierGuidance!.instruction}`;
     } else if (tier === 'full') {
-      writingGuideTip = `\n\n🛠️  MANDATORY REWRITE — ${readmePath} is at ${tokens} tokens (target: <400), score ${score}/100. This file is unusable as AI context.\n\nYour NEXT tool call MUST be update_ai_readme on this same file with a single 'rewrite' operation that replaces the entire content from scratch. Do not proceed with any other task — code edits, other files, anything — until this rewrite is done.\n\nExact call shape:\n  update_ai_readme({\n    readmePath: "${readmePath}",\n    operations: [{ type: "rewrite", content: "<full new file content here>" }]\n  })\n\nRewrite requirements:\n  - Target: <400 tokens, ideally <200\n  - Preserve the project-specific facts (tech choices, cross-directory deps, real conventions)\n  - Drop: filler language, redundant sections AI can discover itself (project structure, standard naming, generic test commands), code examples\n  - Use fragments and bullets, not prose paragraphs\n  - If you're unsure what to keep, read the current file first to extract the real signal\n\nAfter the rewrite, verify the new score with validate_ai_readmes, then resume your original task.\n\n${guide}`;
+      writingGuideTip = fullTierGuidance!.instruction;
     } else if (tier === 'light' && madeWorse) {
       writingGuideTip = `\n\n⚠️  Your edit is pushing ${readmePath} off-spec${delta}. Tighten it now before adding more:\n\n${guide}`;
     } else if (tier === 'light') {
@@ -139,10 +161,11 @@ export async function updateAIReadme(input: UpdateInput) {
     // Experiment: when the file is in 'full' tier (severely broken), return
     // success:false so AI treats this as a failed tool call rather than a
     // successful-with-warnings one. The edit was actually applied, but we want
-    // AI to halt and act on the rewrite instruction.
+    // AI to halt and act on the over-budget instruction (split or rewrite).
     const reportSuccess = tier !== 'full';
+    const fix = fullTierGuidance?.mode === 'split' ? 'split' : 'rewrite';
     const failureBanner = !reportSuccess
-      ? `❌ Update applied, but the file is unusable as AI context (${tokens} tokens, score ${score}/100). Returning success:false to force you to handle the rewrite before continuing. The edit IS on disk — do not re-apply it. Just do the rewrite.\n\n`
+      ? `❌ Update applied, but the file is unusable as AI context (${tokens} tokens, score ${score}/100). Returning success:false to force you to handle the ${fix} before continuing. The edit IS on disk — do not re-apply it. Just do the ${fix} described below.\n\n`
       : '';
 
     return {

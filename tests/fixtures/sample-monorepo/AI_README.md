@@ -1,4 +1,4 @@
-# Apps
+# Root Level AI_README
 
 Monorepo apps directory. Contains frontend (React/TypeScript) and backend (TypeScript) apps.
 
