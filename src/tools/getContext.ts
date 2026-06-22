@@ -95,7 +95,7 @@ export async function getContextForFile(input: GetContextInput) {
     promptText += `- Follow the above conventions when making changes\n`;
     promptText += `- When establishing NEW conventions: update AI_README first → get context → write code\n`;
     promptText += `- When discovering patterns in existing code: document them in AI_README afterward\n`;
-    promptText += `- Record a convention ONLY if it is non-obvious (AI would get it wrong by reading the code alone) — as one line, adding the WHY only when it keeps the rule from being reverted. Record nothing AI can re-derive from the code: directory structure, standard naming, framework defaults, generic test commands, exhaustive endpoint/field/file lists, per-file descriptions. ("We use async/await" is obvious; "bcrypt direct, NOT passlib — incompatible with bcrypt 4.x" is a trap worth a line.)\n`;
+    promptText += `- Record a convention ONLY if it is non-obvious (AI would get it wrong by reading the code alone) — as one line. Record nothing AI can re-derive from the code: directory structure, standard naming, framework defaults, generic test commands, exhaustive endpoint/field/file lists, per-file descriptions. ("We use async/await" is obvious; "bcrypt direct, NOT passlib" is a trap worth a line.)\n`;
   }
 
   return {

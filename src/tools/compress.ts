@@ -3,6 +3,8 @@ import { dirname } from 'path';
 import { ReadmeCompressor } from '../core/compressor.js';
 import { ReadmeValidator } from '../core/validator.js';
 import { pickWritingGuideTier, renderWritingGuide } from '../core/writingGuide.js';
+import { analyzeSections, type SectionStat } from '../core/sectionAnalysis.js';
+import { DEFAULT_VALIDATION_CONFIG } from '../types/index.js';
 
 /**
  * Build the over-budget rewrite instruction shared by both the "filler stripped
@@ -41,6 +43,39 @@ function buildRewriteInstruction(readmePath: string, tokens: number, score: numb
   );
 }
 
+/**
+ * Build the SPLIT instruction — used when an over-budget file is dominated by a
+ * single section documenting one subsystem (e.g. a catalog-import pipeline with
+ * its own OOM/subprocess/retry traps). Rewriting can't shrink it without losing
+ * signal, so the fix is to MOVE that section into a child-directory AI_README.
+ *
+ * Like the rewrite handoff, the MCP server only detects the dominant section and
+ * names it; the agent decides which child directory it belongs to (a semantic
+ * call) and performs the move with existing tools.
+ */
+function buildSplitInstruction(
+  readmePath: string,
+  tokens: number,
+  section: SectionStat,
+  thresholdPct: number
+): string {
+  const pct = Math.round(section.fraction * 100);
+  return (
+    `\n\n✂️  SPLIT, don't squeeze — ${readmePath} is at ${tokens} tokens, and ONE section ` +
+    `"${section.heading}" (line ${section.line}) alone is ~${section.tokens} tokens (${pct}% of the file, over the ${Math.round(thresholdPct * 100)}% split threshold).\n` +
+    `This section documents a subsystem dense with its own non-obvious traps — it is NOT filler, so compression/rewrite would have to DELETE real signal to fit. The right fix is to relocate it, not shrink it.\n\n` +
+    `Do this BEFORE any other task:\n` +
+    `  1. Identify the directory that subsystem actually lives in (read the section — it references the real files/paths). The child AI_README goes THERE so get_context_for_file surfaces it only when editing that subsystem.\n` +
+    `  2. Create/extend that directory's AI_README with the section content:\n` +
+    `       update_ai_readme({ readmePath: "<subsystem-dir>/AI_README.md", operations: [{ type: "rewrite", content: "<the section, as a standalone file with its own # H1>" }] })\n` +
+    `  3. Remove the section from ${readmePath} and leave ONE pointer line in its place, e.g.:\n` +
+    `       update_ai_readme({ readmePath: "${readmePath}", operations: [{ type: "replace", searchText: "<the whole section>", content: "<subsystem>: see <subsystem-dir>/AI_README.md" }] })\n\n` +
+    `Why this breaks the loop: the heavy subsystem detail no longer counts against the parent file's budget on every unrelated edit, and each file stays independently within budget — so you stop oscillating between compress and re-bloat.\n\n` +
+    `If NO child directory fits (the dense content genuinely belongs at this level), fall back to a rewrite instead — apply the restraint test and cut what AI can re-derive.\n\n` +
+    `After splitting, verify both files with validate_ai_readmes, then resume your original task.`
+  );
+}
+
 export const compressSchema = z.object({
   readmePath: z.string().describe('Absolute path to the AI_README.md file to compress'),
   dryRun: z
@@ -53,6 +88,37 @@ export const compressSchema = z.object({
 });
 
 export type CompressInput = z.infer<typeof compressSchema>;
+
+/**
+ * Decide how to handle an over-budget file: SPLIT (a single subsystem section
+ * dominates → relocate it) or REWRITE (genuinely bloated → cut). Returns the
+ * over-budget instruction text plus a short reason for the summary line.
+ *
+ * Both triggers from the design must hold for a split:
+ *   1. file is over budget (caller already established this), AND
+ *   2. one section occupies >= sectionSplitThreshold of the file.
+ * When compression couldn't shrink the file (filler-free, point 3), that's the
+ * caller's signal the length is structural — exactly when split/rewrite apply.
+ */
+function buildOverBudgetGuidance(
+  readmePath: string,
+  content: string,
+  tokens: number,
+  score: number,
+  thresholdFraction: number
+): { instruction: string; mode: 'split' | 'rewrite' } {
+  const { dominant } = analyzeSections(content);
+  if (dominant && dominant.fraction >= thresholdFraction) {
+    return {
+      instruction: buildSplitInstruction(readmePath, tokens, dominant, thresholdFraction),
+      mode: 'split',
+    };
+  }
+  return {
+    instruction: buildRewriteInstruction(readmePath, tokens, score),
+    mode: 'rewrite',
+  };
+}
 
 /**
  * Compress an AI_README.md file using deterministic filler-language removal.
@@ -85,12 +151,27 @@ export async function compressAIReadme(input: CompressInput) {
     const score = validation?.score ?? 100;
     const tier = pickWritingGuideTier(score, tokens);
     const overBudget = tier !== 'none';
+    const splitThreshold =
+      config?.sectionSplitThreshold ?? DEFAULT_VALIDATION_CONFIG.sectionSplitThreshold;
+    // Section analysis runs on the post-regex content (what the file is/will be
+    // after the filler phase), so split decisions reflect the compressed state.
+    const analyzedContent = result.compressedContent;
 
     if (result.changes.length === 0) {
       // No filler to strip. If still over budget, the file is long (not padded)
       // and needs an LLM rewrite — don't mislead the agent with "already concise".
       if (overBudget) {
-        const instruction = buildRewriteInstruction(readmePath, tokens, score);
+        const { instruction, mode } = buildOverBudgetGuidance(
+          readmePath,
+          analyzedContent,
+          tokens,
+          score,
+          splitThreshold
+        );
+        const tail =
+          mode === 'split'
+            ? `one section dominates the file, so the fix is to SPLIT it out (below), not squeeze.`
+            : `the regex phase can't do it, so the rewrite phase below is the rest of THIS compression, not optional follow-up.`;
         return {
           success: false,
           readmePath,
@@ -98,13 +179,14 @@ export async function compressAIReadme(input: CompressInput) {
             `⚠️ compress_ai_readme is NOT done with ${readmePath}. ` +
             `The deterministic (regex) phase found no filler to strip, but the file is still over budget ` +
             `(${tokens} tokens, score ${score}/100). The user asked to compress this file, so it MUST get shorter — ` +
-            `the regex phase can't do it, so the rewrite phase below is the rest of THIS compression, not optional follow-up.${instruction}`,
+            `${tail}${instruction}`,
           tokensBefore: result.tokensBefore,
           tokensAfter: result.tokensAfter,
           reductionPercent: 0,
           changes: [],
           written: false,
           overBudget: true,
+          mode,
         };
       }
       return {
@@ -137,9 +219,15 @@ export async function compressAIReadme(input: CompressInput) {
     const stillOverBudget = dryRun
       ? pickWritingGuideTier(score, result.tokensAfter) !== 'none'
       : overBudget;
-    const rewriteTip = stillOverBudget
-      ? buildRewriteInstruction(readmePath, dryRun ? result.tokensAfter : tokens, score)
-      : '';
+    const overBudgetGuidance = stillOverBudget
+      ? buildOverBudgetGuidance(
+          readmePath,
+          analyzedContent,
+          dryRun ? result.tokensAfter : tokens,
+          score,
+          splitThreshold
+        )
+      : null;
 
     return {
       success: !stillOverBudget,
@@ -152,13 +240,14 @@ export async function compressAIReadme(input: CompressInput) {
         dryRun
           ? '\n💡 Run without dryRun:true to apply changes.'
           : '\n✅ File written. Use git diff to review.',
-      ].join('\n') + rewriteTip,
+      ].join('\n') + (overBudgetGuidance?.instruction ?? ''),
       tokensBefore: result.tokensBefore,
       tokensAfter: result.tokensAfter,
       reductionPercent: result.reductionPercent,
       changes: result.changes,
       written: result.written,
       overBudget: stillOverBudget,
+      mode: overBudgetGuidance?.mode,
     };
   } catch (error) {
     return {

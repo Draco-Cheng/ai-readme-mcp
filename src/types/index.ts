@@ -113,6 +113,12 @@ export interface ValidationConfig {
     /** Error: over this many tokens (default: 1200) */
     error?: number;
   };
+  /**
+   * Fraction (0..1) of total tokens a single section may occupy before an
+   * over-budget file is treated as "split this subsystem out" rather than
+   * "rewrite/squeeze". Default: 0.40.
+   */
+  sectionSplitThreshold?: number;
 }
 
 /**
@@ -132,6 +138,7 @@ export interface ResolvedValidationConfig {
     warning: number;
     error: number;
   };
+  sectionSplitThreshold: number;
 }
 
 /**
@@ -151,6 +158,7 @@ export const DEFAULT_VALIDATION_CONFIG: ResolvedValidationConfig = {
     warning: 600,
     error: 1000,
   },
+  sectionSplitThreshold: 0.4,
 };
 
 /**

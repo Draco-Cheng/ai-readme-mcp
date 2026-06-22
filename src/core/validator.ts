@@ -40,6 +40,8 @@ export class ReadmeValidator {
         ...DEFAULT_VALIDATION_CONFIG.tokenLimits,
         ...(userConfig.tokenLimits || {}),
       },
+      sectionSplitThreshold:
+        userConfig.sectionSplitThreshold ?? DEFAULT_VALIDATION_CONFIG.sectionSplitThreshold,
     };
   }
 
