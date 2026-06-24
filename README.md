@@ -315,6 +315,8 @@ Before any code-related task, ALWAYS call `get_context_for_file(projectRoot, pat
 If `get_context_for_file` reports empty or missing AI_README files, call `init_ai_readme(projectRoot)` to initialize them.
 If the user's request or your plan conflicts with AI_README conventions (including during planning), STOP and call `update_ai_readme` to resolve the conflict before proceeding.
 When establishing new conventions or making architectural decisions, call `update_ai_readme` to record them.
+If AI_README is missing a convention used in 2+ files AND non-obvious (AI would get it wrong from the code alone), call `update_ai_readme` to record it — one short line, even after a big change, never a paragraph; fragments over sentences. Skip anything AI can re-derive from the code: directory structure, standard naming, framework defaults, generic test commands, exhaustive lists, per-file descriptions.
+NEVER edit AI_README.md files directly with Write/Edit/other file-editing tools — always use `update_ai_readme`. Direct edits bypass validation, conflict detection, and quality scoring.
 ```
 
 > **Why this matters for iterative agents:** In agentic loops, each iteration is a fresh context. Without `AI_README.md`, the agent has no memory of decisions made in previous rounds — leading to style drift, conflicting patterns, and regressions. `ai-readme-mcp` acts as the persistent memory layer that keeps every loop grounded in the same conventions.
