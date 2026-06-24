@@ -25,7 +25,14 @@ const updateOperationSchema = z.object({
   searchText: z.string().optional().describe(
     'Text to search for (required for replace operation)'
   ),
-  content: z.string().describe('Content to add or replace (for rewrite: the full new file content)'),
+  content: z.string().describe(
+    'Content to add or replace (for rewrite: the full new file content).\n' +
+    'WRITE IT MINIMAL THE FIRST TIME — do not dump a paragraph and rely on a later compress pass. ' +
+    'One point = one short line, fragments not sentences, default to the fewest words that still carry the trap. ' +
+    'A new convention is usually ONE line (e.g. "bcrypt direct, NOT passlib"), not a section. ' +
+    'Add the WHY only when it stops the rule from being reverted; otherwise omit it. ' +
+    'If you are about to add more than a couple of lines, stop and cut to the load-bearing facts first.'
+  ),
 });
 
 /**

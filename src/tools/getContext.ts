@@ -96,6 +96,7 @@ export async function getContextForFile(input: GetContextInput) {
     promptText += `- When establishing NEW conventions: update AI_README first → get context → write code\n`;
     promptText += `- When discovering patterns in existing code: document them in AI_README afterward\n`;
     promptText += `- Record a convention ONLY if it is non-obvious (AI would get it wrong by reading the code alone) — as one line. Record nothing AI can re-derive from the code: directory structure, standard naming, framework defaults, generic test commands, exhaustive endpoint/field/file lists, per-file descriptions. ("We use async/await" is obvious; "bcrypt direct, NOT passlib" is a trap worth a line.)\n`;
+    promptText += `- When you DO add to AI_README, write it minimal the FIRST time — one point per short line, fragments not sentences, fewest words that still carry the trap. Don't dump a paragraph expecting a later compress pass; a big addition then a forced shrink wastes a whole round-trip. Even a large code change is usually a one-line note.\n`;
   }
 
   return {

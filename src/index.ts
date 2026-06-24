@@ -67,7 +67,7 @@ const server = new Server(
       "",
       "When establishing new conventions or making architectural decisions, call update_ai_readme to record them.",
       "",
-      "If AI_README is missing a convention used in 2+ files AND it is non-obvious (AI would get it wrong by reading the code alone), call update_ai_readme to record it as one line. Record nothing AI can re-derive from the code — directory structure, standard naming, framework defaults, generic test commands, exhaustive endpoint/field/file lists, per-file descriptions.",
+      "If AI_README is missing a convention used in 2+ files AND it is non-obvious (AI would get it wrong by reading the code alone), call update_ai_readme to record it — one short line, even after a big change, never a paragraph; fragments over sentences. Skip anything AI can re-derive from the code: directory structure, standard naming, framework defaults, generic test commands, exhaustive lists, per-file descriptions.",
       "",
       "NEVER edit AI_README.md files directly with Write/Edit/other file-editing tools — always use update_ai_readme. Direct edits bypass validation, conflict detection, and quality scoring.",
     ].join("\n"),
