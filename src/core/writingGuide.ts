@@ -4,39 +4,33 @@
  * when scores are low — so AI follows the same standard in both contexts).
  */
 
-export const TOKEN_EFFICIENT_FORMAT_GUIDE = `## Writing Style: Token-Efficient Format
+export const TOKEN_EFFICIENT_FORMAT_GUIDE = `## Writing Style: Keywords, not prose
 
-AI_README is read by AI, not humans. Use token-efficient prose to minimize context consumption:
+AI_README is read by AI, not humans. Keywords > sentences:
 
-**Remove these words entirely:**
-- Articles: a, an, the (in prose)
-- Filler: just, really, basically, actually, simply, essentially, generally
-- Hedging: "it might be worth", "you could consider", "it would be good to"
-- Fluff connectives: however, furthermore, additionally, in addition
-- Verbose phrases: "in order to" → "to", "make sure to" → "ensure", "utilize" → "use"
-- Prefixes: "You should", "Remember to", "Make sure to" — just state the rule
+**Core rule — bullets, 1 bullet = 1 fact:**
+- Each "- " bullet carries ONE fact AI'd get wrong from code alone (+why only if it stops reversion).
+- A run-on sentence chaining facts with ";"/"then"/"—" is a wall: break it into separate bullets.
+- Fragments, not sentences. No prose paragraphs — when you append to a dense block, bullet the existing wall too, never grow it.
 
-**Fragments are OK** — incomplete sentences are fine, AI understands them:
+**Drop entirely:**
+- Articles (a, an, the in prose); filler (just, really, basically, actually, simply, essentially, generally)
+- Hedging / prefixes ("You should", "Remember to", "it might be worth") — state the rule
+- Verbose phrases: "in order to" → "to", "utilize" → "use"
+- Anything AI re-derives from code: directory structure, standard naming, framework defaults, generic test commands, exhaustive lists, step-by-step how-to
+
+**Preserve exactly (never compress):** code blocks + inline code, file paths, URLs, commands, technical terms, versions.
+
+**Examples (✅ = 1 fact per bullet, fragments):**
 \`\`\`
 ❌ You should always run the tests before committing any changes.
 ✅ Run tests before commit.
 
 ❌ This module is responsible for handling all authentication logic.
 ✅ Handles auth logic.
-\`\`\`
 
-**Preserve exactly (never compress):**
-- Code blocks (\`\`\`...\`\`\`) and inline code (\`...\`)
-- File paths, URLs, commands
-- Technical terms, library names, version numbers
-
-**More examples:**
-\`\`\`
-❌ The application uses a microservices architecture with the following components.
-✅ Microservices. API gateway routes requests to services.
-
-❌ It is important to note that all exports must be named, not default.
-✅ Named exports only.
+❌ Release TAG-ONLY: CD never bumps package.json (private, Docker). $VERSION from tag. CD via nx release version --dry-run then git tag, no commit to main, nx affected clean (deploy.yml).
+✅ Release tag-only; $VERSION from git tag. CD tags w/o commit→main → nx affected stays clean. See deploy.yml.
 \`\`\`
 `;
 
@@ -45,12 +39,11 @@ AI_README is read by AI, not humans. Use token-efficient prose to minimize conte
  * Used standalone for mid-tier issues. For severe cases, callers append
  * TOKEN_EFFICIENT_FORMAT_GUIDE separately so the full ❌→✅ examples follow.
  */
-export const LOW_SCORE_REMINDER = `📖 **AI_README is for AI, not humans.** Write key points, not full prose:
-- Keep under 400 tokens — fragments and bullet points beat paragraphs
-- State rules directly — no "You should", "Remember to", "Make sure to"
-- Drop filler — just, really, basically, actually, simply, in order to, utilize
-- Skip what AI can discover itself — project structure, standard naming (camelCase/PascalCase), npm test commands
-- Keep only what's project-specific and non-obvious`;
+export const LOW_SCORE_REMINDER = `📖 **AI_README is for AI, not humans.** Keywords, not prose:
+- 1 bullet ("- ") = 1 fact AI'd get wrong from code (+why only if it stops reversion). A run-on chaining facts with ";"/"then" is a wall → break into bullets.
+- Under 400 tokens. Fragments, no prose paragraphs. State rules directly (no "You should"/"Remember to").
+- Drop filler (just, really, basically, in order to, utilize) AND anything AI re-derives from code: project structure, standard naming, generic test commands, exhaustive lists.
+- Keep only project-specific + non-obvious.`;
 
 // Tiered thresholds: light reminder for "drifting", full guide for "needs rewrite".
 // Token thresholds fire even when score is OK — a 900-token file with one warning

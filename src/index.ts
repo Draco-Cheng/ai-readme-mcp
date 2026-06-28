@@ -67,7 +67,7 @@ const server = new Server(
       "",
       "When establishing new conventions or making architectural decisions, call update_ai_readme to record them.",
       "",
-      "If AI_README is missing a convention used in 2+ files AND it is non-obvious (AI would get it wrong by reading the code alone), call update_ai_readme to record it — one short line, even after a big change, never a paragraph; fragments over sentences. Skip anything AI can re-derive from the code: directory structure, standard naming, framework defaults, generic test commands, exhaustive lists, per-file descriptions.",
+      "Convention used in 2+ files AND non-obvious (AI'd get it wrong from code alone) → call update_ai_readme to record it. Bulleted keywords, not prose; 1 \"- \" bullet = 1 fact (+why only if it stops reversion); fragments. Record only the fact AI can't see in code — not where it lives, what toggles it, or how it works (those → \"See <file>.\"). A run-on chaining facts with \";\"/\"then\" is a wall — break it into bullets, don't grow it.",
       "",
       "NEVER edit AI_README.md files directly with Write/Edit/other file-editing tools — always use update_ai_readme. Direct edits bypass validation, conflict detection, and quality scoring.",
     ].join("\n"),

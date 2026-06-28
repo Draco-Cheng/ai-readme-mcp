@@ -96,7 +96,9 @@ export async function getContextForFile(input: GetContextInput) {
     promptText += `- When establishing NEW conventions: update AI_README first → get context → write code\n`;
     promptText += `- When discovering patterns in existing code: document them in AI_README afterward\n`;
     promptText += `- Record a convention ONLY if it is non-obvious (AI would get it wrong by reading the code alone) — as one line. Record nothing AI can re-derive from the code: directory structure, standard naming, framework defaults, generic test commands, exhaustive endpoint/field/file lists, per-file descriptions. ("We use async/await" is obvious; "bcrypt direct, NOT passlib" is a trap worth a line.)\n`;
-    promptText += `- When you DO add to AI_README, write it minimal the FIRST time — one point per short line, fragments not sentences, fewest words that still carry the trap. Don't dump a paragraph expecting a later compress pass; a big addition then a forced shrink wastes a whole round-trip. Even a large code change is usually a one-line note.\n`;
+    promptText += `- Adding to AI_README: bulleted keywords, NOT prose. 1 bullet ("- ") = 1 fact AI'd get wrong from code (+why only if it stops reversion). A run-on sentence chaining facts with ";"/"then"/"—" is a wall — break it into separate bullets. Fragments.\n`;
+    promptText += `  KEEP the fact (rule/invariant/trap) + why. DROP how-to AI reads from code — where it lives (paths, template names), what toggles it (flags, env), step-by-step mechanism → one "See <file>." pointer. Naming a file is fine; describing its contents is not.\n`;
+    promptText += `  When you append to a dense section, break the existing paragraph into bullets too — never grow the wall.\n`;
   }
 
   return {

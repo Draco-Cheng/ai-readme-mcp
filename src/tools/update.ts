@@ -26,12 +26,17 @@ const updateOperationSchema = z.object({
     'Text to search for (required for replace operation)'
   ),
   content: z.string().describe(
-    'Content to add or replace (for rewrite: the full new file content).\n' +
-    'WRITE IT MINIMAL THE FIRST TIME — do not dump a paragraph and rely on a later compress pass. ' +
-    'One point = one short line, fragments not sentences, default to the fewest words that still carry the trap. ' +
-    'A new convention is usually ONE line (e.g. "bcrypt direct, NOT passlib"), not a section. ' +
-    'Add the WHY only when it stops the rule from being reverted; otherwise omit it. ' +
-    'If you are about to add more than a couple of lines, stop and cut to the load-bearing facts first.'
+    'Content to add/replace (rewrite: full new file).\n' +
+    'Format = bulleted keywords, NOT prose paragraphs. 1 bullet ("- ") = 1 fact AI\'d get wrong from code (+why only if it stops reversion). A run-on sentence chaining facts with ";"/"then"/"—" is a wall: break it into separate bullets. Fragments.\n' +
+    'KEEP = the fact (rule/invariant/trap) + why. DROP = how-to AI reads from code: WHERE it lives (paths, template names), WHAT toggles it (flags, env), the step-by-step mechanism → ONE pointer "See <file>." Naming a file is fine; describing its contents is not.\n' +
+    'Before append/insert, look at the target section: if it is already a dense block, add your facts as new bullets and break the existing wall into bullets too — never grow the paragraph.\n' +
+    '  ❌ (wall) "Sellable = ... − reserve% then capped at max_listed; orders reserve via committed_quantity, lots untouched until ship; status→inventory only via apply_order_status_transition; ship drains UNSPEC-first."  — 4 facts in one run-on line\n' +
+    '  ✅ (bullets, 1 fact each)\n' +
+    '       - Sellable = max(0, min(max_listed, Σ(lot.qty−mother)−reserve%) − committed)\n' +
+    '       - Orders reserve via `committed_quantity` — lots untouched until ship (UNSPEC-first)\n' +
+    '       - status→inventory ONLY via `apply_order_status_transition` (HTTP + chat), never direct stock_quantity writes\n' +
+    '  ❌ "Migrations auto-run via Helm pre-install/pre-upgrade hook Job (helm/templates/migrate-job.yaml, gated by migrations.enabled)..."  — mechanism + path + flag = how-to\n' +
+    '  ✅ "- Migrations auto-run on deploy; failure blocks rollout → code never outruns schema. Never `kubectl exec` alembic by hand. See helm/templates/migrate-job.yaml."'
   ),
 });
 
