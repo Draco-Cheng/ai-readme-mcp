@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { ReadmeValidator } from '../core/validator.js';
-import { AIReadmeScanner } from '../core/scanner.js';
+import { AIReadmeScanner, resolveExcludePatterns } from '../core/scanner.js';
 import { pickWritingGuideTier, renderWritingGuide } from '../core/writingGuide.js';
 import type { ValidationConfig } from '../types/index.js';
+import { DEFAULT_VALIDATION_CONFIG } from '../types/index.js';
 
 /**
  * Zod schema for validate_ai_readmes tool
@@ -13,7 +14,7 @@ export const validateSchema = z.object({
     'Glob patterns to exclude (e.g., ["node_modules/**", ".git/**"])'
   ),
   config: z.object({
-    maxTokens: z.number().optional(),
+    tokenBudget: z.number().optional(),
     rules: z.object({
       requireH1: z.boolean().optional(),
       requireSections: z.array(z.string()).optional(),
@@ -43,7 +44,7 @@ export type ValidateInput = z.infer<typeof validateSchema>;
  *   projectRoot: '/path/to/project',
  *   excludePatterns: ['node_modules/**'],
  *   config: {
- *     maxTokens: 500,
+ *     tokenBudget: 500,
  *     rules: {
  *       requireH1: true,
  *       requireSections: ['## Architecture', '## Conventions']
@@ -57,7 +58,8 @@ function buildValidationMessage(
   validFiles: number,
   totalIssues: number,
   averageScore: number,
-  results: Awaited<ReturnType<InstanceType<typeof ReadmeValidator>['validate']>>[]
+  results: Awaited<ReturnType<InstanceType<typeof ReadmeValidator>['validate']>>[],
+  tokenBudget: number
 ): string {
   if (totalIssues === 0) {
     return `All ${totalFiles} README files passed validation! Average score: ${averageScore}/100`;
@@ -81,7 +83,7 @@ function buildValidationMessage(
     result: r,
     score: r.score ?? 100,
     tokens: r.stats?.tokens ?? 0,
-    tier: pickWritingGuideTier(r.score ?? 100, r.stats?.tokens ?? 0),
+    tier: pickWritingGuideTier(r.score ?? 100, r.stats?.tokens ?? 0, tokenBudget),
   }));
 
   const fullTier = tiered.filter(t => t.tier === 'full');
@@ -91,12 +93,12 @@ function buildValidationMessage(
     const paths = fullTier
       .map(t => `${t.result.filePath} (score: ${t.score}, tokens: ${t.tokens})`)
       .join('\n  - ');
-    msg += `\n\n🚨 These files need rewriting, not patching:\n  - ${paths}\n\n${renderWritingGuide('full')}`;
+    msg += `\n\n🚨 These files need rewriting, not patching:\n  - ${paths}\n\n${renderWritingGuide('full', tokenBudget)}`;
   } else if (lightTier.length > 0) {
     const paths = lightTier
       .map(t => `${t.result.filePath} (score: ${t.score}, tokens: ${t.tokens})`)
       .join('\n  - ');
-    msg += `\n\n⚠️  These files are drifting — tighten them up:\n  - ${paths}\n\n${renderWritingGuide('light')}`;
+    msg += `\n\n⚠️  These files are drifting — tighten them up:\n  - ${paths}\n\n${renderWritingGuide('light', tokenBudget)}`;
   }
 
   return msg;
@@ -106,23 +108,21 @@ export async function validateAIReadmes(input: ValidateInput) {
   const { projectRoot, excludePatterns, config: userConfig } = input;
 
   try {
-    // Use provided config, fallback to file config if available, then defaults
-    let config: Partial<ValidationConfig> | undefined = userConfig;
+    // Always load the file config — even when a per-call config is given, it
+    // carries project-level excludePatterns the caller didn't pass.
+    const fileConfig = await ReadmeValidator.loadConfig(projectRoot);
 
-    if (!config) {
-      // Optionally load from .aireadme.config.json if it exists
-      const fileConfig = await ReadmeValidator.loadConfig(projectRoot);
-      if (fileConfig) {
-        config = fileConfig;
-      }
-    }
+    // Use provided config, fallback to file config if available, then defaults.
+    const config: Partial<ValidationConfig> | undefined = userConfig ?? fileConfig ?? undefined;
+
+    const tokenBudget = config?.tokenBudget ?? DEFAULT_VALIDATION_CONFIG.tokenBudget;
 
     // Create validator with config
     const validator = new ReadmeValidator(config);
 
     // Scan for all README files
     const scanner = new AIReadmeScanner(projectRoot, {
-      excludePatterns: excludePatterns || [],
+      excludePatterns: resolveExcludePatterns(excludePatterns, fileConfig?.excludePatterns),
       cacheContent: false,
     });
     const index = await scanner.scan();
@@ -166,7 +166,7 @@ export async function validateAIReadmes(input: ValidateInput) {
         issuesBySeverity,
       },
       results,
-      message: buildValidationMessage(totalFiles, validFiles, totalIssues, averageScore, results),
+      message: buildValidationMessage(totalFiles, validFiles, totalIssues, averageScore, results, tokenBudget),
     };
   } catch (error) {
     return {

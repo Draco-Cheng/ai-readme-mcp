@@ -5,7 +5,9 @@ import { writeFile, mkdir, rm } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
-const TEST_DIR = join(process.cwd(), 'tests', 'temp');
+// Per-file temp dir — test files run in parallel and each rm()s its TEST_DIR in
+// after(); a shared dir lets one suite's cleanup delete another's fixture mid-test.
+const TEST_DIR = join(process.cwd(), 'tests', 'temp-validator');
 const TEST_README = join(TEST_DIR, 'VALIDATOR_TEST_README.md');
 const CONFIG_FILE = join(TEST_DIR, '.aireadme.config.json');
 
@@ -141,7 +143,7 @@ describe('ReadmeValidator', () => {
 
     it('should create validator with custom config', () => {
       const validator = new ReadmeValidator({
-        maxTokens: 1000,
+        tokenBudget: 1000,
         rules: { requireH1: false },
       });
       assert.ok(validator, 'Validator should be created with custom config');
@@ -374,7 +376,7 @@ ${'This is a very long line that exceeds the maximum line length limit and shoul
 
       const customConfig = {
         validation: {
-          maxTokens: 1000,
+          tokenBudget: 1000,
           rules: {
             requireH1: false,
             requireSections: ['## Architecture'],
@@ -393,7 +395,7 @@ ${'This is a very long line that exceeds the maximum line length limit and shoul
       const config = await ReadmeValidator.loadConfig(TEST_DIR);
 
       assert.ok(config, 'Should load config');
-      assert.strictEqual(config?.maxTokens, 1000, 'Should have custom maxTokens');
+      assert.strictEqual(config?.tokenBudget, 1000, 'Should have custom tokenBudget');
       assert.strictEqual(config?.rules?.requireH1, false, 'Should have custom requireH1');
     });
 
@@ -409,7 +411,7 @@ ${'This is a very long line that exceeds the maximum line length limit and shoul
       }
 
       const flatConfig = {
-        maxTokens: 800,
+        tokenBudget: 800,
         rules: { requireH1: true },
       };
 
@@ -417,7 +419,7 @@ ${'This is a very long line that exceeds the maximum line length limit and shoul
       const config = await ReadmeValidator.loadConfig(TEST_DIR);
 
       assert.ok(config, 'Should load flat config');
-      assert.strictEqual(config?.maxTokens, 800, 'Should have custom maxTokens');
+      assert.strictEqual(config?.tokenBudget, 800, 'Should have custom tokenBudget');
     });
   });
 

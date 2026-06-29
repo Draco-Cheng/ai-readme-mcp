@@ -7,6 +7,38 @@ import { readFile } from 'fs/promises';
 import { dirname, join } from 'path';
 import type { ReadmeEntry, ReadmeIndex, ScannerOptions } from '../types/index.js';
 
+/**
+ * Always-ignored globs. A user's config `excludePatterns` AUGMENT these (never
+ * replace them), so adding a project-specific ignore can't accidentally start
+ * scanning node_modules. See resolveExcludePatterns().
+ */
+export const DEFAULT_EXCLUDE_PATTERNS = [
+  '**/node_modules/**',
+  '**/.git/**',
+  '**/dist/**',
+  '**/build/**',
+  '**/.next/**',
+  '**/coverage/**',
+];
+
+/**
+ * Resolve the exclude globs for a tool call. Precedence:
+ *   per-call argument (explicit) → REPLACES (back-compat: a caller that passes
+ *     its own list gets exactly that, as before).
+ *   otherwise → built-in defaults PLUS the project's config excludePatterns
+ *     (config augments, never replaces, so node_modules can't slip back in).
+ */
+export function resolveExcludePatterns(
+  perCall: string[] | undefined,
+  configPatterns: string[] | undefined
+): string[] {
+  if (perCall && perCall.length > 0) return perCall;
+  if (configPatterns && configPatterns.length > 0) {
+    return [...DEFAULT_EXCLUDE_PATTERNS, ...configPatterns];
+  }
+  return DEFAULT_EXCLUDE_PATTERNS;
+}
+
 export class AIReadmeScanner {
   private projectRoot: string;
   private options: Required<ScannerOptions>;
@@ -14,14 +46,7 @@ export class AIReadmeScanner {
   constructor(projectRoot: string, options?: ScannerOptions) {
     this.projectRoot = projectRoot;
     this.options = {
-      excludePatterns: options?.excludePatterns || [
-        '**/node_modules/**',
-        '**/.git/**',
-        '**/dist/**',
-        '**/build/**',
-        '**/.next/**',
-        '**/coverage/**',
-      ],
+      excludePatterns: options?.excludePatterns || DEFAULT_EXCLUDE_PATTERNS,
       cacheContent: options?.cacheContent ?? true,
       readmeFilename: options?.readmeFilename || 'AI_README.md',
     };

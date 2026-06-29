@@ -8,6 +8,7 @@ import type {
   ValidationIssue,
 } from '../types/index.js';
 import { DEFAULT_VALIDATION_CONFIG } from '../types/index.js';
+import { deriveTokenLimits } from './budget.js';
 
 /**
  * ReadmeValidator - Validates AI_README.md files
@@ -30,14 +31,19 @@ export class ReadmeValidator {
    * Merge user config with default config
    */
   private mergeConfig(userConfig: Partial<ValidationConfig>): ResolvedValidationConfig {
+    const tokenBudget = userConfig.tokenBudget ?? DEFAULT_VALIDATION_CONFIG.tokenBudget;
     return {
-      maxTokens: userConfig.maxTokens ?? DEFAULT_VALIDATION_CONFIG.maxTokens,
+      tokenBudget,
       rules: {
         ...DEFAULT_VALIDATION_CONFIG.rules,
         ...(userConfig.rules || {}),
       },
+      // Token limits derive from tokenBudget so a project sets ONE number and the
+      // four thresholds scale with it (½ / 1× / 1.5× / 2.5× of tokenBudget — equals
+      // the historical 200/400/600/1000 at the default tokenBudget=400). Any limit
+      // the user sets explicitly still wins.
       tokenLimits: {
-        ...DEFAULT_VALIDATION_CONFIG.tokenLimits,
+        ...deriveTokenLimits(tokenBudget),
         ...(userConfig.tokenLimits || {}),
       },
       sectionSplitThreshold:
@@ -134,13 +140,13 @@ export class ReadmeValidator {
    * Validate token count against limits
    */
   private validateTokenCount(tokens: number, issues: ValidationIssue[]): void {
-    const { tokenLimits, maxTokens } = this.config;
+    const { tokenLimits, tokenBudget } = this.config;
 
     if (tokens > tokenLimits.error) {
       issues.push({
         type: 'error',
         rule: 'token-count',
-        message: `README is too long (${tokens} tokens). Maximum recommended: ${maxTokens} tokens.`,
+        message: `README is too long (${tokens} tokens). Target budget: ${tokenBudget} tokens.`,
         suggestion: 'Remove unnecessary content, use bullet points instead of paragraphs, and avoid code examples.',
       });
     } else if (tokens > tokenLimits.warning) {

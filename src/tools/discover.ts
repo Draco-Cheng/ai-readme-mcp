@@ -4,7 +4,8 @@
  */
 
 import { z } from 'zod';
-import { AIReadmeScanner } from '../core/scanner.js';
+import { AIReadmeScanner, resolveExcludePatterns } from '../core/scanner.js';
+import { ReadmeValidator } from '../core/validator.js';
 
 export const discoverSchema = z.object({
   projectRoot: z.string().describe('The root directory of the project. Use the current working directory (e.g., from environment or pwd). If unsure, pass the project root path.'),
@@ -19,9 +20,11 @@ export type DiscoverInput = z.infer<typeof discoverSchema>;
 export async function discoverAIReadmes(input: DiscoverInput) {
   const { projectRoot, excludePatterns } = input;
 
+  const config = await ReadmeValidator.loadConfig(projectRoot);
+
   // Create scanner with options
   const scanner = new AIReadmeScanner(projectRoot, {
-    excludePatterns,
+    excludePatterns: resolveExcludePatterns(excludePatterns, config?.excludePatterns),
     cacheContent: false, // Don't cache content in discovery phase
   });
 

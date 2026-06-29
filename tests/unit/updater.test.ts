@@ -5,7 +5,9 @@ import { writeFile, mkdir, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
-const TEST_DIR = join(process.cwd(), 'tests', 'temp');
+// Per-file temp dir — see validator.test.ts: parallel files sharing one temp dir
+// race on cleanup.
+const TEST_DIR = join(process.cwd(), 'tests', 'temp-updater');
 const TEST_README = join(TEST_DIR, 'TEST_README.md');
 
 const SAMPLE_README = `# Test Project

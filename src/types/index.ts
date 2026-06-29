@@ -89,8 +89,17 @@ export interface UpdaterOptions {
  * Validation configuration
  */
 export interface ValidationConfig {
-  /** Maximum tokens allowed (default: 500) */
-  maxTokens?: number;
+  /**
+   * Target token budget (default: 400). A TARGET, not a hard cap — files over it
+   * are nudged, never rejected. All other thresholds derive from it (see budget.ts).
+   */
+  tokenBudget?: number;
+  /**
+   * Project-level globs to exclude from scanning. AUGMENT the scanner's built-in
+   * defaults (node_modules, .git, ...) — they do not replace them. A per-call
+   * excludePatterns argument still overrides. See resolveExcludePatterns().
+   */
+  excludePatterns?: string[];
   /** Validation rules */
   rules?: {
     /** Require H1 heading (default: true) */
@@ -125,7 +134,7 @@ export interface ValidationConfig {
  * Fully resolved validation configuration (all properties required)
  */
 export interface ResolvedValidationConfig {
-  maxTokens: number;
+  tokenBudget: number;
   rules: {
     requireH1: boolean;
     requireSections: string[];
@@ -145,7 +154,7 @@ export interface ResolvedValidationConfig {
  * Default validation configuration
  */
 export const DEFAULT_VALIDATION_CONFIG: ResolvedValidationConfig = {
-  maxTokens: 400,
+  tokenBudget: 400,
   rules: {
     requireH1: true,
     requireSections: [],

@@ -4,8 +4,9 @@
  */
 
 import { z } from 'zod';
-import { AIReadmeScanner } from '../core/scanner.js';
+import { AIReadmeScanner, resolveExcludePatterns } from '../core/scanner.js';
 import { ContextRouter } from '../core/router.js';
+import { ReadmeValidator } from '../core/validator.js';
 
 export const getContextSchema = z.object({
   projectRoot: z.string().describe('The root directory of the project. Use the current working directory (e.g., from environment or pwd). If unsure, pass the project root path.'),
@@ -34,9 +35,11 @@ export type GetContextInput = z.infer<typeof getContextSchema>;
 export async function getContextForFile(input: GetContextInput) {
   const { projectRoot, path, includeRoot, excludePatterns } = input;
 
+  const config = await ReadmeValidator.loadConfig(projectRoot);
+
   // First, scan the project to build the index
   const scanner = new AIReadmeScanner(projectRoot, {
-    excludePatterns,
+    excludePatterns: resolveExcludePatterns(excludePatterns, config?.excludePatterns),
     cacheContent: true, // Cache content for context retrieval
   });
 

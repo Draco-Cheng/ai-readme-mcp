@@ -18,6 +18,7 @@
   - [Alternative Installation Methods](#alternative-installation-methods)
 - [Quick Start](#-quick-start)
 - [Manual Creation & Editing](#️-manual-creation--editing)
+- [Configuration (`.aireadme.config.json`)](#️-configuration-aireadmeconfigjson)
 - [Validate & Compress AI_README Files](#️-validate--compress-ai_readme-files)
 - [Multi-Level AI_README](#multi-level-ai_readme-not-just-for-monorepos)
 - [Available MCP Tools](#️-available-mcp-tools)
@@ -441,6 +442,62 @@ Database: Prisma + PostgreSQL.
 
 ---
 
+## ⚙️ Configuration (`.aireadme.config.json`)
+
+Most projects need no config — the defaults target tight, AI-optimized files (< 400 tokens). But large monorepos often have directories whose conventions genuinely don't compress that far. Drop a `.aireadme.config.json` at your project root to raise the budget:
+
+```json
+{
+  "tokenBudget": 800
+}
+```
+
+**`tokenBudget` is the single knob.** Set it and *everything* scales with it — the quality-score thresholds, the "drifting / needs-rewrite" nudges, and the numbers printed in the over-budget prompts. You don't set five numbers; you set one.
+
+> **It's a target, not a hard cap.** A file is never rejected or truncated for going over `tokenBudget` — it just gets nudged to tighten up. Validation only flags an *error* at the top tier (2.5 × budget). So a 420-token file under an 800 budget is perfectly fine.
+
+| Tier | Formula | @ 400 (default) | @ 800 |
+|---|---|---|---|
+| Excellent | ½ × tokenBudget | 200 | 400 |
+| Good (the target) | 1 × tokenBudget | 400 | 800 |
+| Warning | 1.5 × tokenBudget | 600 | 1200 |
+| Error | 2.5 × tokenBudget | 1000 | 2000 |
+
+Omitting the file is identical to `{ "tokenBudget": 400 }` — existing projects see no change. Advanced overrides (`tokenLimits`, `rules`, `sectionSplitThreshold`) are still accepted and win over the derived values when set explicitly.
+
+> Tip: prefer raising `tokenBudget` only when content is genuinely irreducible. If a single section dominates an over-budget file, the tool will suggest *splitting* it into a child-directory `AI_README.md` instead — that keeps each file tight without inflating the budget.
+
+### Excluding directories
+
+By default the scanner skips `node_modules`, `.git`, `dist`, `build`, `.next`, and `coverage`. To always ignore extra directories (e.g. generated code or a `legacy/` tree), add `excludePatterns`:
+
+```json
+{
+  "tokenBudget": 800,
+  "excludePatterns": ["**/legacy/**", "**/generated/**"]
+}
+```
+
+These **add to** the built-in ignores — `node_modules` etc. stay excluded, so you can't accidentally start scanning them. (Passing `excludePatterns` directly to a tool call still overrides the config for that one call.)
+
+### Validation rules (optional)
+
+Two rules are worth overriding for some teams:
+
+```json
+{
+  "rules": {
+    "allowCodeBlocks": true,
+    "requireSections": ["## Conventions", "## Cross-directory dependencies"]
+  }
+}
+```
+
+- **`allowCodeBlocks`** (default `false`) — code fences are flagged by default because they burn tokens. Set `true` if a snippet genuinely belongs in your AI_README.
+- **`requireSections`** (default none) — warn when a listed section heading is missing, e.g. to enforce a house template across every AI_README.
+
+---
+
 ## 🗜️ Validate & Compress AI_README Files
 
 Keep your AI_README files concise and token-efficient with a single prompt to your AI assistant:
@@ -795,7 +852,7 @@ Validate all AI_README.md files in your project for quality and token efficiency
   projectRoot: string;             // Required: Project root directory
   excludePatterns?: string[];      // Optional: Glob patterns to exclude
   config?: {                       // Optional: Custom validation config
-    maxTokens?: number;
+    tokenBudget?: number;          // Single knob; derives the tiers below (default: 400)
     rules?: {
       requireH1?: boolean;
       requireSections?: string[];

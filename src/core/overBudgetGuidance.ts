@@ -20,15 +20,22 @@
  */
 
 import { renderWritingGuide } from './writingGuide.js';
+import { DEFAULT_TOKEN_BUDGET, idealTokens } from './budget.js';
 import { analyzeSections, type SectionStat } from './sectionAnalysis.js';
 
 /**
  * REWRITE instruction — file is bloated, cut it down in place.
  */
-export function buildRewriteInstruction(readmePath: string, tokens: number, score: number): string {
-  const guide = renderWritingGuide('full');
+export function buildRewriteInstruction(
+  readmePath: string,
+  tokens: number,
+  score: number,
+  tokenBudget: number = DEFAULT_TOKEN_BUDGET
+): string {
+  const guide = renderWritingGuide('full', tokenBudget);
+  const ideal = idealTokens(tokenBudget);
   return (
-    `\n\n🛠️  MANDATORY REWRITE — ${readmePath}: ${tokens} tokens (target <400), score ${score}/100. ` +
+    `\n\n🛠️  MANDATORY REWRITE — ${readmePath}: ${tokens} tokens (target <${tokenBudget}), score ${score}/100. ` +
     `Over budget because content is long, not padded — regex can't fix, an LLM rewrite can.\n` +
     `NEXT call MUST be update_ai_readme 'rewrite' on this file, full content from scratch. Nothing else until done.\n\n` +
     `Exact call shape:\n` +
@@ -38,7 +45,7 @@ export function buildRewriteInstruction(readmePath: string, tokens: number, scor
     `  })\n\n` +
     `NOT a squeeze — a CUT. Remove low-value INFORMATION, not words.\n` +
     `Rewrite reqs (keywords not prose):\n` +
-    `  - Target <400 tokens, ideally <200. Fragments + bullets.\n` +
+    `  - Target <${tokenBudget} tokens, ideally <${ideal}. Fragments + bullets.\n` +
     `  - Bullets, 1 "- " per fact AI'd get wrong from code (+why only if it stops reversion). Run-on chaining facts with ";"/"then" = wall → break into bullets.\n` +
     `  - KEEP only: project-specific + non-obvious — traps ("bcrypt direct, NOT passlib"), cross-dir deps, invariants/gotchas.\n` +
     `  - DELETE: anything AI re-derives from code — directory structure, standard naming, framework defaults, generic test commands, code examples, exhaustive lists (endpoints/fields/per-file), step-by-step how-to.\n` +
@@ -84,7 +91,8 @@ export function buildOverBudgetGuidance(
   content: string,
   tokens: number,
   score: number,
-  thresholdFraction: number
+  thresholdFraction: number,
+  tokenBudget: number = DEFAULT_TOKEN_BUDGET
 ): { instruction: string; mode: 'split' | 'rewrite' } {
   const { dominant } = analyzeSections(content);
   if (dominant && dominant.fraction >= thresholdFraction) {
@@ -94,7 +102,7 @@ export function buildOverBudgetGuidance(
     };
   }
   return {
-    instruction: buildRewriteInstruction(readmePath, tokens, score),
+    instruction: buildRewriteInstruction(readmePath, tokens, score, tokenBudget),
     mode: 'rewrite',
   };
 }

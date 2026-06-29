@@ -80,6 +80,7 @@ export async function updateAIReadme(input: UpdateInput) {
   // "file was already broken before this edit" — phrasing changes accordingly.
   const projectRoot = dirname(dirname(readmePath));
   const config = await ReadmeValidator.loadConfig(projectRoot);
+  const tokenBudget = config?.tokenBudget ?? DEFAULT_VALIDATION_CONFIG.tokenBudget;
   const preValidator = new ReadmeValidator(config || undefined);
   const before = existsSync(readmePath)
     ? await preValidator.validate(readmePath).catch(() => null)
@@ -127,8 +128,8 @@ export async function updateAIReadme(input: UpdateInput) {
     // made things worse (you broke it → corrective) or the file was already
     // unhealthy before (heads-up → opportunity to fix). AI shrugs off accusations
     // when "it wasn't me", so don't accuse if the data doesn't support it.
-    const tier = pickWritingGuideTier(validation.score ?? 100, validation.stats?.tokens ?? 0);
-    const guide = renderWritingGuide(tier);
+    const tier = pickWritingGuideTier(validation.score ?? 100, validation.stats?.tokens ?? 0, tokenBudget);
+    const guide = renderWritingGuide(tier, tokenBudget);
     const tokens = validation.stats?.tokens ?? 0;
     const score = validation.score ?? 0;
     const SCORE_REGRESSION = 10;
@@ -155,7 +156,8 @@ export async function updateAIReadme(input: UpdateInput) {
         content,
         tokens,
         score,
-        splitThreshold
+        splitThreshold,
+        tokenBudget
       );
     }
 

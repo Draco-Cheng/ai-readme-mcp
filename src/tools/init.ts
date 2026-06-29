@@ -7,8 +7,10 @@ import { z } from 'zod';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { AIReadmeScanner } from '../core/scanner.js';
+import { AIReadmeScanner, resolveExcludePatterns } from '../core/scanner.js';
+import { ReadmeValidator } from '../core/validator.js';
 import { TOKEN_EFFICIENT_FORMAT_GUIDE } from '../core/writingGuide.js';
+import { DEFAULT_VALIDATION_CONFIG } from '../types/index.js';
 
 export const initSchema = z.object({
   projectRoot: z.string().describe('The root directory of the project. Use the current working directory (e.g., from environment or pwd). If unsure, pass the project root path.'),
@@ -38,9 +40,12 @@ interface EmptyReadmeInfo {
 export async function initAIReadme(input: InitInput) {
   const { projectRoot, excludePatterns, targetPath } = input;
 
+  const config = await ReadmeValidator.loadConfig(projectRoot);
+  const tokenBudget = config?.tokenBudget ?? DEFAULT_VALIDATION_CONFIG.tokenBudget;
+
   // Scan the project
   const scanner = new AIReadmeScanner(projectRoot, {
-    excludePatterns,
+    excludePatterns: resolveExcludePatterns(excludePatterns, config?.excludePatterns),
     cacheContent: true,
   });
 
@@ -151,7 +156,7 @@ export async function initAIReadme(input: InitInput) {
     promptText += `   - Tailwind only — no inline styles, no CSS modules\n`;
     promptText += `   - Shared UI in libs/ui-components; shared types in packages/common\n`;
     promptText += `   \`\`\`\n\n`;
-    promptText += `   **Keep it concise:** <400 tokens. Focus on what helps AI generate better code.\n\n`;
+    promptText += `   **Keep it concise:** <${tokenBudget} tokens. Focus on what helps AI generate better code.\n\n`;
   }
 
   promptText += `${TOKEN_EFFICIENT_FORMAT_GUIDE}\n`;

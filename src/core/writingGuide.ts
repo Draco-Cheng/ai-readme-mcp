@@ -4,6 +4,8 @@
  * when scores are low — so AI follows the same standard in both contexts).
  */
 
+import { DEFAULT_TOKEN_BUDGET, lightTierTokens, fullTierTokens } from './budget.js';
+
 export const TOKEN_EFFICIENT_FORMAT_GUIDE = `## Writing Style: Keywords, not prose
 
 AI_README is read by AI, not humans. Keywords > sentences:
@@ -39,30 +41,37 @@ AI_README is read by AI, not humans. Keywords > sentences:
  * Used standalone for mid-tier issues. For severe cases, callers append
  * TOKEN_EFFICIENT_FORMAT_GUIDE separately so the full ❌→✅ examples follow.
  */
-export const LOW_SCORE_REMINDER = `📖 **AI_README is for AI, not humans.** Keywords, not prose:
+/** "Under N tokens" line scales with the project budget (default 400). */
+export function renderLowScoreReminder(tokenBudget: number = DEFAULT_TOKEN_BUDGET): string {
+  return `📖 **AI_README is for AI, not humans.** Keywords, not prose:
 - 1 bullet ("- ") = 1 fact AI'd get wrong from code (+why only if it stops reversion). A run-on chaining facts with ";"/"then" is a wall → break into bullets.
-- Under 400 tokens. Fragments, no prose paragraphs. State rules directly (no "You should"/"Remember to").
+- Under ${tokenBudget} tokens. Fragments, no prose paragraphs. State rules directly (no "You should"/"Remember to").
 - Drop filler (just, really, basically, in order to, utilize) AND anything AI re-derives from code: project structure, standard naming, generic test commands, exhaustive lists.
 - Keep only project-specific + non-obvious.`;
+}
 
 // Tiered thresholds: light reminder for "drifting", full guide for "needs rewrite".
 // Token thresholds fire even when score is OK — a 900-token file with one warning
-// scores 75 but is already 2x over budget and needs the same nudge.
+// scores 75 but is already 2x over budget and needs the same nudge. Token cutoffs
+// derive from the project's tokenBudget (see budget.ts); score cutoffs are fixed.
 export const SCORE_LIGHT_THRESHOLD = 80;
 export const SCORE_FULL_THRESHOLD = 60;
-export const TOKENS_LIGHT_THRESHOLD = 500;
-export const TOKENS_FULL_THRESHOLD = 700;
 
 export type WritingGuideTier = 'none' | 'light' | 'full';
 
 /**
  * Pick which writing-guide tier to surface for a single README, based on score
  * and token count. Shared between validate (multi-file summary) and update
- * (single-file post-write check) so both tools give the same nudge.
+ * (single-file post-write check) so both tools give the same nudge. The token
+ * cutoffs scale with tokenBudget so a higher-budget project isn't nagged at 500.
  */
-export function pickWritingGuideTier(score: number, tokens: number): WritingGuideTier {
-  if (score < SCORE_FULL_THRESHOLD || tokens > TOKENS_FULL_THRESHOLD) return 'full';
-  if (score < SCORE_LIGHT_THRESHOLD || tokens > TOKENS_LIGHT_THRESHOLD) return 'light';
+export function pickWritingGuideTier(
+  score: number,
+  tokens: number,
+  tokenBudget: number = DEFAULT_TOKEN_BUDGET
+): WritingGuideTier {
+  if (score < SCORE_FULL_THRESHOLD || tokens > fullTierTokens(tokenBudget)) return 'full';
+  if (score < SCORE_LIGHT_THRESHOLD || tokens > lightTierTokens(tokenBudget)) return 'light';
   return 'none';
 }
 
@@ -70,8 +79,11 @@ export function pickWritingGuideTier(score: number, tokens: number): WritingGuid
  * Render the writing-guide reminder for a given tier. Returns empty string
  * for 'none' so callers can unconditionally append.
  */
-export function renderWritingGuide(tier: WritingGuideTier): string {
+export function renderWritingGuide(
+  tier: WritingGuideTier,
+  tokenBudget: number = DEFAULT_TOKEN_BUDGET
+): string {
   if (tier === 'full') return TOKEN_EFFICIENT_FORMAT_GUIDE;
-  if (tier === 'light') return LOW_SCORE_REMINDER;
+  if (tier === 'light') return renderLowScoreReminder(tokenBudget);
   return '';
 }

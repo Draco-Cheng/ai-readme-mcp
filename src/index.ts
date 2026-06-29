@@ -169,7 +169,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           "4. Continue with implementation.",
           "",
           "Content Rules:",
-          "- Extremely concise (< 400 tokens).",
+          "- Extremely concise (default < 400 tokens; project may set a higher tokenBudget).",
           "- Only actionable conventions (tech, naming, patterns, infrastructure patterns, testing patterns).",
           "- NO explanations or examples",
         ].join("\n"),

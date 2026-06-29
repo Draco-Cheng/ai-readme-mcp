@@ -44,11 +44,12 @@ export async function compressAIReadme(input: CompressInput) {
     // victory on filler-count alone.
     const projectRoot = dirname(dirname(readmePath));
     const config = await ReadmeValidator.loadConfig(projectRoot);
+    const tokenBudget = config?.tokenBudget ?? DEFAULT_VALIDATION_CONFIG.tokenBudget;
     const validator = new ReadmeValidator(config || undefined);
     const validation = await validator.validate(readmePath).catch(() => null);
     const tokens = validation?.stats?.tokens ?? result.tokensAfter;
     const score = validation?.score ?? 100;
-    const tier = pickWritingGuideTier(score, tokens);
+    const tier = pickWritingGuideTier(score, tokens, tokenBudget);
     const overBudget = tier !== 'none';
     const splitThreshold =
       config?.sectionSplitThreshold ?? DEFAULT_VALIDATION_CONFIG.sectionSplitThreshold;
@@ -65,7 +66,8 @@ export async function compressAIReadme(input: CompressInput) {
           analyzedContent,
           tokens,
           score,
-          splitThreshold
+          splitThreshold,
+          tokenBudget
         );
         const tail =
           mode === 'split'
@@ -116,7 +118,7 @@ export async function compressAIReadme(input: CompressInput) {
     // validation above reflects pre-compression state. Re-estimate budget from the
     // compressed token count in that case; for a real write, trust the validator.
     const stillOverBudget = dryRun
-      ? pickWritingGuideTier(score, result.tokensAfter) !== 'none'
+      ? pickWritingGuideTier(score, result.tokensAfter, tokenBudget) !== 'none'
       : overBudget;
     const overBudgetGuidance = stillOverBudget
       ? buildOverBudgetGuidance(
@@ -124,7 +126,8 @@ export async function compressAIReadme(input: CompressInput) {
           analyzedContent,
           dryRun ? result.tokensAfter : tokens,
           score,
-          splitThreshold
+          splitThreshold,
+          tokenBudget
         )
       : null;
 

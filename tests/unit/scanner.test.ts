@@ -4,8 +4,30 @@
 import { describe, it, before } from 'node:test';
 import assert from 'node:assert';
 import { join } from 'path';
-import { AIReadmeScanner } from '../../src/core/scanner.js';
+import {
+  AIReadmeScanner,
+  resolveExcludePatterns,
+  DEFAULT_EXCLUDE_PATTERNS,
+} from '../../src/core/scanner.js';
 import type { ReadmeIndex } from '../../src/types/index.js';
+
+describe('resolveExcludePatterns', () => {
+  it('returns built-in defaults when neither per-call nor config is set', () => {
+    assert.deepEqual(resolveExcludePatterns(undefined, undefined), DEFAULT_EXCLUDE_PATTERNS);
+    assert.deepEqual(resolveExcludePatterns([], []), DEFAULT_EXCLUDE_PATTERNS);
+  });
+
+  it('config patterns AUGMENT the defaults (node_modules never slips back in)', () => {
+    const result = resolveExcludePatterns(undefined, ['**/legacy/**']);
+    assert.ok(result.includes('**/node_modules/**'), 'defaults retained');
+    assert.ok(result.includes('**/legacy/**'), 'config pattern added');
+  });
+
+  it('per-call argument REPLACES (back-compat: explicit list wins outright)', () => {
+    const result = resolveExcludePatterns(['**/only-this/**'], ['**/legacy/**']);
+    assert.deepEqual(result, ['**/only-this/**']);
+  });
+});
 
 describe('AIReadmeScanner', () => {
   const fixtureRoot = join(process.cwd(), 'tests', 'fixtures', 'sample-monorepo');
