@@ -138,17 +138,18 @@ export async function initAIReadme(input: InitInput) {
     promptText += `   - Main source files\n`;
     promptText += `   - Important modules/components\n\n`;
     promptText += `3. **Analyze and write a concise AI_README:**\n\n`;
-    promptText += `   Use update_ai_readme to populate. **No fixed format required** - a few clear sentences is often enough!\n\n`;
-    promptText += `   **What to include (pick what's relevant):**\n`;
-    promptText += `   - Tech choices (framework, styling, database)\n`;
+    promptText += `   Use update_ai_readme to populate. Format = bulleted keywords, NOT prose: 1 "- " bullet = 1 fact AI'd get wrong from code alone (+why only if it stops reversion). Record only non-obvious facts; skip anything AI can re-derive from the code.\n\n`;
+    promptText += `   **What to include (pick what's relevant, one bullet each):**\n`;
+    promptText += `   - Tech choices that are traps (a non-default/surprising one), not the whole stack AI reads from deps\n`;
     promptText += `   - **Cross-directory dependencies** (IMPORTANT for monorepos: "UI components in libs/ui", "shared types in packages/common")\n`;
-    promptText += `   - Key conventions or restrictions (e.g., "no emoji", "use server components")\n`;
-    promptText += `   - Shared resources other directories should know about\n\n`;
-    promptText += `   **Example - simple is fine:**\n`;
+    promptText += `   - Invariants / restrictions AI would violate (e.g., "no emoji", "never write to X directly")\n`;
+    promptText += `   - For where-it-lives / how-it-works: one "See <file>." pointer, not a description of its contents\n\n`;
+    promptText += `   **Example - bullets, 1 fact each:**\n`;
     promptText += `   \`\`\`\n`;
-    promptText += `   Next.js 14 App Router with TypeScript.\n`;
-    promptText += `   Use Tailwind CSS, not inline styles.\n`;
-    promptText += `   Shared UI components in libs/ui-components.\n`;
+    promptText += `   # apps/web\n`;
+    promptText += `   - Next.js 14 App Router; Server Components by default (mark client with "use client")\n`;
+    promptText += `   - Tailwind only — no inline styles, no CSS modules\n`;
+    promptText += `   - Shared UI in libs/ui-components; shared types in packages/common\n`;
     promptText += `   \`\`\`\n\n`;
     promptText += `   **Keep it concise:** <400 tokens. Focus on what helps AI generate better code.\n\n`;
   }
