@@ -1,8 +1,8 @@
 # Root Level AI_README
 
-Monorepo apps directory. Contains frontend (React/TypeScript) and backend (TypeScript) apps.
+Monorepo: frontend (React/TS) + backend (TS) apps.
 
 ## Cross-directory dependencies
-Shared utilities in `packages/shared/src/utils`. Backend REST API consumed by frontend.
+Shared utils in `packages/shared/src/utils`. Frontend consumes backend REST API.
 
 
