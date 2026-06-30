@@ -4,9 +4,14 @@
  */
 
 import { z } from 'zod';
+import { minimatch } from 'minimatch';
 import { AIReadmeScanner, resolveExcludePatterns } from '../core/scanner.js';
 import { ContextRouter } from '../core/router.js';
 import { ReadmeValidator } from '../core/validator.js';
+
+function pathMatchesExcludes(targetPath: string, patterns: string[]): boolean {
+  return patterns.some(p => minimatch(targetPath, p, { dot: true }));
+}
 
 export const getContextSchema = z.object({
   projectRoot: z.string().describe('The root directory of the project. Use the current working directory (e.g., from environment or pwd). If unsure, pass the project root path.'),
@@ -37,17 +42,34 @@ export async function getContextForFile(input: GetContextInput) {
 
   const config = await ReadmeValidator.loadConfig(projectRoot);
 
+  const resolvedExcludes = resolveExcludePatterns(excludePatterns, config?.excludePatterns);
+
   // First, scan the project to build the index
   const scanner = new AIReadmeScanner(projectRoot, {
-    excludePatterns: resolveExcludePatterns(excludePatterns, config?.excludePatterns),
+    excludePatterns: resolvedExcludes,
     cacheContent: true, // Cache content for context retrieval
   });
 
   const index = await scanner.scan();
 
-  // Create router and get context
+  // Create router and get context. Same exclude globs gate the routing layer:
+  // if the file the caller is editing sits under an excluded path, the user
+  // has opted out — don't push any context (including root) at them.
   const router = new ContextRouter(index);
-  const contexts = await router.getContextForPath(path, includeRoot);
+  const contexts = await router.getContextForPath(path, includeRoot, resolvedExcludes);
+
+  // If the path is excluded by user config, short-circuit with a one-liner so
+  // the LLM doesn't mistake "no context" for "AI_README missing → run init".
+  if (contexts.length === 0 && pathMatchesExcludes(path, resolvedExcludes)) {
+    return {
+      path,
+      totalContexts: 0,
+      contexts: [],
+      formattedPrompt:
+        `## 📚 Project Context for: ${path}\n\n` +
+        `_This path is excluded by \`excludePatterns\` — no AI_README context injected._\n`,
+    };
+  }
 
   // Check for empty AI_README files
   const hasEmptyReadmes = contexts.some(ctx => !ctx.content || ctx.content.trim().length === 0);

@@ -18,11 +18,21 @@ export class ContextRouter {
    * Get relevant AI_README contexts for a specific path (file or directory)
    * @param targetPath - The path relative to project root (can be file or directory)
    * @param includeRoot - Whether to include root-level README (default: true)
+   * @param skipPatterns - Globs that, if matched by targetPath, cause an early
+   *   empty return. Same patterns the scanner uses to skip dirs; passing them
+   *   here makes excludePatterns "I don't care about this path" mean what it
+   *   says — no scanning AND no context injection for files under there.
    */
   async getContextForPath(
     targetPath: string,
-    includeRoot: boolean = true
+    includeRoot: boolean = true,
+    skipPatterns?: string[]
   ): Promise<ReadmeContext[]> {
+    if (skipPatterns && skipPatterns.length > 0) {
+      const hit = skipPatterns.some(p => minimatch(targetPath, p, { dot: true }));
+      if (hit) return [];
+    }
+
     const contexts: ReadmeContext[] = [];
 
     // Find matching READMEs

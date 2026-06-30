@@ -11,7 +11,9 @@ TypeScript ESM MCP server (Node >=18). Bundled via `tsup`. Tests via `tsx --test
 
 - Token budget: ONE knob `tokenBudget` (.aireadme.config.json, default 400). All thresholds/tiers/prompt numbers derive from it via `src/core/budget.ts` — never hardcode 400/200/500/700.
 - `tokenBudget` is a TARGET not a hard cap — files over it are nudged, never rejected; error tier = 2.5× (config field name reflects this, NOT `maxTokens`).
+- `excludePatterns` is dual-purpose: scanner skips them AND `getContextForPath` short-circuits with empty contexts if `targetPath` matches — so a user opting out of `docs/` doesn't get root README forced on them.
 - config `excludePatterns` AUGMENT scanner defaults (node_modules etc. always kept); per-call arg REPLACES. All scan tools route through `resolveExcludePatterns()` — never pass raw `excludePatterns` to the scanner.
+- `getContextForFile` MUST pass resolved excludes to `router.getContextForPath` as the 3rd arg, AND distinguish "skipped" from "no README found" in the response — else LLM mistakes opt-out for missing-README and calls init.
 - Test files run in PARALLEL; each must use its own `tests/temp-<name>` dir — a shared temp dir lets one suite's after() rm() delete another's fixture mid-test.
 ## Cross-directory dependencies
 `src/tools/` imports from `src/core/` and `src/types/`. `src/core/` imports from `src/types/` only. No circular dependencies.

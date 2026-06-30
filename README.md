@@ -469,16 +469,20 @@ Omitting the file is identical to `{ "tokenBudget": 400 }` — existing projects
 
 ### Excluding directories
 
-By default the scanner skips `node_modules`, `.git`, `dist`, `build`, `.next`, and `coverage`. To always ignore extra directories (e.g. generated code or a `legacy/` tree), add `excludePatterns`:
+By default the scanner skips `node_modules`, `.git`, `dist`, `build`, `.next`, and `coverage`. To always ignore extra directories (e.g. generated code, a `legacy/` tree, or a `docs/` folder you don't want the agent to consult conventions for), add `excludePatterns`:
 
 ```json
 {
-  "tokenBudget": 800,
-  "excludePatterns": ["**/legacy/**", "**/generated/**"]
+  "excludePatterns": ["**/legacy/**", "**/docs/**"]
 }
 ```
 
-These **add to** the built-in ignores — `node_modules` etc. stay excluded, so you can't accidentally start scanning them. (Passing `excludePatterns` directly to a tool call still overrides the config for that one call.)
+`excludePatterns` is a single "I don't care about this path" knob, applied two ways:
+
+1. The scanner skips these directories (no AI_README inside them gets indexed).
+2. `get_context_for_file` short-circuits when the file you're editing matches — no AI_README context (not even root) is injected. The tool returns a one-line note instead. This avoids forcing a heavy root AI_README on agents editing `docs/` or other non-code paths.
+
+Built-in ignores (`node_modules` etc.) stay excluded on top of yours — you can't accidentally start scanning them. (Passing `excludePatterns` directly to a tool call still overrides the config for that one call.)
 
 ### Validation rules (optional)
 

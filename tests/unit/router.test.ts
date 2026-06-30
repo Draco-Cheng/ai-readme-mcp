@@ -55,6 +55,26 @@ describe('ContextRouter', () => {
       assert.strictEqual(rootContext, undefined, 'Should not include root README');
     });
 
+    it('returns empty when targetPath matches skipPatterns (path-level opt-out)', async () => {
+      const contexts = await router.getContextForPath(
+        'apps/frontend/src/components/atoms/Button.tsx',
+        true,
+        ['**/frontend/**']
+      );
+
+      assert.strictEqual(contexts.length, 0, 'Excluded path should get no context, not even root');
+    });
+
+    it('ignores skipPatterns when nothing matches', async () => {
+      const contexts = await router.getContextForPath(
+        'apps/backend/src/routes/users.ts',
+        true,
+        ['**/frontend/**']
+      );
+
+      assert.ok(contexts.length > 0, 'Non-excluded paths still get context as usual');
+    });
+
     it('should find correct README for backend file', async () => {
       const contexts = await router.getContextForPath(
         'apps/backend/src/routes/users.ts'
