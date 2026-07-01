@@ -500,6 +500,21 @@ Two rules are worth overriding for some teams:
 - **`allowCodeBlocks`** (default `false`) — code fences are flagged by default because they burn tokens. Set `true` if a snippet genuinely belongs in your AI_README.
 - **`requireSections`** (default none) — warn when a listed section heading is missing, e.g. to enforce a house template across every AI_README.
 
+### Prompt verbosity
+
+The tool descriptions and the guidance appended to `get_context_for_file` are sent to the model **every turn**. If this server dominates your context budget, switch to `medium` — it trims the descriptions ~80% and drops the AI_README-writing guide from every read (that guidance still lives on `update_ai_readme`, where it's actually needed):
+
+```json
+{
+  "verbosity": "medium"
+}
+```
+
+- **`high`** (default) — the full "call this every time" prompting. Best for smaller / less compliant models that need a push to call the tools.
+- **`medium`** — much smaller footprint. Best for capable models (Opus/Sonnet) where the extra tokens are pure cost.
+
+> **Read once at startup** from the `.aireadme.config.json` at the server's working directory, so a change needs a server restart to take effect. (Tool descriptions ship before any tool call, so this is the one setting read from cwd rather than a per-call `projectRoot`.) It only controls the server's prompt overhead — not what your AI_README files say or how validation behaves.
+
 ---
 
 ## 🗜️ Validate & Compress AI_README Files
@@ -943,19 +958,6 @@ Compress an AI_README.md file using deterministic filler-language removal. No LL
 2. Run `compress_ai_readme` with `dryRun: true` to preview
 3. Run again without `dryRun` to apply
 4. Re-run `validate_ai_readmes` to confirm improvement
-
----
-
-## 🚀 What's Next
-
-We're actively working on new features:
-
-- **Auto-populate Empty AI_README** - Automatically generate AI_README content when `get_context_for_file` detects empty files, reducing manual initialization steps
-- **Enhanced Tool Triggering** - ~~Claude 4.6+ deferred tool loading workaround via `CLAUDE.md` (see Step 4 above)~~ ✅ Resolved: Add `CLAUDE.md` to your project root
-- **CI/CD Integration** - GitHub Actions for automated README validation
-- **VSCode Extension** - Native VSCode extension with visual UI for managing AI_README files, offering a more integrated experience alongside the current MCP server
-
-Want to contribute? Check out our [Contributing Guide](./CONTRIBUTING.md)!
 
 ---
 

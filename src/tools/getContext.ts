@@ -8,6 +8,7 @@ import { minimatch } from 'minimatch';
 import { AIReadmeScanner, resolveExcludePatterns } from '../core/scanner.js';
 import { ContextRouter } from '../core/router.js';
 import { ReadmeValidator } from '../core/validator.js';
+import { resolveVerbosity } from '../core/verbosity.js';
 
 function pathMatchesExcludes(targetPath: string, patterns: string[]): boolean {
   return patterns.some(p => minimatch(targetPath, p, { dot: true }));
@@ -115,15 +116,24 @@ export async function getContextForFile(input: GetContextInput) {
       promptText += ctx.content + '\n\n';
     }
 
-    promptText += `---\n`;
-    promptText += `**Important:**\n`;
-    promptText += `- Follow the above conventions when making changes\n`;
-    promptText += `- When establishing NEW conventions: update AI_README first → get context → write code\n`;
-    promptText += `- When discovering patterns in existing code: document them in AI_README afterward\n`;
-    promptText += `- Record a convention ONLY if it is non-obvious (AI would get it wrong by reading the code alone) — as one line. Record nothing AI can re-derive from the code: directory structure, standard naming, framework defaults, generic test commands, exhaustive endpoint/field/file lists, per-file descriptions. ("We use async/await" is obvious; "bcrypt direct, NOT passlib" is a trap worth a line.)\n`;
-    promptText += `- Adding to AI_README: bulleted keywords, NOT prose. 1 bullet ("- ") = 1 fact AI'd get wrong from code (+why only if it stops reversion). A run-on sentence chaining facts with ";"/"then"/"—" is a wall — break it into separate bullets. Fragments.\n`;
-    promptText += `  KEEP the fact (rule/invariant/trap) + why. DROP how-to AI reads from code — where it lives (paths, template names), what toggles it (flags, env), step-by-step mechanism → one "See <file>." pointer. Naming a file is fine; describing its contents is not.\n`;
-    promptText += `  When you append to a dense section, break the existing paragraph into bullets too — never grow the wall.\n`;
+    // The writing-guide reminder is only useful when the agent is actually
+    // WRITING an AI_README — but it gets appended to every read. In medium mode
+    // collapse it to one line (update_ai_readme carries the full guidance where
+    // it's needed); high mode keeps the full reminder inline.
+    if (resolveVerbosity(config?.verbosity) === 'medium') {
+      promptText += `---\n`;
+      promptText += `Follow the above conventions. To record a new/changed convention, use update_ai_readme (never edit AI_README.md directly).\n`;
+    } else {
+      promptText += `---\n`;
+      promptText += `**Important:**\n`;
+      promptText += `- Follow the above conventions when making changes\n`;
+      promptText += `- When establishing NEW conventions: update AI_README first → get context → write code\n`;
+      promptText += `- When discovering patterns in existing code: document them in AI_README afterward\n`;
+      promptText += `- Record a convention ONLY if it is non-obvious (AI would get it wrong by reading the code alone) — as one line. Record nothing AI can re-derive from the code: directory structure, standard naming, framework defaults, generic test commands, exhaustive endpoint/field/file lists, per-file descriptions. ("We use async/await" is obvious; "bcrypt direct, NOT passlib" is a trap worth a line.)\n`;
+      promptText += `- Adding to AI_README: bulleted keywords, NOT prose. 1 bullet ("- ") = 1 fact AI'd get wrong from code (+why only if it stops reversion). A run-on sentence chaining facts with ";"/"then"/"—" is a wall — break it into separate bullets. Fragments.\n`;
+      promptText += `  KEEP the fact (rule/invariant/trap) + why. DROP how-to AI reads from code — where it lives (paths, template names), what toggles it (flags, env), step-by-step mechanism → one "See <file>." pointer. Naming a file is fine; describing its contents is not.\n`;
+      promptText += `  When you append to a dense section, break the existing paragraph into bullets too — never grow the wall.\n`;
+    }
   }
 
   return {
