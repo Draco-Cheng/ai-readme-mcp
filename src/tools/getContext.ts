@@ -120,7 +120,7 @@ export async function getContextForFile(input: GetContextInput) {
     // WRITING an AI_README — but it gets appended to every read. In medium mode
     // collapse it to one line (update_ai_readme carries the full guidance where
     // it's needed); high mode keeps the full reminder inline.
-    if (resolveVerbosity(config?.verbosity) === 'medium') {
+    if (resolveVerbosity(config?.guidanceLevel) === 'medium') {
       promptText += `---\n`;
       promptText += `Follow the above conventions. To record a new/changed convention, use update_ai_readme (never edit AI_README.md directly).\n`;
     } else {

@@ -16,7 +16,7 @@ TypeScript ESM MCP server (Node >=18). Bundled via `tsup`. Tests via `tsx --test
 - get_context response MUST distinguish "skipped (excluded)" from "no README found" — else LLM mistakes opt-out for missing-README and calls init.
 - Test files run in PARALLEL; each must use its own `tests/temp-<name>` dir — a shared temp dir lets one suite's after() rm() delete another's fixture mid-test.
 
-- Prompt verbosity (`verbosity` in .aireadme.config.json, high default|medium): tool descriptions read it SYNC from cwd at startup — ListTools ships before any call, so no projectRoot. high = old text verbatim. See src/core/verbosity.ts.
+- Guidance level (`guidanceLevel` in .aireadme.config.json, high default|medium): tool descriptions read it SYNC from cwd at startup — ListTools ships before any call, so no projectRoot. high = old text verbatim. See src/core/verbosity.ts.
 ## Cross-directory dependencies
 `src/tools/` imports from `src/core/` and `src/types/`. `src/core/` imports from `src/types/` only. No circular dependencies.
 

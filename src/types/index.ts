@@ -101,14 +101,14 @@ export interface ValidationConfig {
    */
   excludePatterns?: string[];
   /**
-   * Prompt verbosity for tool descriptions + get_context guidance (neutral
-   * levels, not a good/bad choice):
+   * How much guidance (tool descriptions + get_context reminder) the server
+   * sends the model (neutral levels, not a good/bad choice):
    *   'high' (default) — full "call every time" prompting.
    *   'medium' — ~80% smaller; best for capable models watching context cost.
    * Read once at server startup from .aireadme.config.json at the server's cwd.
    * See verbosity.ts / resolveVerbosity().
    */
-  verbosity?: 'high' | 'medium';
+  guidanceLevel?: 'high' | 'medium';
   /** Validation rules */
   rules?: {
     /** Require H1 heading (default: true) */

@@ -500,13 +500,13 @@ Two rules are worth overriding for some teams:
 - **`allowCodeBlocks`** (default `false`) — code fences are flagged by default because they burn tokens. Set `true` if a snippet genuinely belongs in your AI_README.
 - **`requireSections`** (default none) — warn when a listed section heading is missing, e.g. to enforce a house template across every AI_README.
 
-### Prompt verbosity
+### Guidance level
 
 The tool descriptions and the guidance appended to `get_context_for_file` are sent to the model **every turn**. If this server dominates your context budget, switch to `medium` — it trims the descriptions ~80% and drops the AI_README-writing guide from every read (that guidance still lives on `update_ai_readme`, where it's actually needed):
 
 ```json
 {
-  "verbosity": "medium"
+  "guidanceLevel": "medium"
 }
 ```
 

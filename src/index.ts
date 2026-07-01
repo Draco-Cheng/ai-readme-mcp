@@ -46,21 +46,21 @@ import {
   updateDescription,
 } from "./core/verbosity.js";
 
-// Prompt verbosity is fixed at server startup: read `verbosity` from
+// Guidance level is fixed at server startup: read `guidanceLevel` from
 // .aireadme.config.json at the server's cwd. Tool descriptions ship in
 // ListTools before any tool call, so this is the one moment we can read it —
 // hence cwd (not a per-call projectRoot). Sync read: startup only, once.
-function readVerbosityFromCwd(): string | undefined {
+function readGuidanceLevelFromCwd(): string | undefined {
   try {
     const cfgPath = join(process.cwd(), ".aireadme.config.json");
     if (!existsSync(cfgPath)) return undefined;
     const cfg = JSON.parse(readFileSync(cfgPath, "utf-8"));
-    return (cfg.validation ?? cfg)?.verbosity;
+    return (cfg.validation ?? cfg)?.guidanceLevel;
   } catch {
     return undefined;
   }
 }
-const verbosity = resolveVerbosity(readVerbosityFromCwd());
+const verbosity = resolveVerbosity(readGuidanceLevelFromCwd());
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
