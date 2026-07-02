@@ -1,4 +1,3 @@
 {
-  "tokenBudget": 400,
-  "excludePatterns": ["**/tests/**"]
+  "tokenBudget": 400
 }
