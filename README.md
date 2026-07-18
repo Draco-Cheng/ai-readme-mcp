@@ -746,6 +746,7 @@ Update an AI_README.md file with specified operations.
 // Parameters
 {
   readmePath: string;            // Required: Path to AI_README.md file
+  projectRoot: string;           // Required: Project root (config is read from here)
   operations: Array<{            // Required: Update operations to perform
     type: 'append' | 'prepend' | 'replace' | 'insert-after' | 'insert-before';
     content: string;             // Content to add or replace
@@ -773,7 +774,6 @@ Update an AI_README.md file with specified operations.
 - Review changes: `git diff AI_README.md`
 - Undo changes: `git checkout AI_README.md`
 - Commit changes: `git add AI_README.md && git commit -m "Update AI_README"`
-```
 
 **Example Usage:**
 
@@ -924,6 +924,7 @@ Compress an AI_README.md file using deterministic filler-language removal. No LL
 // Parameters
 {
   readmePath: string;    // Required: Absolute path to AI_README.md file
+  projectRoot: string;   // Required: Project root (config is read from here)
   dryRun?: boolean;      // Optional: Preview changes without writing (default: false)
 }
 
