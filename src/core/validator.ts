@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import type {
   ValidationConfig,
   ResolvedValidationConfig,
@@ -454,6 +454,36 @@ export class ReadmeValidator {
     } catch (error) {
       console.error(`Failed to load config from ${configPath}:`, error);
       return null;
+    }
+  }
+
+  /**
+   * Load config by walking UP from a starting directory to the filesystem root,
+   * returning the nearest `.aireadme.config.json`.
+   *
+   * Tools that only have a `readmePath` (compress, update) can't assume the
+   * project root is a fixed number of levels above the file — a nested
+   * `apps/backend/AI_README.md` would otherwise miss a root-level config and
+   * silently fall back to the default budget. Walk up instead of guessing.
+   *
+   * @param startDir - Directory to start searching from (e.g. the README's dir)
+   * @returns Nearest config or null if none found up to the root
+   */
+  static async loadConfigNearest(
+    startDir: string
+  ): Promise<Partial<ValidationConfig> | null> {
+    let dir = startDir;
+
+    while (true) {
+      const config = await ReadmeValidator.loadConfig(dir);
+      if (config) {
+        return config;
+      }
+      const parent = dirname(dir);
+      if (parent === dir) {
+        return null; // reached filesystem root
+      }
+      dir = parent;
     }
   }
 }

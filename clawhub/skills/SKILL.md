@@ -1,7 +1,7 @@
 ---
 name: ai-readme-manager
 description: Manages AI_README.md files so AI agents remember your project conventions across every session
-version: 1.7.2
+version: 1.7.3
 metadata:
   openclaw:
     install:
@@ -24,12 +24,12 @@ Before this skill works, you must register the MCP server with OpenClaw:
 
 On macOS/Linux:
 ```bash
-openclaw mcp set ai-readme-manager '{"command":"npx","args":["ai-readme-mcp@1.7.2"]}'
+openclaw mcp set ai-readme-manager '{"command":"npx","args":["ai-readme-mcp@1.7.3"]}'
 ```
 
 On Windows (cmd):
 ```cmd
-openclaw mcp set ai-readme-manager "{\"command\":\"npx\",\"args\":[\"ai-readme-mcp@1.7.2\"]}"
+openclaw mcp set ai-readme-manager "{\"command\":\"npx\",\"args\":[\"ai-readme-mcp@1.7.3\"]}"
 ```
 
 **Option 2: Edit config file**
@@ -41,7 +41,7 @@ Add to `~/.openclaw/openclaw.json`:
     "servers": {
       "ai-readme-manager": {
         "command": "npx",
-        "args": ["ai-readme-mcp@1.7.2"]
+        "args": ["ai-readme-mcp@1.7.3"]
       }
     }
   }

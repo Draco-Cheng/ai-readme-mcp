@@ -10,9 +10,9 @@ TypeScript ESM MCP server (Node >=18). Bundled via `tsup`. Tests via `tsx --test
 
 
 - Token budget: ONE knob `tokenBudget` (.aireadme.config.json, default 400). All thresholds/tiers/prompt numbers derive from it via `src/core/budget.ts` — never hardcode 400/200/500/700.
+- compress/update load config via `loadConfigNearest()` (walks UP), NEVER `dirname(dirname(readmePath))` — that misses root config for READMEs >1 level deep → silent fallback to default budget.
 - `tokenBudget` is a TARGET not a hard cap — files over it are nudged, never rejected; error tier = 2.5× (config field name reflects this, NOT `maxTokens`).
-- `excludePatterns` is dual-purpose: scanner skips them AND `getContextForPath` short-circuits with empty contexts if `targetPath` matches — so a user opting out of `docs/` doesn't get root README forced on them.
-- config `excludePatterns` AUGMENT scanner defaults (node_modules etc. always kept); per-call arg REPLACES. All scan tools route through `resolveExcludePatterns()` — never pass raw `excludePatterns` to the scanner.
+- `excludePatterns` dual-purpose: scanner skips them AND `getContextForPath` short-circuits (excluded path gets no README, not even root). Config values AUGMENT defaults (node_modules always kept); per-call REPLACES. All via `resolveExcludePatterns()`.
 - get_context response MUST distinguish "skipped (excluded)" from "no README found" — else LLM mistakes opt-out for missing-README and calls init.
 - Test files run in PARALLEL; each must use its own `tests/temp-<name>` dir — a shared temp dir lets one suite's after() rm() delete another's fixture mid-test.
 

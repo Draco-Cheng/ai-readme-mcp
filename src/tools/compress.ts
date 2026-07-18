@@ -42,8 +42,7 @@ export async function compressAIReadme(input: CompressInput) {
     // "No filler" is NOT the same as "within budget" — a file can be tight prose
     // yet still too long. Surface the real budget state instead of declaring
     // victory on filler-count alone.
-    const projectRoot = dirname(dirname(readmePath));
-    const config = await ReadmeValidator.loadConfig(projectRoot);
+    const config = await ReadmeValidator.loadConfigNearest(dirname(readmePath));
     const tokenBudget = config?.tokenBudget ?? DEFAULT_VALIDATION_CONFIG.tokenBudget;
     const validator = new ReadmeValidator(config || undefined);
     const validation = await validator.validate(readmePath).catch(() => null);

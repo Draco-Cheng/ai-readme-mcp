@@ -1,6 +1,6 @@
 {
   "name": "ai-readme-mcp",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "MCP server for managing AI_README.md files in projects",
   "type": "module",
   "bin": {

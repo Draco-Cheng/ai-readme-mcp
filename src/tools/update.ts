@@ -78,8 +78,7 @@ export async function updateAIReadme(input: UpdateInput) {
 
   // Snapshot pre-edit health so we can distinguish "AI made it worse" from
   // "file was already broken before this edit" — phrasing changes accordingly.
-  const projectRoot = dirname(dirname(readmePath));
-  const config = await ReadmeValidator.loadConfig(projectRoot);
+  const config = await ReadmeValidator.loadConfigNearest(dirname(readmePath));
   const tokenBudget = config?.tokenBudget ?? DEFAULT_VALIDATION_CONFIG.tokenBudget;
   const preValidator = new ReadmeValidator(config || undefined);
   const before = existsSync(readmePath)
