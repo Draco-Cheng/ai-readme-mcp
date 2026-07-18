@@ -3,7 +3,7 @@
   "id": "ai-readme-mcp",
   "displayName": "AI_README MCP Server",
   "description": "Manages AI_README.md files that document your project's conventions for AI assistants. Gives your agent persistent memory of project rules across every session.",
-  "version": "1.7.3",
+  "version": "1.8.0",
   "homepage": "https://github.com/Draco-Cheng/ai-readme-mcp",
   "emoji": "📋",
   "configSchema": {

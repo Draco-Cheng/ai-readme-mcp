@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
-import { dirname } from 'path';
 import { ReadmeUpdater, UpdateOperation } from '../core/updater.js';
 import { ReadmeValidator } from '../core/validator.js';
 import { pickWritingGuideTier, renderWritingGuide } from '../core/writingGuide.js';
@@ -45,6 +44,9 @@ const updateOperationSchema = z.object({
  */
 export const updateSchema = z.object({
   readmePath: z.string().describe('Path to the AI_README.md file to update'),
+  projectRoot: z
+    .string()
+    .describe('Project root directory. Config (.aireadme.config.json) is read from here.'),
   operations: z.array(updateOperationSchema).describe(
     'List of update operations to perform'
   ),
@@ -74,11 +76,11 @@ export type UpdateInput = z.infer<typeof updateSchema>;
  * Use git to track changes and rollback if needed.
  */
 export async function updateAIReadme(input: UpdateInput) {
-  const { readmePath, operations } = input;
+  const { readmePath, projectRoot, operations } = input;
 
   // Snapshot pre-edit health so we can distinguish "AI made it worse" from
   // "file was already broken before this edit" — phrasing changes accordingly.
-  const config = await ReadmeValidator.loadConfigNearest(dirname(readmePath));
+  const config = await ReadmeValidator.loadConfig(projectRoot);
   const tokenBudget = config?.tokenBudget ?? DEFAULT_VALIDATION_CONFIG.tokenBudget;
   const preValidator = new ReadmeValidator(config || undefined);
   const before = existsSync(readmePath)

@@ -423,30 +423,6 @@ ${'This is a very long line that exceeds the maximum line length limit and shoul
     });
   });
 
-  describe('loadConfigNearest()', () => {
-    it('finds a config in an ancestor dir (nested README, root-level config)', async () => {
-      // Config lives at TEST_DIR (the "project root"); the README is two levels
-      // deeper, mirroring apps/backend/AI_README.md. Walking up must find it —
-      // dirname(dirname(readmePath)) would have missed it.
-      const nested = join(TEST_DIR, 'apps', 'backend');
-      await mkdir(nested, { recursive: true });
-      await writeFile(
-        CONFIG_FILE,
-        JSON.stringify({ tokenBudget: 550 }, null, 2),
-        'utf-8'
-      );
-
-      const config = await ReadmeValidator.loadConfigNearest(nested);
-      assert.ok(config, 'Should find ancestor config');
-      assert.strictEqual(config?.tokenBudget, 550, 'Should read tokenBudget from ancestor');
-    });
-
-    it('returns null when no config exists up to the filesystem root', async () => {
-      const config = await ReadmeValidator.loadConfigNearest('/nonexistent/deep/dir');
-      assert.strictEqual(config, null, 'Should return null when nothing is found');
-    });
-  });
-
   describe('quality scoring', () => {
     it('should calculate score based on issues', async () => {
       // Ensure test directory exists

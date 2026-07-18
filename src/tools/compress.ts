@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { dirname } from 'path';
 import { ReadmeCompressor } from '../core/compressor.js';
 import { ReadmeValidator } from '../core/validator.js';
 import { pickWritingGuideTier } from '../core/writingGuide.js';
@@ -8,6 +7,9 @@ import { DEFAULT_VALIDATION_CONFIG } from '../types/index.js';
 
 export const compressSchema = z.object({
   readmePath: z.string().describe('Absolute path to the AI_README.md file to compress'),
+  projectRoot: z
+    .string()
+    .describe('Project root directory. Config (.aireadme.config.json) is read from here.'),
   dryRun: z
     .boolean()
     .optional()
@@ -32,7 +34,7 @@ export type CompressInput = z.infer<typeof compressSchema>;
  * @returns Compression result with token diff and list of changes
  */
 export async function compressAIReadme(input: CompressInput) {
-  const { readmePath, dryRun } = input;
+  const { readmePath, projectRoot, dryRun } = input;
   const compressor = new ReadmeCompressor();
 
   try {
@@ -42,7 +44,7 @@ export async function compressAIReadme(input: CompressInput) {
     // "No filler" is NOT the same as "within budget" — a file can be tight prose
     // yet still too long. Surface the real budget state instead of declaring
     // victory on filler-count alone.
-    const config = await ReadmeValidator.loadConfigNearest(dirname(readmePath));
+    const config = await ReadmeValidator.loadConfig(projectRoot);
     const tokenBudget = config?.tokenBudget ?? DEFAULT_VALIDATION_CONFIG.tokenBudget;
     const validator = new ReadmeValidator(config || undefined);
     const validation = await validator.validate(readmePath).catch(() => null);
