@@ -44,6 +44,7 @@ export function buildRewriteInstruction(
     `    operations: [{ type: "rewrite", content: "<full new file content here>" }]\n` +
     `  })\n\n` +
     `NOT a squeeze — a CUT. Remove low-value INFORMATION, not words.\n` +
+    `Be willing to DELETE. When unsure a line earns its place, cut it — don't keep it just because it's already there. A dropped low-value line costs nothing; a kept one costs budget every read.\n` +
     `Rewrite reqs (keywords not prose):\n` +
     `  - Target <${tokenBudget} tokens, ideally <${ideal}. Fragments + bullets.\n` +
     `  - Bullets, 1 "- " per fact AI'd get wrong from code (+why only if it stops reversion). Run-on chaining facts with ";"/"then" = wall → break into bullets.\n` +

@@ -21,6 +21,8 @@ AI_README is read by AI, not humans. Keywords > sentences:
 - Verbose phrases: "in order to" → "to", "utilize" → "use"
 - Anything AI re-derives from code: directory structure, standard naming, framework defaults, generic test commands, exhaustive lists, step-by-step how-to
 
+**When unsure, CUT.** A line must earn its place; if you're not sure it does, delete it — a dropped low-value line costs nothing, a kept one costs budget every read. Don't keep a line just because it's already there.
+
 **Preserve exactly (never compress):** code blocks + inline code, file paths, URLs, commands, technical terms, versions.
 
 **Examples (✅ = 1 fact per bullet, fragments):**
