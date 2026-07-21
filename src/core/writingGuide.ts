@@ -65,7 +65,7 @@ export type WritingGuideTier = 'none' | 'light' | 'full';
  * Pick which writing-guide tier to surface for a single README, based on score
  * and token count. Shared between validate (multi-file summary) and update
  * (single-file post-write check) so both tools give the same nudge. The token
- * cutoffs scale with tokenBudget so a higher-budget project isn't nagged at 500.
+ * cutoffs scale with tokenBudget so a higher-budget project isn't nagged early.
  */
 export function pickWritingGuideTier(
   score: number,

@@ -124,7 +124,7 @@ export interface ValidationConfig {
   tokenLimits?: {
     /** Excellent: under this many tokens (default: 300) */
     excellent?: number;
-    /** Good: under this many tokens (default: 500) */
+    /** Good: under this many tokens (default: 400 = tokenBudget) */
     good?: number;
     /** Warning: under this many tokens (default: 800) */
     warning?: number;

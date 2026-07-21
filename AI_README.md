@@ -11,7 +11,7 @@ TypeScript ESM MCP server (Node >=18). Bundled via `tsup`. Tests via `tsx --test
 
 - Token budget: ONE knob `tokenBudget` (.aireadme.config.json, default 400). All thresholds/tiers/prompt numbers derive from it via `src/core/budget.ts` — never hardcode them.
 - ALL tools (incl. compress/update) require `projectRoot` + read config via `loadConfig(projectRoot)` — one path, no walk-up/guessing.
-- `tokenBudget` is a TARGET not a hard cap — files over it are nudged, never rejected; error tier = 2.5× (config field name reflects this, NOT `maxTokens`).
+- `tokenBudget` = TARGET not hard cap — crossing it triggers light nudge (1.0× on purpose, no silent band); error = 2×; never rejected (hence NOT named `maxTokens`).
 - `excludePatterns` dual-purpose: scanner skips them AND `getContextForPath` short-circuits (excluded path gets NO README). Config AUGMENTS defaults (node_modules always kept), per-call REPLACES; all via `resolveExcludePatterns()`. Response MUST distinguish "skipped" from "no README found" — else LLM calls init on an opt-out.
 - Test files run in PARALLEL; each must use its own `tests/temp-<name>` dir — a shared temp dir lets one suite's after() rm() delete another's fixture mid-test.
 

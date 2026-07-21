@@ -454,14 +454,14 @@ Most projects need no config — the defaults target tight, AI-optimized files (
 
 **`tokenBudget` is the single knob.** Set it and *everything* scales with it — the quality-score thresholds, the "drifting / needs-rewrite" nudges, and the numbers printed in the over-budget prompts. You don't set five numbers; you set one.
 
-> **It's a target, not a hard cap.** A file is never rejected or truncated for going over `tokenBudget` — it just gets nudged to tighten up. Validation only flags an *error* at the top tier (2.5 × budget). So a 420-token file under an 800 budget is perfectly fine.
+> **It's a target, not a hard cap.** A file is never rejected or truncated for going over `tokenBudget` — crossing it earns a light "tighten this up" nudge, and validation only flags an *error* at double the budget. So a 420-token file under an 800 budget is perfectly fine.
 
 | Tier | Formula | @ 400 (default) | @ 800 |
 |---|---|---|---|
 | Excellent | ½ × tokenBudget | 200 | 400 |
 | Good (the target) | 1 × tokenBudget | 400 | 800 |
 | Warning | 1.5 × tokenBudget | 600 | 1200 |
-| Error | 2.5 × tokenBudget | 1000 | 2000 |
+| Error | 2 × tokenBudget | 800 | 1600 |
 
 Omitting the file is identical to `{ "tokenBudget": 400 }` — existing projects see no change. Advanced overrides (`tokenLimits`, `rules`, `sectionSplitThreshold`) are still accepted and win over the derived values when set explicitly.
 
@@ -882,7 +882,7 @@ Validate all AI_README.md files in your project for quality and token efficiency
       excellent?: number;          // Default: 200
       good?: number;              // Default: 400
       warning?: number;           // Default: 600
-      error?: number;             // Default: 1000
+      error?: number;             // Default: 800
     };
   };
 }
@@ -914,7 +914,7 @@ Validate all AI_README.md files in your project for quality and token efficiency
 - 🌟 Excellent: < 200 tokens
 - ✅ Good: < 400 tokens
 - ⚠️ Needs improvement: < 600 tokens
-- ❌ Too long: > 1000 tokens
+- ❌ Too long: > 800 tokens
 
 ### `compress_ai_readme`
 
