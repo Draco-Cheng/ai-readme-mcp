@@ -134,6 +134,45 @@ describe('ReadmeUpdater', () => {
         'Error should mention text not found'
       );
     });
+
+    it('should show the closest matching lines when searchText is a near-miss', async () => {
+      // One word off from the real line ("Run tests with npm test." in the fixture) —
+      // this is the common case: an LLM re-typing remembered content instead of
+      // copying it exactly.
+      const result = await updater.update(TEST_README, [
+        {
+          type: 'replace',
+          searchText: 'Run tests using npm test.',
+          content: 'New content',
+        },
+      ]);
+
+      assert.strictEqual(result.success, false, 'Update should fail');
+      assert.ok(
+        result.error?.includes('Closest match in the file'),
+        'Error should surface the closest match'
+      );
+      assert.ok(
+        result.error?.includes('Run tests with npm test.'),
+        'Closest match should show the actual line'
+      );
+    });
+
+    it('should omit the hint when nothing in the file is close enough', async () => {
+      const result = await updater.update(TEST_README, [
+        {
+          type: 'replace',
+          searchText: 'Completely unrelated multi word content string here',
+          content: 'New content',
+        },
+      ]);
+
+      assert.strictEqual(result.success, false, 'Update should fail');
+      assert.ok(
+        !result.error?.includes('Closest match in the file'),
+        'Should not show a misleading low-similarity match'
+      );
+    });
   });
 
   describe('update() - insert-after operation', () => {

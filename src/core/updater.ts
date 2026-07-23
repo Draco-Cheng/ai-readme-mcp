@@ -21,6 +21,53 @@ export interface UpdateResult {
 }
 
 /**
+ * A caller's `searchText` almost always comes from the LLM re-typing a
+ * remembered version of the file rather than an exact copy — one changed
+ * dash, quote, or dropped word and the replace fails with no clue why. Find
+ * the window in `content` most similar to `searchText` (same line count,
+ * scored by line-level Jaccard similarity) so the error can show it — the
+ * diff between "what you sent" and "what's actually there" is usually
+ * obvious once both are visible.
+ */
+function findClosestMatch(content: string, searchText: string): string | null {
+  const contentLines = content.split('\n');
+  const searchLines = searchText.split('\n');
+  const windowSize = searchLines.length;
+  if (contentLines.length < windowSize) return null;
+
+  const tokenSet = (line: string) => new Set(line.trim().split(/\s+/).filter(Boolean));
+  const searchTokens = searchLines.map(tokenSet);
+
+  const lineSimilarity = (a: Set<string>, b: Set<string>): number => {
+    if (a.size === 0 && b.size === 0) return 1;
+    let intersection = 0;
+    for (const tok of a) if (b.has(tok)) intersection++;
+    const union = a.size + b.size - intersection;
+    return union === 0 ? 1 : intersection / union;
+  };
+
+  let bestScore = -1;
+  let bestStart = 0;
+  for (let start = 0; start <= contentLines.length - windowSize; start++) {
+    let score = 0;
+    for (let i = 0; i < windowSize; i++) {
+      score += lineSimilarity(tokenSet(contentLines[start + i]!), searchTokens[i]!);
+    }
+    score /= windowSize;
+    if (score > bestScore) {
+      bestScore = score;
+      bestStart = start;
+    }
+  }
+
+  // Below this, the "closest" window is just noise — showing it would mislead
+  // more than help, so let the caller fall back to a generic message.
+  if (bestScore < 0.3) return null;
+
+  return contentLines.slice(bestStart, bestStart + windowSize).join('\n');
+}
+
+/**
  * ReadmeUpdater - Handles updating AI_README.md files
  *
  * Features:
@@ -180,7 +227,11 @@ export class ReadmeUpdater {
         }
 
         if (originalContent === newContent) {
-          throw new Error(`Text not found: ${operation.searchText}`);
+          const closest = findClosestMatch(originalContent, operation.searchText);
+          const hint = closest
+            ? `\n\nClosest match in the file (searchText must match this EXACTLY, including punctuation/whitespace):\n${closest}`
+            : '';
+          throw new Error(`Text not found: ${operation.searchText}${hint}`);
         }
 
         updatedLines = newContent.split('\n');
