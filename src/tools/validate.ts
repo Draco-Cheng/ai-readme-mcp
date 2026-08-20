@@ -1,7 +1,10 @@
 import { z } from 'zod';
+import { readFile } from 'fs/promises';
+import { join, isAbsolute } from 'path';
 import { ReadmeValidator } from '../core/validator.js';
 import { AIReadmeScanner, resolveExcludePatterns } from '../core/scanner.js';
 import { pickWritingGuideTier, renderWritingGuide } from '../core/writingGuide.js';
+import { diagnoseOverBudget } from '../core/overBudgetGuidance.js';
 import type { ValidationConfig } from '../types/index.js';
 import { DEFAULT_VALIDATION_CONFIG } from '../types/index.js';
 
@@ -59,7 +62,8 @@ function buildValidationMessage(
   totalIssues: number,
   averageScore: number,
   results: Awaited<ReturnType<InstanceType<typeof ReadmeValidator>['validate']>>[],
-  tokenBudget: number
+  tokenBudget: number,
+  diagnoses: Map<string, string>
 ): string {
   if (totalIssues === 0) {
     return `All ${totalFiles} README files passed validation! Average score: ${averageScore}/100`;
@@ -90,10 +94,19 @@ function buildValidationMessage(
   const lightTier = tiered.filter(t => t.tier === 'light');
 
   if (fullTier.length > 0) {
+    // Per-file diagnosis, not a blanket "rewrite": the right fix differs
+    // (split a dominant section / architecture check / rewrite), and telling
+    // the agent "rewrite" for a split-shaped file makes it delete real signal.
+    // validate only LABELS the fix; compress/update deliver the full steps.
     const paths = fullTier
-      .map(t => `${t.result.filePath} (score: ${t.score}, tokens: ${t.tokens})`)
+      .map(t => {
+        const label = diagnoses.get(t.result.filePath);
+        return `${t.result.filePath} (score: ${t.score}, tokens: ${t.tokens})${label ? ` — likely fix: ${label}` : ''}`;
+      })
       .join('\n  - ');
-    msg += `\n\n🚨 These files need rewriting, not patching:\n  - ${paths}\n\n${renderWritingGuide('full', tokenBudget)}`;
+    msg += `\n\n🚨 These files are severely over budget — patching won't fix them:\n  - ${paths}\n\n` +
+      `Run compress_ai_readme (or edit via update_ai_readme) on each — it returns the full steps for the fix named above.\n\n` +
+      `${renderWritingGuide('full', tokenBudget)}`;
   } else if (lightTier.length > 0) {
     const paths = lightTier
       .map(t => `${t.result.filePath} (score: ${t.score}, tokens: ${t.tokens})`)
@@ -154,6 +167,29 @@ export async function validateAIReadmes(input: ValidateInput) {
       }
     }
 
+    // One-line fix diagnosis for severely over-budget files — same decision
+    // core as compress/update (diagnoseOverBudget), so the survey label never
+    // disagrees with the tool that later acts on the file.
+    const splitThreshold =
+      config?.sectionSplitThreshold ?? DEFAULT_VALIDATION_CONFIG.sectionSplitThreshold;
+    const diagnoses = new Map<string, string>();
+    for (const r of results) {
+      const tier = pickWritingGuideTier(r.score ?? 100, r.stats?.tokens ?? 0, tokenBudget);
+      if (tier !== 'full') continue;
+      const abs = isAbsolute(r.filePath) ? r.filePath : join(projectRoot, r.filePath);
+      const content = await readFile(abs, 'utf-8').catch(() => '');
+      if (!content) continue;
+      const d = diagnoseOverBudget(content, splitThreshold);
+      diagnoses.set(
+        r.filePath,
+        d.mode === 'split'
+          ? `SPLIT — "${d.dominant!.heading}" ≈${Math.round(d.dominant!.fraction * 100)}% of the file`
+          : d.mode === 'restructure'
+          ? `ARCHITECTURE CHECK — ${d.sectionCount} sections, none dominant`
+          : 'REWRITE — cut low-value content'
+      );
+    }
+
     return {
       success: true,
       projectRoot,
@@ -166,7 +202,7 @@ export async function validateAIReadmes(input: ValidateInput) {
         issuesBySeverity,
       },
       results,
-      message: buildValidationMessage(totalFiles, validFiles, totalIssues, averageScore, results, tokenBudget),
+      message: buildValidationMessage(totalFiles, validFiles, totalIssues, averageScore, results, tokenBudget, diagnoses),
     };
   } catch (error) {
     return {

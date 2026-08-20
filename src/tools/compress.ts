@@ -73,6 +73,8 @@ export async function compressAIReadme(input: CompressInput) {
         const tail =
           mode === 'split'
             ? `one section dominates the file, so the fix is to SPLIT it out (below), not squeeze.`
+            : mode === 'restructure'
+            ? `many sections, none dominant — likely a directory-structure symptom; review the architecture check below before squeezing.`
             : `the regex phase can't do it, so the rewrite phase below is the rest of THIS compression, not optional follow-up.`;
         return {
           success: false,

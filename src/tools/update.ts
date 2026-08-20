@@ -147,7 +147,7 @@ export async function updateAIReadme(input: UpdateInput) {
     // not squeezed. Without this, update only ever says "rewrite", so an edit that
     // pushes a subsystem-heavy file over budget forces the agent to either delete
     // load-bearing safety rules or give up at the <400 gate.
-    let fullTierGuidance: { instruction: string; mode: 'split' | 'rewrite' } | null = null;
+    let fullTierGuidance: { instruction: string; mode: 'split' | 'restructure' | 'rewrite' } | null = null;
     if (tier === 'full') {
       const splitThreshold =
         config?.sectionSplitThreshold ?? DEFAULT_VALIDATION_CONFIG.sectionSplitThreshold;
@@ -178,7 +178,7 @@ export async function updateAIReadme(input: UpdateInput) {
     // successful-with-warnings one. The edit was actually applied, but we want
     // AI to halt and act on the over-budget instruction (split or rewrite).
     const reportSuccess = tier !== 'full';
-    const fix = fullTierGuidance?.mode === 'split' ? 'split' : 'rewrite';
+    const fix = fullTierGuidance?.mode ?? 'rewrite';
     const failureBanner = !reportSuccess
       ? `❌ Update applied, but the file is unusable as AI context (${tokens} tokens, score ${score}/100). Returning success:false to force you to handle the ${fix} before continuing. The edit IS on disk — do not re-apply it. Just do the ${fix} described below.\n\n`
       : '';
