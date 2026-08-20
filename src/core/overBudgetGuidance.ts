@@ -123,9 +123,10 @@ export function buildRestructureInstruction(
     `   - If they're actually cohesive (shared logic, one domain) → this signal is a false positive; fall back ` +
     `to a rewrite of the doc and do NOT touch the directory.\n` +
     `2. If regrouping makes sense, STOP and confirm with the user before moving anything — propose the feature ` +
-    `groups and wait for approval. Moving files is a visible, hard-to-reverse change (use \`git mv\` to keep history).\n\n` +
+    `groups and wait for approval. Moving files is a visible, hard-to-reverse change.\n\n` +
     `Once approved, per feature group:\n` +
-    `  - \`git mv\` its files into a child directory (e.g. \`<feature>/\`).\n` +
+    `  - Move its files into a child directory (e.g. \`<feature>/\`) — \`git mv\` if the project is under git ` +
+    `(keeps history), a plain move otherwise.\n` +
     `  - Write its conventions into \`<feature-dir>/AI_README.md\` (standalone file, own # H1):\n` +
     `      update_ai_readme({ readmePath: "<feature-dir>/AI_README.md", operations: [{ type: "rewrite", content: "<that feature's sections>" }] })\n` +
     `  - Replace the moved section in ${readmePath} with ONE pointer line:\n` +
