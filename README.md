@@ -53,24 +53,15 @@ An AI reading your code sees **what it does today**. It cannot see what you alre
 
 ## 💡 The Solution
 
-**AI_README.md** - a per-directory memory file that captures what the code cannot say.
+**AI_README.md** - a per-directory memory file holding what the code cannot say: conventions, plus the traps and post-mortem lessons that stop the same bug being reintroduced.
 
-It holds two kinds of knowledge:
-
-- **Conventions** - the standards new code should follow
-- **Scar tissue** - the traps, invariants, and post-mortem lessons that stop the same bug being reintroduced
-
-### What actually gets recorded
-
-You have probably had a version of this conversation with an AI assistant:
+You have probably had this conversation:
 
 > **You:** This retry loop looks redundant, clean it up.
 > **AI:** Done, simplified.
 > *(three days later, the flaky upload bug is back)*
 
-The loop was not redundant — it was working around a provider that returns `200` before the file is durable. That knowledge existed in a Slack thread and one engineer's memory. The AI could not see it, so it removed it. Next month, a different AI session will remove it again.
-
-Everyday examples of what belongs in an AI_README:
+The loop was working around a provider that returns `200` before the file is durable. That lived in a Slack thread and one engineer's memory — invisible to the AI, so it removed it. Next month a different session removes it again.
 
 | The situation | The line that prevents it |
 |---|---|
@@ -79,65 +70,40 @@ Everyday examples of what belongs in an AI_README:
 | AI adds a field the API silently ignores | `PATCH ignores unknown fields, returns 200 — always verify with a follow-up GET` |
 | AI "fixes" an odd-looking sort | `NULLs sort last via a boolean key, never NULLS LAST — unsupported on SQLite` |
 | AI removes a "pointless" `await` | `Must await — the handler commits, and the caller reads in the same transaction` |
-| New AI session re-asks a question you answered last week | `Staging DB resets nightly at 03:00 UTC — do not debug data loss before checking the clock` |
 
-The pattern is always the same: **something looks wrong but is deliberate**, and the reason lives outside the code. Written down once, it stops being rediscovered the hard way.
+The pattern is always the same: **something looks wrong but is deliberate**, and the reason lives outside the code.
 
-### Real entries from a production codebase
+<details>
+<summary><b>Real entries from a production monorepo</b> (20 AI_README files, 5 directory levels)</summary>
 
-From a monorepo with 20 AI_README files across 5 directory levels. Each is terse by design — these are written for an AI to load, not for a human to browse:
+Terse by design — written for an AI to load, not a human to browse.
 
-**A mistake you cannot take back**
+| Entry | Why it exists |
+|---|---|
+| `Manifest name CANNOT be localized - browser fetches it once at install with no Accept-Language, and the installed home-screen name is frozen` | Ship it wrong and every existing install keeps the wrong name. No deploy fixes it. |
+| `Order.items needs a NEW list assigned - an in-place mutation is invisible to the ORM and silently dropped at flush` | The natural way to write it throws no error and saves nothing. |
+| `Column stays nullable, never backfilled - stamping the current time at deploy invalidates every existing session` | Looks like harmless data hygiene. Is a site-wide forced logout. |
+| `search_products returns the SKU list, not a count - given a bare count the model invents plausible SKUs` | Found the way these things usually are: in an incident review. |
 
-```
-- Manifest `name` CANNOT be localized - browser fetches it once at install
-  with no `Accept-Language`, and the installed home-screen name is frozen
-```
-> Ship it wrong and every existing install keeps the wrong name. No deploy fixes it.
+The code shows the fix, never the failure that motivated it.
 
-**A change that succeeds and loses your data**
-
-```
-- `Order.items` needs a NEW list assigned - an in-place mutation is invisible
-  to the ORM and silently dropped at flush
-```
-> The natural way to write it — appending to the list — throws no error and saves nothing.
-
-**A one-line migration that logs everyone out**
-
-```
-- Column stays nullable, never backfilled - stamping the current time at
-  deploy invalidates every existing session
-```
-> Looks like harmless data hygiene. Is actually a site-wide forced logout.
-
-**A detail that changes what an AI does with the result**
-
-```
-- `search_products` returns the SKU list, not a count - given a bare count
-  the model invents plausible SKUs that do not exist
-```
-> Found the way these things usually are: in production, in an incident review.
-
-None of these are style rules, and none are discoverable by reading the code — the code shows the fix, never the failure that motivated it. Each line is a debugging session someone already paid for, written down so nobody pays twice.
+</details>
 
 ### How It Works
 
 1. **Create** `AI_README.md` files in your project (root or specific directories)
-2. **Record** both conventions and hard-won lessons - especially anything that fails silently
+2. **Record** conventions and hard-won lessons - especially anything that fails silently
 3. **Commit to git** - the knowledge outlives the person who earned it
-4. **AI pulls the relevant ones** before planning or editing - including during planning, before a file is opened
-5. **AI writes back** - when you debug something together, the lesson gets recorded on the spot, through a validated channel
+4. **AI pulls the relevant ones** before planning or editing - including before a file is opened
+5. **AI writes back** - lessons get recorded on the spot, through a validated channel
 
 ### What This MCP Server Does
 
-This MCP (Model Context Protocol) server automates the entire workflow:
-
 - 🔍 **Auto-discovers** all AI_README.md files in your project
-- 🎯 **Routes context** - AI gets the relevant parent chain for the code it's editing
-- 🚀 **Guided initialization** - `init_ai_readme` scans for empty files and guides AI through population
+- 🎯 **Routes context** - the relevant parent chain for the code being edited
+- 🚀 **Guided initialization** - `init_ai_readme` scans for empty files and guides population
 - ✏️ **Captures lessons in-flow** - the moment a trap is found, `update_ai_readme` records it
-- ✅ **Reviews every write** - validation, conflict detection, and quality scoring on each update
+- ✅ **Reviews every write** - validation, conflict detection, quality scoring
 - 🗜️ **Keeps it dense** - token budget enforcement with compression and splitting
 
 **Result:** the same bug does not get reintroduced six months later by an AI that never saw the post-mortem.
@@ -146,57 +112,41 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 
 ## 🆚 AI_README vs. CLAUDE.md
 
-> **"Can't I just write a CLAUDE.md?"** — For conventions, often yes. The difference is not the format; it is **where the knowledge comes from and how it gets written down**.
+> **"Can't I just write a CLAUDE.md?"** — For conventions, often yes. The difference is **where the knowledge comes from**.
 
-A CLAUDE.md is written by a human, deliberately, usually up front. That works well for rules you already know: which tools to call, how to run the tests, what the workflow is.
+CLAUDE.md is written by a human, up front. That fits rules you already know: which tools to call, how to run the tests.
 
-But the most valuable knowledge in a mature codebase is not knowable up front. Nobody sits down on day one and writes *"kube-proxy rewrites the source address before Traefik fills XFF, so `externalTrafficPolicy` must be `Local`"*. That is learned at 2am, and the person who learned it is the AI's pair — mid-session, hands dirty.
-
-AI_README is built for that moment: the AI records the lesson as it is earned, through a channel that reviews the write.
+But the knowledge worth most in a mature codebase isn't knowable up front. Nobody writes *"kube-proxy rewrites the source address before Traefik fills XFF, so `externalTrafficPolicy` must be `Local`"* on day one. That's learned at 2am — and the one who learned it alongside you was the AI. AI_README captures it in that moment, through a channel that reviews the write.
 
 | | CLAUDE.md | AI_README |
 |---|---|---|
 | **Typical content** | Instructions you know in advance | Lessons learned by breaking things |
-| **Authored by** | Humans, deliberately, up front | AI, in-flow, at the moment of discovery |
+| **Authored by** | Humans, up front | AI, at the moment of discovery |
 | **Write path** | Free-form text editing | `update_ai_readme` only |
 | **Review on write** | None | Validation + conflict detection + quality score |
 | **Token budget** | Unmanaged — grows until it crowds out code | `tokenBudget`, with compress / split / rewrite |
 | **Nesting** | Yes | Yes |
 | **Subdirectory rules** | Not in context until you work in that directory | Retrieved on demand, for any path |
 
-### Why a reviewed write path matters
+**The reviewed write path** is what keeps the file from rotting. Most important is conflict detection: if a request contradicts a recorded lesson, the AI **stops and asks** instead of quietly rewriting the rule — which is exactly what stops it "fixing" a workaround back into the bug it was avoiding.
 
-A convention file that anyone can free-text edit degrades. Because updates go through `update_ai_readme`, every write is checked:
+**On-demand retrieval** closes a planning-time gap. Both formats nest, but a subdirectory's rules only reach the AI once it works in that directory. `get_context_for_file` returns the full parent chain for any path, before a file is opened — so conflicts surface while changing course is still cheap.
 
-1. **Conflict detection** — if your request contradicts a recorded lesson, the AI **stops and asks** rather than quietly rewriting the rule. This is the one that matters most: it is what stops an AI from "fixing" a workaround back into the bug it was avoiding.
-2. **Quality scoring** — each update returns a score and token count, so the file does not rot.
-3. **Budget enforcement** — going over `tokenBudget` triggers compression or a split. Knowledge accumulates for years; without a budget it eventually crowds out the code you are trying to fit in context.
+<details>
+<summary>The experiment behind that claim</summary>
 
-### Why on-demand retrieval matters
+A root `CLAUDE.md` plus `apps/frontend/CLAUDE.md` holding one rule, "use CSS Modules only":
 
-Both file types nest. The difference is *when* a subdirectory's rules reach the AI.
+- **At session start, nothing opened:** the AI listed only the root file's contents. The frontend rule was not in context.
+- **Asked to plan a refactor in that directory without reading files:** it could not name a styling approach — picking one "would be an invention", in its own words — and listed *"whether `apps/frontend/` has its own CLAUDE.md"* among what it would need to check. It inferred the file might exist but could not see inside it.
 
-A quick experiment — a root `CLAUDE.md` plus `apps/frontend/CLAUDE.md` holding one rule, "use CSS Modules only":
+</details>
 
-**At session start, before opening anything:** the AI listed only the root file's contents. The frontend rule was not in context.
+**Why this compounds:** conventions are roughly fixed, but lessons accumulate for as long as the project lives — each one a bug that cannot return the same way twice. As AI drafts more of the work, stability depends less on any single model's reasoning and more on whether hard-won knowledge is reachable when it's needed — by an assistant that never saw this codebase, won't remember today tomorrow, and can't read the Slack thread where the decision was made.
 
-**Asked to plan a refactor of a file in that directory, without reading files first:** it could not name a styling approach — picking one "would be an invention", in its own words — and it listed *"whether `apps/frontend/` has its own CLAUDE.md"* among the things it would need to check. It inferred the file might exist but could not see inside it.
+Conventions make AI output *consistent*. Recorded lessons make it *not regress*.
 
-That is the gap. During planning, a rule one directory away is not yet shaping the plan. `get_context_for_file` takes a path and returns the full parent chain — sorted by distance, without opening a single source file — so a conflict surfaces while changing course is still cheap.
-
-### Why this compounds
-
-A convention file saves you from repeating yourself. A memory of what went wrong saves you from **repeating the outage**.
-
-The difference shows up over time. Conventions are roughly fixed — you write them once and they stay true. Lessons accumulate for as long as the project lives, and each one is a bug that cannot come back the same way twice. A codebase with two years of recorded traps behaves differently under AI hands than one without: the assistant stops proposing the approach that was already tried and abandoned.
-
-This matters more as AI takes on a larger share of the work. When most changes are drafted by an assistant, project stability depends less on any single model's reasoning and more on **whether the hard-won knowledge is reachable at the moment it is needed** — including by an AI that has never seen this codebase before, that will not remember today's session tomorrow, and that has no access to the Slack thread where the decision was made.
-
-Conventions make AI output *consistent*. Recorded lessons make it *not regress*. The second one is what keeps a codebase stable as the number of hands on it — human and otherwise — goes up.
-
-### Use both
-
-They are not alternatives, and this project ships both. The rule that makes this server work — *"call `get_context_for_file` before any code-related task"* — lives in CLAUDE.md, because it is a behavioral instruction that must apply before any MCP tool runs. **CLAUDE.md drives the workflow; AI_README holds what the project taught you.**
+**Use both.** This project ships both: the rule that makes this server work — *"call `get_context_for_file` before any code-related task"* — lives in CLAUDE.md, because it must apply before any MCP tool runs. **CLAUDE.md drives the workflow; AI_README holds what the project taught you.**
 
 ---
 
