@@ -1,6 +1,6 @@
 # AI_README MCP Server
 
-> A smart documentation system that helps AI assistants understand and follow your project's conventions
+> Project memory for AI assistants — the conventions, traps, and hard-won lessons your code cannot tell them
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
@@ -9,6 +9,7 @@
 ## 📑 Quick Navigation
 
 
+- [AI_README vs. CLAUDE.md](#-ai_readme-vs-claudemd)
 - [Installation & Setup](#-installation--setup)
   - [For Claude Code](#for-claude-code-vscode-extension)
   - [For Cursor](#for-cursor)
@@ -28,7 +29,7 @@
 
 ## 📋 Overview
 
-**AI_README MCP Server** is a Model Context Protocol (MCP) server that helps AI assistants understand your project conventions through dedicated `AI_README.md` guide files. It automatically discovers, routes, and manages these files so AI can generate consistent, high-quality code that matches your team's standards.
+**AI_README MCP Server** is a Model Context Protocol (MCP) server that gives AI assistants a persistent, per-directory memory of your project — not just its coding conventions, but the silent-failure traps and post-mortem lessons that are invisible in the source. It discovers, routes, and manages `AI_README.md` files so that knowledge earned once is not lost, and the same bug is not reintroduced six months later.
 
 **Works with:** GitHub Copilot (VSCode 1.102+), Claude Code, Cursor, OpenClaw, and other MCP-compatible AI tools.
 
@@ -36,43 +37,166 @@
 
 ## 🎯 The Problem
 
-When working with AI assistants (like Claude, GPT, or other AI coding tools), you've probably experienced:
+**Your AI assistant starts every session with no memory of the last one.**
 
-- ❌ **Inconsistent code style** - AI generates code that doesn't match your project's conventions
-- ❌ **Repeated instructions** - You have to tell the AI the same rules over and over
-- ❌ **Team inconsistency** - Different team members get different AI outputs, leading to fragmented code quality
-- ❌ **Context loss** - AI forgets your project's specific patterns and best practices
-- ❌ **No single source of truth** - Team conventions exist in Slack messages, PRs, and people's heads, not in a format AI can use
+It re-reads the code, re-derives what it can, and re-makes the same wrong call — because the reasoning that would have stopped it was never written anywhere it can see. You correct it. The session ends. The correction is gone.
+
+Every project accumulates knowledge that **is not visible in the code**:
+
+- 💣 **Hard-won lessons** - The code shows which library you use. It does not show the three you tried first, or why they failed.
+- 🕳️ **Silent-failure traps** - Some mistakes throw no error. They just quietly stop working, and nobody notices for a week.
+- ⚰️ **Deliberate oddities** - That duplicated-looking field, that extra `await`, that retry that seems unnecessary. Each one is load-bearing, and none of them look it.
+- 🔁 **Mistakes that repeat** - The AI "cleans up" the workaround, reintroducing the exact bug it was working around.
+- 🧠 **Knowledge that lives in one person's head** - and leaves with them.
+
+An AI reading your code sees **what it does today**. It cannot see what you already tried, what broke, or why the obvious approach was rejected. So it confidently suggests the thing you learned not to do.
 
 ## 💡 The Solution
 
-**AI_README.md** - A dedicated guide file specifically designed for AI assistants to read.
+**AI_README.md** - a per-directory memory file that captures what the code cannot say.
 
-Think of it as:
-- 📖 A "style guide" that AI reads before writing code
-- 🎓 An "onboarding document" that teaches AI your project's conventions
-- 🔧 A "configuration file" for AI behavior in your codebase
-- 🤝 A **"team contract"** that ensures every developer's AI assistant follows the same standards
+It holds two kinds of knowledge:
+
+- **Conventions** - the standards new code should follow
+- **Scar tissue** - the traps, invariants, and post-mortem lessons that stop the same bug being reintroduced
+
+### What actually gets recorded
+
+You have probably had a version of this conversation with an AI assistant:
+
+> **You:** This retry loop looks redundant, clean it up.
+> **AI:** Done, simplified.
+> *(three days later, the flaky upload bug is back)*
+
+The loop was not redundant — it was working around a provider that returns `200` before the file is durable. That knowledge existed in a Slack thread and one engineer's memory. The AI could not see it, so it removed it. Next month, a different AI session will remove it again.
+
+Everyday examples of what belongs in an AI_README:
+
+| The situation | The line that prevents it |
+|---|---|
+| AI "simplifies" a workaround back into the bug it was avoiding | `Retry loop is required — provider returns 200 before the file is durable` |
+| AI picks the library you already migrated off | `Use date-fns, NOT moment — moment mutates in place and caused the timezone bug` |
+| AI adds a field the API silently ignores | `PATCH ignores unknown fields, returns 200 — always verify with a follow-up GET` |
+| AI "fixes" an odd-looking sort | `NULLs sort last via a boolean key, never NULLS LAST — unsupported on SQLite` |
+| AI removes a "pointless" `await` | `Must await — the handler commits, and the caller reads in the same transaction` |
+| New AI session re-asks a question you answered last week | `Staging DB resets nightly at 03:00 UTC — do not debug data loss before checking the clock` |
+
+The pattern is always the same: **something looks wrong but is deliberate**, and the reason lives outside the code. Written down once, it stops being rediscovered the hard way.
+
+### Real entries from a production codebase
+
+From a monorepo with 20 AI_README files across 5 directory levels. Each is terse by design — these are written for an AI to load, not for a human to browse:
+
+**A mistake you cannot take back**
+
+```
+- Manifest `name` CANNOT be localized - browser fetches it once at install
+  with no `Accept-Language`, and the installed home-screen name is frozen
+```
+> Ship it wrong and every existing install keeps the wrong name. No deploy fixes it.
+
+**A change that succeeds and loses your data**
+
+```
+- `Order.items` needs a NEW list assigned - an in-place mutation is invisible
+  to the ORM and silently dropped at flush
+```
+> The natural way to write it — appending to the list — throws no error and saves nothing.
+
+**A one-line migration that logs everyone out**
+
+```
+- Column stays nullable, never backfilled - stamping the current time at
+  deploy invalidates every existing session
+```
+> Looks like harmless data hygiene. Is actually a site-wide forced logout.
+
+**A detail that changes what an AI does with the result**
+
+```
+- `search_products` returns the SKU list, not a count - given a bare count
+  the model invents plausible SKUs that do not exist
+```
+> Found the way these things usually are: in production, in an incident review.
+
+None of these are style rules, and none are discoverable by reading the code — the code shows the fix, never the failure that motivated it. Each line is a debugging session someone already paid for, written down so nobody pays twice.
 
 ### How It Works
 
 1. **Create** `AI_README.md` files in your project (root or specific directories)
-2. **Document** your conventions: coding standards, architecture patterns, naming rules, testing requirements
-3. **Commit to git** - Share conventions with your entire team
-4. **AI reads it automatically** before making changes - ensuring every team member's AI follows the same rules
-5. **Keep it in sync** - AI can update the README as your project evolves
+2. **Record** both conventions and hard-won lessons - especially anything that fails silently
+3. **Commit to git** - the knowledge outlives the person who earned it
+4. **AI pulls the relevant ones** before planning or editing - including during planning, before a file is opened
+5. **AI writes back** - when you debug something together, the lesson gets recorded on the spot, through a validated channel
 
 ### What This MCP Server Does
 
 This MCP (Model Context Protocol) server automates the entire workflow:
 
 - 🔍 **Auto-discovers** all AI_README.md files in your project
-- 🎯 **Routes context** - AI gets the most relevant README for the code it's editing
+- 🎯 **Routes context** - AI gets the relevant parent chain for the code it's editing
 - 🚀 **Guided initialization** - `init_ai_readme` scans for empty files and guides AI through population
-- ✏️ **Updates automatically** - AI can add new conventions it discovers while coding
-- ✅ **Validates quality** - Ensures READMEs are concise and optimized for AI consumption
+- ✏️ **Captures lessons in-flow** - the moment a trap is found, `update_ai_readme` records it
+- ✅ **Reviews every write** - validation, conflict detection, and quality scoring on each update
+- 🗜️ **Keeps it dense** - token budget enforcement with compression and splitting
 
-**Result:** Every AI interaction in your project follows your team's standards and produces consistent, high-quality code.
+**Result:** the same bug does not get reintroduced six months later by an AI that never saw the post-mortem.
+
+---
+
+## 🆚 AI_README vs. CLAUDE.md
+
+> **"Can't I just write a CLAUDE.md?"** — For conventions, often yes. The difference is not the format; it is **where the knowledge comes from and how it gets written down**.
+
+A CLAUDE.md is written by a human, deliberately, usually up front. That works well for rules you already know: which tools to call, how to run the tests, what the workflow is.
+
+But the most valuable knowledge in a mature codebase is not knowable up front. Nobody sits down on day one and writes *"kube-proxy rewrites the source address before Traefik fills XFF, so `externalTrafficPolicy` must be `Local`"*. That is learned at 2am, and the person who learned it is the AI's pair — mid-session, hands dirty.
+
+AI_README is built for that moment: the AI records the lesson as it is earned, through a channel that reviews the write.
+
+| | CLAUDE.md | AI_README |
+|---|---|---|
+| **Typical content** | Instructions you know in advance | Lessons learned by breaking things |
+| **Authored by** | Humans, deliberately, up front | AI, in-flow, at the moment of discovery |
+| **Write path** | Free-form text editing | `update_ai_readme` only |
+| **Review on write** | None | Validation + conflict detection + quality score |
+| **Token budget** | Unmanaged — grows until it crowds out code | `tokenBudget`, with compress / split / rewrite |
+| **Nesting** | Yes | Yes |
+| **Subdirectory rules** | Not in context until you work in that directory | Retrieved on demand, for any path |
+
+### Why a reviewed write path matters
+
+A convention file that anyone can free-text edit degrades. Because updates go through `update_ai_readme`, every write is checked:
+
+1. **Conflict detection** — if your request contradicts a recorded lesson, the AI **stops and asks** rather than quietly rewriting the rule. This is the one that matters most: it is what stops an AI from "fixing" a workaround back into the bug it was avoiding.
+2. **Quality scoring** — each update returns a score and token count, so the file does not rot.
+3. **Budget enforcement** — going over `tokenBudget` triggers compression or a split. Knowledge accumulates for years; without a budget it eventually crowds out the code you are trying to fit in context.
+
+### Why on-demand retrieval matters
+
+Both file types nest. The difference is *when* a subdirectory's rules reach the AI.
+
+A quick experiment — a root `CLAUDE.md` plus `apps/frontend/CLAUDE.md` holding one rule, "use CSS Modules only":
+
+**At session start, before opening anything:** the AI listed only the root file's contents. The frontend rule was not in context.
+
+**Asked to plan a refactor of a file in that directory, without reading files first:** it could not name a styling approach — picking one "would be an invention", in its own words — and it listed *"whether `apps/frontend/` has its own CLAUDE.md"* among the things it would need to check. It inferred the file might exist but could not see inside it.
+
+That is the gap. During planning, a rule one directory away is not yet shaping the plan. `get_context_for_file` takes a path and returns the full parent chain — sorted by distance, without opening a single source file — so a conflict surfaces while changing course is still cheap.
+
+### Why this compounds
+
+A convention file saves you from repeating yourself. A memory of what went wrong saves you from **repeating the outage**.
+
+The difference shows up over time. Conventions are roughly fixed — you write them once and they stay true. Lessons accumulate for as long as the project lives, and each one is a bug that cannot come back the same way twice. A codebase with two years of recorded traps behaves differently under AI hands than one without: the assistant stops proposing the approach that was already tried and abandoned.
+
+This matters more as AI takes on a larger share of the work. When most changes are drafted by an assistant, project stability depends less on any single model's reasoning and more on **whether the hard-won knowledge is reachable at the moment it is needed** — including by an AI that has never seen this codebase before, that will not remember today's session tomorrow, and that has no access to the Slack thread where the decision was made.
+
+Conventions make AI output *consistent*. Recorded lessons make it *not regress*. The second one is what keeps a codebase stable as the number of hands on it — human and otherwise — goes up.
+
+### Use both
+
+They are not alternatives, and this project ships both. The rule that makes this server work — *"call `get_context_for_file` before any code-related task"* — lives in CLAUDE.md, because it is a behavioral instruction that must apply before any MCP tool runs. **CLAUDE.md drives the workflow; AI_README holds what the project taught you.**
 
 ---
 
@@ -82,6 +206,8 @@ This MCP (Model Context Protocol) server automates the entire workflow:
 - 🎯 **Smart Context Routing** - Find relevant README content based on file paths
 - 🤝 **Team Consistency** - Every team member's AI assistant reads the same conventions from git, ensuring uniform code quality
 - 🚀 **Guided Initialization** - `init_ai_readme` tool scans for empty files and guides AI through population
+- 💣 **Captures Hard-Won Lessons** - records the trap the moment you hit it, so the fix is never quietly undone
+- 🛑 **Conflict Detection** - if a request contradicts a recorded lesson, the AI stops and asks instead of overwriting it
 - 🔄 **Update & Sync** - AI can both read and update AI_README files
 - ✅ **Validation & Quality** - Ensure README consistency with token limits and structure checks
 - 🗜️ **Auto-Compression** - `compress_ai_readme` removes filler language and verbose phrases automatically, reducing token footprint without losing information
