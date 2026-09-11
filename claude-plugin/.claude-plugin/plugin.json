@@ -1,0 +1,41 @@
+{
+  "name": "ai-readme",
+  "displayName": "AI README Manager",
+  "version": "1.10.2",
+  "description": "Persistent project memory for AI agents. Injects AI_README conventions at session start and guards AI_README files from unvalidated direct edits.",
+  "author": {
+    "name": "Draco Cheng",
+    "url": "https://github.com/Draco-Cheng"
+  },
+  "homepage": "https://github.com/Draco-Cheng/ai-readme-mcp",
+  "license": "MIT",
+  "keywords": ["ai-readme", "conventions", "project-memory", "mcp"],
+  "mcpServers": "./.mcp.json",
+  "skills": "./skills/",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/ai-readme-session.cjs\"",
+            "timeout": 30,
+            "statusMessage": "Loading AI_README conventions..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/ai-readme-guard.cjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

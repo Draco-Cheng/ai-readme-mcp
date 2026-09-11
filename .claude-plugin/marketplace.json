@@ -1,0 +1,16 @@
+{
+  "name": "ai-readme",
+  "owner": {
+    "name": "Draco Cheng",
+    "url": "https://github.com/Draco-Cheng"
+  },
+  "description": "Persistent project memory for AI agents via AI_README.md convention files.",
+  "plugins": [
+    {
+      "name": "ai-readme",
+      "displayName": "AI README Manager",
+      "description": "Injects AI_README conventions at session start and guards the files from unvalidated direct edits.",
+      "source": "./claude-plugin"
+    }
+  ]
+}

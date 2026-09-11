@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The hooks are plain .cjs with no build step, so nothing else validates
+      # them. A syntax error here only surfaces when a user's session starts.
+      - name: Hook syntax
+        run: |
+          node --check claude-plugin/src/hooks/ai-readme-guard.cjs
+          node --check claude-plugin/src/hooks/ai-readme-session.cjs
+
+      - name: Manifests parse
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/marketplace.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('claude-plugin/.claude-plugin/plugin.json','utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('claude-plugin/.mcp.json','utf8'))"
+
+      - name: Guard behavior
+        run: node claude-plugin/tests/guard.test.cjs
+
+      - name: Versions in sync
+        run: node scripts/check-versions.cjs
+
+      # An odd fence count means npm silently renders nothing.
+      - name: Code fences balanced
+        run: |
+          for f in README.md claude-plugin/skills/ai-readme/SKILL.md clawhub/skills/SKILL.md; do
+            n=$(grep -c '^```' "$f" || true)
+            if [ $((n % 2)) -ne 0 ]; then echo "Odd fence count ($n) in $f"; exit 1; fi
+          done

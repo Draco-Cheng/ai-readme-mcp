@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # Required for npm trusted publishing (OIDC). Without it npm falls back to
+      # looking for a token and the publish fails.
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Trusted publishing needs Node >= 22.14.0 and npm >= 11.5.1.
+          node-version: '22'
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
+
+      - run: npm ci
+
+      - name: Tag matches package.json
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg=$(node -p "require('./package.json').version")
+          if [ "$tag" != "$pkg" ]; then
+            echo "Tag $tag does not match package.json $pkg"; exit 1
+          fi
+
+      - name: Versions in sync
+        run: node scripts/check-versions.cjs
+
+      - run: npm run typecheck
+      - run: npm test
+      - run: node claude-plugin/tests/guard.test.cjs
+      - run: npm run build
+
+      # No NODE_AUTH_TOKEN: OIDC authenticates this workflow directly.
+      # Provenance is attached automatically for public repos.
+      - name: Publish to npm
+        run: npm publish --access public
+
+      - name: GitHub Release
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
