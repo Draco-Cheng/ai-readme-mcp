@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ai-readme-manager": {
+      "command": "npx",
+      "args": ["-y", "ai-readme-mcp@1.10.2"]
+    }
+  }
+}
