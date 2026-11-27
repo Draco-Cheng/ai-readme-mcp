@@ -23,7 +23,10 @@ coverage/
 
 # Claude Code configuration (local only)
 .claude/
-.mcp.json
+# Leading slash: the root .mcp.json is a local dev config pointing at ./dist,
+# but an unanchored pattern also swallows claude-plugin/.mcp.json, which is
+# shipped and names the published npm version.
+/.mcp.json
 
 # OS
 .DS_Store

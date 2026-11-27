@@ -26,3 +26,5 @@ TypeScript ESM MCP server (Node >=18). Bundled via `tsup`. Tests via `tsx --test
 - After editing any .md, before publish: code-fence count MUST be even (grep the fence marker). Odd = unbalanced fences → npm silently won't render the README.
 
 - Over-budget: dominant section (≥40%) → SPLIT; else ≥6 sections → RESTRUCTURE (split dir by feature, needs user confirm); else REWRITE. Dominant check wins over section count.
+
+- Version lives in 6 places — `npm run version:sync` propagates, CI blocks drift. See scripts/AI_README.md.

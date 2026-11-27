@@ -18,7 +18,11 @@
     "test": "tsx --test tests/**/*.test.ts",
     "test:watch": "tsx --test --watch tests/**/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "version:check": "node scripts/check-versions.cjs",
+    "version:sync": "node scripts/sync-versions.cjs",
+    "test:plugin": "node claude-plugin/tests/guard.test.cjs",
+    "version": "npm run version:sync && git add -A"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
